@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="ナルトすごろく">
@@ -35,6 +36,15 @@
                 radial-gradient(circle at 50% 85%, rgba(234, 179, 8, 0.14) 0%, transparent 50%);
             color: #fff;
             user-select: none;
+        }
+
+        html:fullscreen, html:-webkit-full-screen,
+        body:fullscreen, body:-webkit-full-screen {
+            width: 100vw !important;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
+            overflow: hidden !important;
+            background-color: #0c0a09;
         }
 
         .text-outline {
@@ -175,9 +185,14 @@
                 <a href="../index.html" class="px-3 py-1.5 rounded-2xl bg-stone-800/90 border-2 border-amber-400 text-amber-200 font-black text-xs sm:text-sm flex items-center gap-1.5 active:scale-95">
                     <span>🏠</span><span>ゲーム いちらんへ</span>
                 </a>
-                <button onclick="toggleSoundMute()" class="sound-toggle-btn px-3 py-1.5 rounded-2xl bg-amber-900/90 border-2 border-amber-400 text-amber-100 font-black text-xs sm:text-sm flex items-center gap-1.5 active:scale-95">
-                    <span>🔊</span><span>おと オン</span>
-                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleFullScreen()" class="fs-toggle-btn px-3 py-1.5 rounded-2xl bg-emerald-950/90 hover:bg-emerald-900 border-2 border-emerald-400 text-emerald-100 font-black text-xs sm:text-sm flex items-center gap-1.5 active:scale-95">
+                        <span>⛶</span><span class="fs-label-text">ぜんがめん</span>
+                    </button>
+                    <button onclick="toggleSoundMute()" class="sound-toggle-btn px-3 py-1.5 rounded-2xl bg-amber-900/90 border-2 border-amber-400 text-amber-100 font-black text-xs sm:text-sm flex items-center gap-1.5 active:scale-95">
+                        <span>🔊</span><span>おと オン</span>
+                    </button>
+                </div>
             </div>
 
             <!-- ナルト世界観キャラクターヒーローバナー -->
@@ -214,9 +229,14 @@
         <!-- ステップ2：ワクワクの キャラクター えらび -->
         <div id="setupStep2" class="relative z-10 hidden w-full h-full max-w-6xl mx-auto flex flex-col justify-between gap-2 overflow-hidden">
             <div class="flex items-center justify-between gap-2 shrink-0">
-                <button onclick="backToStep1()" class="px-3 py-1.5 rounded-2xl bg-stone-800 hover:bg-stone-700 border-2 border-stone-500 text-stone-200 font-black text-xs sm:text-sm active:scale-95">
-                    ◀ にんずうを かえる
-                </button>
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <button onclick="backToStep1()" class="px-3 py-1.5 rounded-2xl bg-stone-800 hover:bg-stone-700 border-2 border-stone-500 text-stone-200 font-black text-xs sm:text-sm active:scale-95">
+                        ◀ にんずうを かえる
+                    </button>
+                    <button onclick="toggleFullScreen()" class="fs-toggle-btn px-2.5 py-1.5 rounded-2xl bg-emerald-950/90 hover:bg-emerald-900 border-2 border-emerald-400 text-emerald-100 font-black text-xs sm:text-sm flex items-center gap-1 active:scale-95">
+                        <span>⛶</span><span class="fs-label-text hidden sm:inline">ぜんがめん</span>
+                    </button>
+                </div>
                 <div id="charSelectPrompt" class="text-base sm:text-2xl font-black text-yellow-300 text-outline text-center truncate">
                     👇 1P の キャラを タッチして えらんでね！
                 </div>
@@ -242,8 +262,9 @@
             <div class="flex items-center gap-1">
                 <a href="../index.html" class="w-8 h-7 rounded-lg bg-stone-800 hover:bg-stone-700 border border-amber-400/70 flex items-center justify-center text-sm active:scale-95" title="いちらんへ">🏠</a>
                 <button onclick="toggleSoundMute()" class="sound-toggle-btn w-8 h-7 rounded-lg bg-amber-900/90 border border-amber-400 flex items-center justify-center text-sm active:scale-95" title="おと">🔊</button>
+                <button onclick="toggleFullScreen()" class="fs-toggle-btn w-8 h-7 rounded-lg bg-emerald-950/90 hover:bg-emerald-900 border border-emerald-400 flex items-center justify-center text-sm font-black text-emerald-200 active:scale-95" title="ぜんがめん">⛶</button>
             </div>
-            <button onclick="confirmRestartToSetup()" class="px-1.5 h-6 rounded-lg bg-red-950 hover:bg-red-900 border border-red-400 text-[10px] font-black text-red-200 active:scale-95">
+            <button onclick="confirmRestartToSetup()" class="w-full px-1.5 h-6 rounded-lg bg-red-950 hover:bg-red-900 border border-red-400 text-[10px] font-black text-red-200 active:scale-95">
                 🔄 さいしょ
             </button>
         </div>
@@ -334,12 +355,28 @@
 
         <div id="finaleAwardsGrid" class="relative z-10 flex-1 min-h-0 max-w-6xl w-full mx-auto my-2 grid grid-cols-3 gap-3 items-stretch"></div>
 
-        <div class="relative z-10 flex items-center justify-center gap-4 shrink-0">
+        <div class="relative z-10 flex items-center justify-center gap-3 sm:gap-4 shrink-0">
+            <button onclick="toggleFullScreen()" class="fs-toggle-btn px-4 py-3 rounded-2xl font-black text-xs sm:text-base bg-emerald-950 border-2 border-emerald-400 text-emerald-100 shadow-lg active:scale-95 flex items-center gap-1.5">
+                <span>⛶</span><span class="fs-label-text">ぜんがめん</span>
+            </button>
             <button onclick="playAllFinaleVoices()" class="px-6 py-3 rounded-2xl font-black text-sm sm:text-lg bg-gradient-to-r from-cyan-400 to-blue-500 text-black border-2 border-white shadow-lg active:scale-95">
                 🔊 みんなの おいわい ボイスを じゅんばんに きく！
             </button>
             <button onclick="restartFromFinale()" class="px-8 py-3 rounded-2xl font-black text-base sm:text-xl bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 text-black border-4 border-white shadow-xl active:scale-95">
                 🔄 もういちど あそぶ！
+            </button>
+        </div>
+    </div>
+
+    <!-- ぜんがめん ガイドモーダル（漢字ゼロ） -->
+    <div id="fsGuideModal" class="hidden fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-stone-900 border-4 border-emerald-400 rounded-3xl p-6 max-w-md w-full text-center space-y-4 shadow-2xl">
+            <div class="text-xl sm:text-2xl font-black text-emerald-300">📱 ぜんがめんで あそぶ ほうほう！</div>
+            <p id="fsGuideText" class="text-sm sm:text-base text-white font-bold leading-relaxed">
+                サファリの「ぁあ」マーク →「ツールバーを かくす」を タッチするか、「ホームがめんに ついか」を すると バーが きえて ひろびろ ぜんがめんで あそべるよ！
+            </p>
+            <button onclick="closeFsGuideModal()" class="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 text-black font-black text-base sm:text-lg border-2 border-white active:scale-95">
+                わかった！ とじる ✨
             </button>
         </div>
     </div>
@@ -713,6 +750,7 @@
 
         function selectPlayerCount(n) {
             unlockAudio();
+            maybeRestorePreferredFs();
             playPoyonSound(n);
             game.playerCount = n;
             renderStep1CountButtons();
@@ -720,6 +758,7 @@
 
         function goToCharSelectStep() {
             unlockAudio();
+            maybeRestorePreferredFs();
             playStarChime();
             for (let i = game.playerCount; i < 6; i++) game.selectedChars[i] = null;
             const firstEmpty = game.selectedChars.slice(0, game.playerCount).findIndex(c => c === null);
@@ -1962,6 +2001,92 @@
             document.getElementById('setupOverlay').classList.remove('hidden');
             backToStep1();
         }
+
+        /* ==========================================================
+           ぜんがめん ひょうじ きりかえ（iPad Safari / Android / PC たいおう）
+        ========================================================== */
+        function getFsElement() {
+            return document.fullscreenElement || document.webkitFullscreenElement || document.webkitCurrentFullScreenElement || document.msFullscreenElement || null;
+        }
+
+        function isStandalonePwa() {
+            return window.navigator.standalone === true || window.matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches;
+        }
+
+        function syncFsButtons() {
+            const active = !!getFsElement();
+            document.querySelectorAll('.fs-label-text').forEach(el => {
+                el.textContent = active ? 'もどす' : 'ぜんがめん';
+            });
+            document.querySelectorAll('.fs-toggle-btn').forEach(btn => {
+                if (active) {
+                    btn.classList.add('ring-2', 'ring-yellow-300');
+                } else {
+                    btn.classList.remove('ring-2', 'ring-yellow-300');
+                }
+            });
+            setTimeout(resizeFxCanvas, 80);
+        }
+
+        function closeFsGuideModal() {
+            document.getElementById('fsGuideModal').classList.add('hidden');
+        }
+
+        function maybeRestorePreferredFs() {
+            try {
+                if (sessionStorage.getItem('naruto_prefer_fs') === '1' && !getFsElement()) {
+                    const docEl = document.documentElement;
+                    const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
+                    if (req) {
+                        const p = docEl.requestFullscreen ? docEl.requestFullscreen({ navigationUI: 'hide' }) : req.call(docEl);
+                        if (p && p.catch) p.catch(() => {});
+                    }
+                }
+            } catch (_) {}
+        }
+
+        async function toggleFullScreen() {
+            unlockAudio();
+            playTickSound(true);
+            const docEl = document.documentElement;
+            if (getFsElement()) {
+                try { sessionStorage.setItem('naruto_prefer_fs', '0'); } catch (_) {}
+                if (document.exitFullscreen) await document.exitFullscreen().catch(() => {});
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                syncFsButtons();
+                return;
+            }
+
+            const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
+            if (req) {
+                try {
+                    const p = docEl.requestFullscreen
+                        ? docEl.requestFullscreen({ navigationUI: 'hide' })
+                        : req.call(docEl);
+                    if (p && p.then) await p;
+                } catch (_) {
+                    try {
+                        const p2 = req.call(docEl);
+                        if (p2 && p2.then) await p2;
+                    } catch (_e) {}
+                }
+                await new Promise(r => setTimeout(r, 150));
+                if (getFsElement()) {
+                    try { sessionStorage.setItem('naruto_prefer_fs', '1'); } catch (_) {}
+                    syncFsButtons();
+                    return;
+                }
+            }
+
+            const txtEl = document.getElementById('fsGuideText');
+            if (isStandalonePwa()) {
+                txtEl.textContent = '✨ いま すでに ぜんがめん モード だよ！ そのまま たのしく あそんでね！';
+            }
+            document.getElementById('fsGuideModal').classList.remove('hidden');
+        }
+
+        document.addEventListener('fullscreenchange', syncFsButtons);
+        document.addEventListener('webkitfullscreenchange', syncFsButtons);
 
         /* ==========================================================
            11. 花火＆紙吹雪キャンバス

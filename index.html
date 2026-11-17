@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="NARUTOゲーム">
@@ -36,6 +37,12 @@
             50% { transform: translateY(-6px); }
         }
         .float-card { animation: floatSlow 3.4s ease-in-out infinite; }
+        html:fullscreen, html:-webkit-full-screen,
+        body:fullscreen, body:-webkit-full-screen {
+            width: 100vw !important;
+            min-height: 100dvh !important;
+            background-color: #090a0f;
+        }
     </style>
 </head>
 <body class="flex flex-col justify-between p-4 sm:p-8">
@@ -53,9 +60,14 @@
         <p class="mt-2 text-xs sm:text-base font-bold text-amber-200">
             あそびたい任務をタップしてスタートするってばよ！！
         </p>
-        <button onclick="document.getElementById('hubAudio').play()" class="mt-3 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-stone-900 hover:bg-stone-800 border border-amber-400 text-amber-200 text-xs sm:text-sm font-black shadow active:scale-95 transition">
-            <span>🔊</span><span>ナルトの掛け声を聞く！</span>
-        </button>
+        <div class="mt-3 flex flex-wrap items-center justify-center gap-2.5">
+            <button onclick="document.getElementById('hubAudio').play()" class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-stone-900 hover:bg-stone-800 border border-amber-400 text-amber-200 text-xs sm:text-sm font-black shadow active:scale-95 transition">
+                <span>🔊</span><span>ナルトの掛け声を聞く！</span>
+            </button>
+            <button id="portalFsBtn" onclick="toggleFullScreen()" class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-emerald-950 hover:bg-emerald-900 border border-emerald-400 text-emerald-200 text-xs sm:text-sm font-black shadow active:scale-95 transition">
+                <span id="portalFsIcon">⛶</span><span id="portalFsLabel">全画面表示にする</span>
+            </button>
+        </div>
     </header>
 
     <!-- ゲーム選択カードグリッド -->
@@ -123,8 +135,79 @@
     </main>
 
     <footer class="max-w-5xl w-full mx-auto text-center text-[11px] sm:text-xs text-stone-500 pb-2">
-        💡 タブレットの「ホーム画面に追加」をしておくと、新しいゲームが増えたときもこの画面からすぐ遊べます！
+        💡 タブレットの「ホーム画面に追加」をしておくと、新しいゲームが増えたときもこの画面からすぐ全画面で遊べます！
     </footer>
 
+    <!-- 全画面ガイドモーダル（iPhone Safari等、API非対応端末向け） -->
+    <div id="portalFsModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-stone-900 border-2 border-emerald-400 rounded-3xl p-6 max-w-md w-full text-center space-y-3 shadow-2xl">
+            <div class="text-xl font-black text-emerald-300">📱 全画面で遊ぶ方法</div>
+            <p id="portalFsModalMsg" class="text-sm text-stone-200 leading-relaxed font-bold">
+                Safariのアドレスバーにある「ぁあ」→「ツールバーを非表示」を押すか、共有ボタンから「ホーム画面に追加」するとアドレスバーが消えて完全な全画面で遊べます！
+            </p>
+            <button onclick="document.getElementById('portalFsModal').classList.add('hidden')" class="w-full py-2.5 rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 text-black font-black text-base active:scale-95 transition">
+                閉じる
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function getFsElement() {
+            return document.fullscreenElement || document.webkitFullscreenElement || document.webkitCurrentFullScreenElement || document.msFullscreenElement || null;
+        }
+        function isStandalonePwa() {
+            return window.navigator.standalone === true || window.matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches;
+        }
+        function syncPortalFsBtn() {
+            const active = !!getFsElement();
+            const label = document.getElementById('portalFsLabel');
+            const btn = document.getElementById('portalFsBtn');
+            if (!label || !btn) return;
+            if (active) {
+                label.textContent = '全画面を解除';
+                btn.className = 'inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-amber-950 hover:bg-amber-900 border border-yellow-300 text-yellow-200 text-xs sm:text-sm font-black shadow active:scale-95 transition';
+            } else {
+                label.textContent = '全画面表示にする';
+                btn.className = 'inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-emerald-950 hover:bg-emerald-900 border border-emerald-400 text-emerald-200 text-xs sm:text-sm font-black shadow active:scale-95 transition';
+            }
+        }
+        async function toggleFullScreen() {
+            const docEl = document.documentElement;
+            if (getFsElement()) {
+                try { sessionStorage.setItem('naruto_prefer_fs', '0'); } catch (_) {}
+                if (document.exitFullscreen) await document.exitFullscreen().catch(() => {});
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                syncPortalFsBtn();
+                return;
+            }
+            const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
+            if (req) {
+                try {
+                    const p = docEl.requestFullscreen
+                        ? docEl.requestFullscreen({ navigationUI: 'hide' })
+                        : req.call(docEl);
+                    if (p && p.then) await p;
+                } catch (_) {
+                    try {
+                        const p2 = req.call(docEl);
+                        if (p2 && p2.then) await p2;
+                    } catch (_e) {}
+                }
+                await new Promise(r => setTimeout(r, 150));
+                if (getFsElement()) {
+                    try { sessionStorage.setItem('naruto_prefer_fs', '1'); } catch (_) {}
+                    syncPortalFsBtn();
+                    return;
+                }
+            }
+            const msgEl = document.getElementById('portalFsModalMsg');
+            if (isStandalonePwa()) {
+                msgEl.textContent = '現在すでにホーム画面アプリの「全画面モード」で表示されています！そのままお楽しみください！';
+            }
+            document.getElementById('portalFsModal').classList.remove('hidden');
+        }
+        document.addEventListener('fullscreenchange', syncPortalFsBtn);
+        document.addEventListener('webkitfullscreenchange', syncPortalFsBtn);
+    </script>
 </body>
 </html>

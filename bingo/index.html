@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="NARUTOビンゴ">
@@ -41,6 +42,15 @@
                 radial-gradient(circle at 50% 88%, rgba(56, 189, 248, 0.14) 0%, transparent 50%);
             color: #fff;
             user-select: none;
+        }
+
+        html:fullscreen, html:-webkit-full-screen,
+        body:fullscreen, body:-webkit-full-screen {
+            width: 100vw !important;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
+            overflow: hidden !important;
+            background-color: #090a0f;
         }
 
         .font-manga {
@@ -241,6 +251,12 @@
             <button onclick="openScrollModal()" class="px-2 py-1 rounded-lg font-bold text-[10px] sm:text-xs bg-stone-800 hover:bg-stone-700 border border-amber-500/70 text-amber-300 flex items-center gap-1 shadow active:scale-95 transition">
                 <span>📜</span>
                 <span class="hidden sm:inline">図鑑</span><span>(<span id="headerDrawnCount">0</span>/75)</span>
+            </button>
+
+            <!-- 全画面表示 -->
+            <button id="fullscreenBtn" onclick="toggleFullScreen()" class="px-2 py-1 rounded-lg font-bold text-[10px] sm:text-xs bg-emerald-950 hover:bg-emerald-900 border border-emerald-400 text-emerald-200 flex items-center gap-1 shadow active:scale-95 transition" title="全画面表示の切り替え">
+                <span>⛶</span>
+                <span id="fullscreenText" class="hidden sm:inline">全画面</span>
             </button>
 
             <!-- リセット -->
@@ -510,6 +526,19 @@
                     🔥 新カードで開幕！
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- 全画面ガイドモーダル（iPhone Safari等向け） -->
+    <div id="fsGuideModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="max-w-md w-full bg-stone-900 border-2 border-emerald-400 rounded-2xl p-5 text-center shadow-2xl space-y-3">
+            <h3 class="font-manga text-lg sm:text-xl text-emerald-300">📱 全画面で遊ぶ方法</h3>
+            <p id="bingoFsGuideText" class="text-xs sm:text-sm text-stone-200 font-bold leading-relaxed">
+                Safariのアドレスバーにある「ぁあ」→「ツールバーを非表示」を押すか、共有ボタンから「ホーム画面に追加」するとアドレスバーが消えて完全な全画面で遊べます！
+            </p>
+            <button onclick="document.getElementById('fsGuideModal').classList.add('hidden')" class="w-full py-2.5 rounded-xl font-manga text-sm bg-gradient-to-r from-emerald-400 to-cyan-400 text-black">
+                閉じる
+            </button>
         </div>
     </div>
 
@@ -2383,6 +2412,62 @@
             }
             requestAnimationFrame(animateCanvas);
         }
+
+        // 全画面表示切り替え（iPad Safari / Android / PC 対応）
+        function getFsElement() {
+            return document.fullscreenElement || document.webkitFullscreenElement || document.webkitCurrentFullScreenElement || document.msFullscreenElement || null;
+        }
+        function isStandalonePwa() {
+            return window.navigator.standalone === true || window.matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches;
+        }
+        function syncBingoFsBtn() {
+            const active = !!getFsElement();
+            const txt = document.getElementById('fullscreenText');
+            const btn = document.getElementById('fullscreenBtn');
+            if (txt) txt.textContent = active ? '解除' : '全画面';
+            if (btn) {
+                if (active) btn.classList.add('ring-2', 'ring-yellow-300');
+                else btn.classList.remove('ring-2', 'ring-yellow-300');
+            }
+            setTimeout(resizeCanvas, 80);
+        }
+        async function toggleFullScreen() {
+            const docEl = document.documentElement;
+            if (getFsElement()) {
+                try { sessionStorage.setItem('naruto_prefer_fs', '0'); } catch (_) {}
+                if (document.exitFullscreen) await document.exitFullscreen().catch(() => {});
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                syncBingoFsBtn();
+                return;
+            }
+            const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
+            if (req) {
+                try {
+                    const p = docEl.requestFullscreen
+                        ? docEl.requestFullscreen({ navigationUI: 'hide' })
+                        : req.call(docEl);
+                    if (p && p.then) await p;
+                } catch (_) {
+                    try {
+                        const p2 = req.call(docEl);
+                        if (p2 && p2.then) await p2;
+                    } catch (_e) {}
+                }
+                await new Promise(r => setTimeout(r, 150));
+                if (getFsElement()) {
+                    try { sessionStorage.setItem('naruto_prefer_fs', '1'); } catch (_) {}
+                    syncBingoFsBtn();
+                    return;
+                }
+            }
+            const guideTxt = document.getElementById('bingoFsGuideText');
+            if (isStandalonePwa() && guideTxt) {
+                guideTxt.textContent = '現在すでにホーム画面アプリの「全画面モード」で表示されています！そのままお楽しみください！';
+            }
+            document.getElementById('fsGuideModal').classList.remove('hidden');
+        }
+        document.addEventListener('fullscreenchange', syncBingoFsBtn);
+        document.addEventListener('webkitfullscreenchange', syncBingoFsBtn);
 
         // PWA Service Worker 登録
         if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
