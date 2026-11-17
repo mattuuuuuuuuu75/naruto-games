@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="チャクラホッケー">
+    <meta name="theme-color" content="#ff6b00">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/icons/icon-192.png">
+    <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png">
+    <title>らせんがん エアホッケー・チャクラスマッシュ！</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100dvh;
+            max-height: 100dvh;
+            overflow: hidden;
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            background-color: #050a14;
+            color: #fff;
+        }
+
+        html:fullscreen, html:-webkit-full-screen,
+        body:fullscreen, body:-webkit-full-screen {
+            width: 100vw !important;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
+            overflow: hidden !important;
+            background-color: #050a14;
+        }
+
+        .text-outline {
+            text-shadow:
+                -1.5px -1.5px 0 #000,
+                 1.5px -1.5px 0 #000,
+                -1.5px  1.5px 0 #000,
+                 1.5px  1.5px 0 #000,
+                 0 2px 6px rgba(0,0,0,0.9);
+        }
+
+        .text-outline-sm {
+            text-shadow:
+                -1px -1px 0 #000,
+                 1px -1px 0 #000,
+                -1px  1px 0 #000,
+                 1px  1px 0 #000;
+        }
+
+        .manga-burst {
+            background: repeating-conic-gradient(
+                from 0deg,
+                rgba(56, 189, 248, 0.14) 0deg 3deg,
+                transparent 3deg 9deg
+            );
+        }
+
+        @keyframes spinOrb {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+        .orb-spin {
+            animation: spinOrb 1.2s linear infinite;
+        }
+
+        @keyframes goalShake {
+            0%, 100% { transform: translate(0, 0); }
+            20% { transform: translate(-10px, 6px); }
+            45% { transform: translate(10px, -6px); }
+            70% { transform: translate(-6px, -4px); }
+        }
+        .goal-shake {
+            animation: goalShake 0.34s ease-out;
+        }
+    </style>
+</head>
+<body class="relative w-screen h-[100dvh] overflow-hidden flex flex-col justify-between">
+
+    <audio id="voiceAudio" preload="auto" playsinline class="hidden"></audio>
+    <canvas id="fxCanvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
+
+    <!-- ==========================================================
+         スタートがめん（ステップ1：にんずう ＆ ステップ2：キャラえらび）
+    =========================================================== -->
+    <div id="setupOverlay" class="fixed inset-0 z-40 bg-gradient-to-br from-slate-950 via-cyan-950/95 to-indigo-950 flex flex-col justify-between p-3 sm:p-5 overflow-hidden">
+        <div class="manga-burst absolute inset-0 pointer-events-none"></div>
+
+        <!-- ステップ1：1〜4にん えらび -->
+        <div id="setupStep1" class="relative z-10 w-full h-full max-w-5xl mx-auto flex flex-col items-center justify-between py-1 sm:py-2">
+            <div class="w-full flex items-center justify-between">
+                <a href="../index.html" class="px-3 py-1.5 rounded-2xl bg-stone-800/90 border-2 border-amber-400 text-amber-200 font-black text-xs sm:text-sm flex items-center gap-1.5 active:scale-95">
+                    <span>🏠</span><span>ゲーム いちらんへ</span>
+                </a>
+                <div class="flex items-center gap-2">
+                    <button class="fs-toggle-btn px-3 py-1.5 rounded-2xl bg-emerald-950/90 border-2 border-emerald-400 text-emerald-100 font-black text-xs sm:text-sm flex items-center gap-1.5 active:scale-95">
+                        <span>⛶</span><span class="fs-label-text">ぜんがめん</span>
+                    </button>
+                    <button class="sound-toggle-btn px-3 py-1.5 rounded-2xl bg-amber-900/90 border-2 border-amber-400 text-amber-100 font-black text-xs sm:text-sm flex items-center gap-1.5 active:scale-95">
+                        <span>🔊</span><span>おと オン</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-center text-center gap-1.5">
+                <div class="flex items-center justify-center gap-2 sm:gap-3">
+                    <img src="../bingo/assets/cards/leader_naruto.webp" alt="" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover object-top border-3 border-orange-400 shadow-lg -rotate-6">
+                    <img src="../sugoroku/assets/kage_bunshin.webp" alt="" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-3 border-cyan-300 shadow-lg -rotate-2">
+                    <img src="../assets/game_art/giant_rasengan_orb.webp" alt="" class="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-white orb-spin shadow-[0_0_32px_rgba(56,189,248,1)] z-10">
+                    <img src="../assets/game_art/goukakyuu_fireball.webp" alt="" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-3 border-red-400 shadow-lg rotate-2">
+                    <img src="../bingo/assets/cards/leader_sasuke.webp" alt="" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover object-top border-3 border-purple-400 shadow-lg rotate-6">
+                </div>
+
+                <div class="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-400 via-sky-400 to-amber-300 text-black font-black text-xs sm:text-sm px-4 py-0.5 rounded-full border border-white shadow">
+                    <span>🌀 ゆびで スライド！ らせんがんを はじきかえす たいせん ホッケー！</span>
+                </div>
+                <h1 class="text-2xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-cyan-200 via-sky-300 to-orange-400 drop-shadow-[0_4px_12px_rgba(56,189,248,0.6)]">
+                    らせんがん エアホッケー・チャクラスマッシュ！
+                </h1>
+                <p class="text-lg sm:text-2xl font-black text-white text-outline mt-0.5">
+                    🙌 なんにんで たいせん する？（さきに 7てん とったら かち！）
+                </p>
+            </div>
+
+            <div id="countButtonsRow" class="w-full max-w-4xl grid grid-cols-4 gap-2.5 sm:gap-4"></div>
+
+            <button id="toStep2Btn" class="px-9 py-3.5 sm:py-4 rounded-3xl font-black text-lg sm:text-2xl text-black bg-gradient-to-r from-cyan-300 via-sky-400 to-amber-300 border-4 border-white shadow-[0_0_30px_rgba(56,189,248,0.95)] active:scale-95 transition flex items-center gap-3">
+                <img src="../assets/game_art/giant_rasengan_orb.webp" alt="" class="w-8 h-8 rounded-full object-cover orb-spin">
+                <span>つぎへ！ キャラを えらぼう！ ➡️</span>
+            </button>
+        </div>
+
+        <!-- ステップ2：キャラ えらび -->
+        <div id="setupStep2" class="relative z-10 hidden w-full h-full max-w-6xl mx-auto flex flex-col justify-between gap-2 overflow-hidden">
+            <div class="flex items-center justify-between gap-2 shrink-0">
+                <div class="flex items-center gap-1.5">
+                    <button id="backStep1Btn" class="px-3 py-1.5 rounded-2xl bg-stone-800 border-2 border-stone-500 text-stone-200 font-black text-xs sm:text-sm active:scale-95">
+                        ◀ にんずうを かえる
+                    </button>
+                    <button class="fs-toggle-btn px-2.5 py-1.5 rounded-2xl bg-emerald-950/90 border-2 border-emerald-400 text-emerald-100 font-black text-xs sm:text-sm flex items-center gap-1 active:scale-95">
+                        <span>⛶</span><span class="fs-label-text hidden sm:inline">ぜんがめん</span>
+                    </button>
+                </div>
+                <div id="charPromptLabel" class="text-base sm:text-2xl font-black text-yellow-300 text-outline truncate">
+                    👇 1P の キャラを タッチしてね！
+                </div>
+                <button id="startHockeyBtn" disabled class="px-5 py-2 rounded-2xl font-black text-sm sm:text-lg bg-stone-800 text-stone-500 border-2 border-stone-700 shrink-0">
+                    🌀 バトル スタート！
+                </button>
+            </div>
+
+            <div id="playerSlotsBar" class="grid grid-cols-2 gap-2 shrink-0"></div>
+            <div id="charSelectGrid" class="flex-1 min-h-0 grid grid-cols-6 grid-rows-2 gap-2 sm:gap-2.5"></div>
+        </div>
+    </div>
+
+    <!-- ==========================================================
+         メイン エアホッケー ステージ（100dvh 固定・マルチタッチ）
+    =========================================================== -->
+    <header class="relative z-20 h-[10.5dvh] min-h-[56px] max-h-[78px] bg-gradient-to-r from-slate-950 via-cyan-950 to-slate-950 border-b-2 border-cyan-400 px-2 py-1 flex items-center gap-2 shrink-0">
+        <div class="flex items-center gap-1 shrink-0">
+            <a href="../index.html" class="w-8 h-8 rounded-xl bg-stone-800 border border-amber-400/70 flex items-center justify-center text-sm active:scale-95">🏠</a>
+            <button class="sound-toggle-btn w-8 h-8 rounded-xl bg-amber-900/90 border border-amber-400 flex items-center justify-center text-sm active:scale-95">🔊</button>
+            <button class="fs-toggle-btn w-8 h-8 rounded-xl bg-emerald-950/90 border border-emerald-400 flex items-center justify-center text-sm font-black text-emerald-200 active:scale-95">⛶</button>
+            <button id="hockeyQuitBtn" class="px-2 h-8 rounded-xl bg-red-950 border border-red-400 text-[11px] font-black text-red-200 active:scale-95">🔄 さいしょ</button>
+        </div>
+
+        <div class="bg-slate-900 border-2 border-cyan-400 rounded-xl px-2.5 py-0.5 text-center shrink-0">
+            <div class="text-[9px] sm:text-[10px] font-black text-cyan-300 leading-none">さきに 7てん！</div>
+            <div id="hockeyTimerLabel" class="text-sm sm:text-xl font-black text-yellow-300 tabular-nums leading-tight">90 びょう</div>
+        </div>
+
+        <div id="hockeyScoreGrid" class="flex-1 h-full grid grid-cols-2 gap-1.5 items-stretch"></div>
+    </header>
+
+    <!-- ホッケー アリーナ キャンバス -->
+    <main id="arenaWrap" class="relative z-10 flex-1 min-h-0 w-full overflow-hidden bg-slate-950">
+        <canvas id="hockeyCanvas" class="w-full h-full block"></canvas>
+
+        <!-- ゴール＆アイテム発動カットイン通知 -->
+        <div id="arenaToast" class="hidden pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 z-30 px-7 py-2 rounded-full bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 border-4 border-white shadow-[0_0_40px_rgba(251,191,36,1)] text-black font-black text-lg sm:text-3xl whitespace-nowrap">
+            🌀 ゴール！！ ＋1てん！！
+        </div>
+    </main>
+
+    <!-- ==========================================================
+         🏆 フィナーレ けっか ひょうしょう モーダル
+    =========================================================== -->
+    <div id="finaleModal" class="hidden fixed inset-0 z-40 bg-slate-950/95 flex flex-col justify-between p-4 sm:p-6 overflow-hidden">
+        <div class="manga-burst absolute inset-0 pointer-events-none"></div>
+
+        <div class="relative z-10 text-center">
+            <div class="inline-block bg-gradient-to-r from-cyan-300 via-yellow-300 to-orange-400 text-black font-black text-xs sm:text-base px-5 py-1 rounded-full shadow-lg animate-bounce">
+                🎊 チャクラスマッシュ けっちゃく！！ 🎊
+            </div>
+            <h2 id="finaleHeadline" class="mt-2 text-2xl sm:text-5xl font-black text-yellow-300 text-outline">
+                🏆 1P ナルト の だいしょうり！！ 🏆
+            </h2>
+        </div>
+
+        <div id="finaleRankingGrid" class="relative z-10 max-w-5xl w-full mx-auto my-auto grid grid-cols-2 gap-3"></div>
+
+        <div class="relative z-10 flex items-center justify-center gap-3 sm:gap-4">
+            <button class="fs-toggle-btn px-4 py-3 rounded-2xl font-black text-xs sm:text-base bg-emerald-950 border-2 border-emerald-400 text-emerald-100 active:scale-95 flex items-center gap-1.5">
+                <span>⛶</span><span class="fs-label-text">ぜんがめん</span>
+            </button>
+            <button id="hockeyChangeCharsBtn" class="px-6 py-3.5 rounded-2xl font-black text-sm sm:text-lg bg-stone-800 border-2 border-stone-400 text-white active:scale-95">
+                👥 キャラを かえる
+            </button>
+            <button id="hockeyRematchBtn" class="px-8 py-3.5 rounded-2xl font-black text-base sm:text-2xl bg-gradient-to-r from-cyan-300 via-sky-400 to-amber-300 text-black border-4 border-white shadow-xl active:scale-95">
+                🔄 もう 1かい たいせん！
+            </button>
+        </div>
+    </div>
+
+    <!-- ぜんがめん ガイドモーダル（漢字ゼロ） -->
+    <div id="fsGuideModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-stone-900 border-4 border-emerald-400 rounded-3xl p-6 max-w-md w-full text-center space-y-4 shadow-2xl">
+            <div class="text-xl sm:text-2xl font-black text-emerald-300">📱 ぜんがめんで あそぶ ほうほう！</div>
+            <p id="fsGuideText" class="text-sm sm:text-base text-white font-bold leading-relaxed">
+                サファリの「ぁあ」マーク →「ツールバーを かくす」を タッチするか、「ホームがめんに ついか」を すると バーが きえて ひろびろ ぜんがめんで あそべるよ！
+            </p>
+            <button id="closeFsGuideBtn" class="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 text-black font-black text-base sm:text-lg border-2 border-white active:scale-95">
+                わかった！ とじる ✨
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================================
+           1. キャラクター ＆ アセット プリロード（漢字ゼロ）
+        ========================================================== */
+        const PLAYABLE_CHARS = [
+            { id: 'naruto',    name: 'ナルト',     tag: '🌀 らせん！',     color: '#f97316', img: '../bingo/assets/cards/leader_naruto.webp',    voiceId: 1,  winVoiceId: 61 },
+            { id: 'sasuke',    name: 'サスケ',     tag: '⚡ ちどり！',     color: '#8b5cf6', img: '../bingo/assets/cards/leader_sasuke.webp',    voiceId: 2,  winVoiceId: 62 },
+            { id: 'sakura',    name: 'サクラ',     tag: '🌸 しゃーんなろー', color: '#ec4899', img: '../bingo/assets/cards/leader_sakura.webp',  voiceId: 3,  winVoiceId: 3  },
+            { id: 'kakashi',   name: 'カカシ',     tag: '⚡ らいきり！',   color: '#0ea5e9', img: '../bingo/assets/cards/leader_kakashi.webp',   voiceId: 4,  winVoiceId: 68 },
+            { id: 'hinata',    name: 'ヒナタ',     tag: '🦁 そうしけん',   color: '#a78bfa', img: '../bingo/assets/cards/leader_hinata.webp',    voiceId: 12, winVoiceId: 12 },
+            { id: 'minato',    name: 'ミナト',     tag: '🟨 ひらいしん',   color: '#eab308', img: '../bingo/assets/cards/leader_minato.webp',    voiceId: 5,  winVoiceId: 5  },
+            { id: 'gaara',     name: 'ガアラ',     tag: '🏜️ すなのたて',   color: '#dc2626', img: '../bingo/assets/cards/leader_gaara.webp',     voiceId: 24, winVoiceId: 24 },
+            { id: 'shikamaru', name: 'シカマル',   tag: '🦌 かげまね',     color: '#10b981', img: '../bingo/assets/cards/leader_shikamaru.webp', voiceId: 10, winVoiceId: 10 },
+            { id: 'itachi',    name: 'イタチ',     tag: '🐦‍⬛ アマテラス',   color: '#e11d48', img: '../bingo/assets/cards/leader_itachi.webp',    voiceId: 31, winVoiceId: 31 },
+            { id: 'jiraiya',   name: 'ジライヤ',   tag: '🐸 ガマせんにん', color: '#ea580c', img: '../bingo/assets/cards/leader_jiraiya.webp',   voiceId: 6,  winVoiceId: 6  },
+            { id: 'tsunade',   name: 'ツナデ',     tag: '💎 びゃくごう',   color: '#14b8a6', img: '../bingo/assets/cards/char_07.webp',          voiceId: 7,  winVoiceId: 7  },
+            { id: 'killerbee', name: 'キラービー', tag: '🐙 ラリアット',   color: '#3b82f6', img: '../bingo/assets/cards/char_27.webp',          voiceId: 27, winVoiceId: 27 }
+        ];
+
+        const CPU_BOSS = {
+            id: 'madara', name: 'マダラ (CPU)', color: '#ef4444', img: '../bingo/assets/cards/char_42.webp', voiceId: 42, winVoiceId: 42
+        };
+
+        const SPRITES = {};
+        const ASSET_MAP = {
+            rasengan:  '../assets/game_art/giant_rasengan_orb.webp',
+            fireball:  '../assets/game_art/goukakyuu_fireball.webp',
+            bunshin:   '../sugoroku/assets/kage_bunshin.webp',
+            scroll:    '../sugoroku/assets/chakra_scroll.webp',
+            ramen:     '../assets/game_art/ichiraku_ramen_glow.webp',
+            kyuubi:    '../sugoroku/assets/kyuubi_mode.webp',
+            madara:    '../bingo/assets/cards/char_42.webp'
+        };
+        Object.entries(ASSET_MAP).forEach(([k, src]) => {
+            const im = new Image();
+            im.src = src;
+            SPRITES[k] = im;
+        });
+        PLAYABLE_CHARS.forEach(c => {
+            const im = new Image();
+            im.src = c.img;
+            SPRITES[`char_${c.id}`] = im;
+        });
+
+        /* ==========================================================
+           2. ゲーム じょうたい ＆ サウンド
+        ========================================================== */
+        const WIN_GOALS = 7;
+        const hk = {
+            soundOn: true,
+            modeCount: 2, // 1 (vs CPU), 2 (L vs R), 3 (L, R, Top), 4 (L, R, Top, Bottom)
+            selectedChars: ['naruto', 'sasuke', null, null],
+            activeSlot: 0,
+            running: false,
+            timeLeft: 90.0,
+            players: [], // { idx, side:'left'|'right'|'top'|'bottom', isCpu, label, char, score, smashes, x, y, vx, vy, baseR, giantTimer, guardTimer, assist }
+            pucks: [],   // { x, y, vx, vy, r, rot, kind:'rasengan'|'fireball', lastHitIdx, trail:[] }
+            items: [],   // { x, y, r, kind:'bunshin'|'fireball'|'giant'|'guard' }
+            itemCooldown: 4.5,
+            pointers: new Map(), // pointerId -> playerIdx
+            clockTimer: null
+        };
+
+        const canvas = document.getElementById('hockeyCanvas');
+        const ctx = canvas.getContext('2d');
+        const voiceEl = document.getElementById('voiceAudio');
+        let audioCtx = null;
+        let audioUnlocked = false;
+
+        function getAC() {
+            if (!audioCtx) {
+                const AC = window.AudioContext || window.webkitAudioContext;
+                if (AC) audioCtx = new AC();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }
+
+        function unlockAudio() {
+            if (audioUnlocked) return;
+            audioUnlocked = true;
+            getAC();
+            if (voiceEl && !voiceEl.src) {
+                voiceEl.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+                voiceEl.play().then(() => voiceEl.pause()).catch(() => {});
+            }
+        }
+
+        function playQuoteVoice(voiceId) {
+            if (!hk.soundOn || !voiceId) return;
+            const sid = String(voiceId).padStart(2, '0');
+            voiceEl.src = `../assets/audio/quotes/${sid}.mp3?v=6`;
+            try { voiceEl.currentTime = 0; } catch (_) {}
+            voiceEl.play().catch(() => {});
+        }
+
+        function playPaddleSmashSound(power = 1) {
+            if (!hk.soundOn) return;
+            const ac = getAC();
+            if (!ac) return;
+            const now = ac.currentTime;
+            const osc = ac.createOscillator();
+            const g = ac.createGain();
+            osc.type = 'triangle';
+            const f = Math.min(880, 320 + power * 180);
+            osc.frequency.setValueAtTime(f, now);
+            osc.frequency.exponentialRampToValueAtTime(f * 1.5, now + 0.08);
+            g.gain.setValueAtTime(0.24, now);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 0.095);
+            osc.connect(g);
+            g.connect(ac.destination);
+            osc.start(now);
+            osc.stop(now + 0.10);
+        }
+
+        function playWallBounceSound() {
+            if (!hk.soundOn) return;
+            const ac = getAC();
+            if (!ac) return;
+            const now = ac.currentTime;
+            const osc = ac.createOscillator();
+            const g = ac.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(240, now);
+            osc.frequency.exponentialRampToValueAtTime(150, now + 0.05);
+            g.gain.setValueAtTime(0.12, now);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 0.055);
+            osc.connect(g);
+            g.connect(ac.destination);
+            osc.start(now);
+            osc.stop(now + 0.06);
+        }
+
+        function playGoalHornSound() {
+            if (!hk.soundOn) return;
+            const ac = getAC();
+            if (!ac) return;
+            const now = ac.currentTime;
+            [[523, 0, 0.12], [659, 0.11, 0.12], [784, 0.22, 0.14], [1046, 0.36, 0.42]].forEach(([f, d, dur]) => {
+                const osc = ac.createOscillator();
+                const g = ac.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(f, now + d);
+                g.gain.setValueAtTime(0.20, now + d);
+                g.gain.exponentialRampToValueAtTime(0.001, now + d + dur);
+                osc.connect(g);
+                g.connect(ac.destination);
+                osc.start(now + d);
+                osc.stop(now + d + dur + 0.02);
+            });
+        }
+
+        /* ==========================================================
+           3. スタートがめん（1〜4にん ＆ キャラえらび）
+        ========================================================== */
+        function renderCountButtons() {
+            const row = document.getElementById('countButtonsRow');
+            const modes = [
+                { n: 1, title: '1 にん', sub: 'vs マダラ CPU',     img: '../bingo/assets/cards/char_42.webp' },
+                { n: 2, title: '2 にん', sub: 'ひだり vs みぎ！',  img: '../bingo/assets/cards/char_75.webp' },
+                { n: 3, title: '3 にん', sub: '3ほうこう バトル',  img: '../bingo/assets/cards/char_69.webp' },
+                { n: 4, title: '4 にん', sub: 'みんなで かこもう！', img: '../bingo/assets/cards/char_05.webp' }
+            ];
+
+            row.innerHTML = modes.map(m => {
+                const active = hk.modeCount === m.n;
+                return `
+                    <button data-cnt="${m.n}" class="cnt-btn py-3.5 px-2 rounded-3xl border-4 transition flex flex-col items-center gap-1 ${
+                        active
+                            ? 'bg-gradient-to-b from-cyan-300 via-sky-400 to-amber-300 text-black border-white scale-105 shadow-[0_0_26px_rgba(56,189,248,0.95)]'
+                            : 'bg-slate-900/90 border-slate-600 text-slate-200'
+                    }">
+                        <img src="${m.img}" alt="" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover object-top border-2 border-white shadow">
+                        <span class="text-xl sm:text-3xl font-black">${m.title}</span>
+                        <span class="text-[11px] font-black ${active ? 'bg-black/80 text-yellow-300 px-2 py-0.5 rounded-full' : 'text-cyan-300'}">${m.sub}</span>
+                    </button>
+                `;
+            }).join('');
+
+            row.querySelectorAll('.cnt-btn').forEach(btn => {
+                btn.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    unlockAudio();
+                    maybeRestorePreferredFs();
+                    hk.modeCount = Number(btn.getAttribute('data-cnt'));
+                    playPaddleSmashSound(1);
+                    renderCountButtons();
+                });
+            });
+        }
+
+        function openStep2() {
+            unlockAudio();
+            maybeRestorePreferredFs();
+            const humanCount = hk.modeCount;
+            for (let i = humanCount; i < 4; i++) hk.selectedChars[i] = null;
+            const emptyIdx = hk.selectedChars.slice(0, humanCount).findIndex(x => x === null);
+            hk.activeSlot = emptyIdx !== -1 ? emptyIdx : 0;
+
+            document.getElementById('setupStep1').classList.add('hidden');
+            document.getElementById('setupStep2').classList.remove('hidden');
+            renderCharSelectUI();
+        }
+
+        function renderCharSelectUI() {
+            const n = hk.modeCount;
+            const posNames = ['👈 ひだり', '👉 みぎ', '👆 うえ', '👇 した'];
+            const slotsEl = document.getElementById('playerSlotsBar');
+            slotsEl.className = `grid grid-cols-${n} gap-2 shrink-0`;
+
+            slotsEl.innerHTML = Array.from({ length: n }, (_, i) => {
+                const cid = hk.selectedChars[i];
+                const ch = PLAYABLE_CHARS.find(c => c.id === cid);
+                const isSel = i === hk.activeSlot;
+                return `
+                    <button data-slot="${i}" class="slot-btn rounded-2xl p-2 border-3 flex items-center gap-2 text-left transition ${
+                        isSel ? 'border-yellow-300 ring-4 ring-yellow-300/60 scale-[1.02]' : 'border-slate-600'
+                    }" style="background:${ch ? `linear-gradient(135deg, ${ch.color}dd, #0f172a)` : '#0f172a'}">
+                        <div class="w-11 h-11 rounded-xl bg-slate-800 border-2 border-white overflow-hidden shrink-0 flex items-center justify-center">
+                            ${ch ? `<img src="${ch.img}" alt="" class="w-full h-full object-cover object-top">` : '<span>❓</span>'}
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="text-[10px] sm:text-xs font-black text-cyan-200">${i + 1}P（${posNames[i]}）</div>
+                            <div class="text-sm sm:text-lg font-black text-white text-outline-sm truncate">${ch ? ch.name : 'タッチしてね'}</div>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+
+            slotsEl.querySelectorAll('.slot-btn').forEach(b => {
+                b.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    hk.activeSlot = Number(b.getAttribute('data-slot'));
+                    renderCharSelectUI();
+                });
+            });
+
+            const allReady = hk.selectedChars.slice(0, n).every(c => c !== null);
+            const promptEl = document.getElementById('charPromptLabel');
+            const goBtn = document.getElementById('startHockeyBtn');
+            if (allReady) {
+                promptEl.textContent = '🎉 じゅんび OK！「バトル スタート！」を タッチ！！';
+                goBtn.disabled = false;
+                goBtn.className = 'px-6 py-2 rounded-2xl font-black text-base sm:text-xl text-black bg-gradient-to-r from-cyan-300 via-yellow-300 to-orange-400 border-4 border-white shadow-[0_0_25px_rgba(56,189,248,1)] animate-bounce shrink-0';
+            } else {
+                promptEl.textContent = `👇 ${hk.activeSlot + 1}P（${posNames[hk.activeSlot]}）の キャラを タッチしてね！`;
+                goBtn.disabled = true;
+                goBtn.className = 'px-5 py-2 rounded-2xl font-black text-sm sm:text-lg bg-slate-800 text-slate-500 border-2 border-slate-700 shrink-0';
+            }
+
+            const gridEl = document.getElementById('charSelectGrid');
+            gridEl.innerHTML = PLAYABLE_CHARS.map(ch => {
+                const owner = hk.selectedChars.slice(0, n).findIndex(c => c === ch.id);
+                const taken = owner !== -1;
+                return `
+                    <button data-cid="${ch.id}" class="char-btn relative rounded-2xl overflow-hidden border-3 flex flex-col justify-between transition active:scale-95 ${
+                        taken ? 'border-yellow-300 shadow-[0_0_16px_rgba(250,204,21,0.9)]' : 'border-slate-600'
+                    }">
+                        <img src="${ch.img}" alt="" class="absolute inset-0 w-full h-full object-cover object-top">
+                        <div class="relative z-10 p-1">
+                            <span class="px-1.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black text-white shadow" style="background:${ch.color}">${ch.tag}</span>
+                        </div>
+                        ${taken ? `<div class="relative z-10 mx-auto bg-yellow-300 text-black font-black text-[10px] sm:text-xs px-2 py-0.5 rounded-full border-2 border-black">✨ ${owner + 1}P</div>` : '<div></div>'}
+                        <div class="relative z-10 w-full py-1 bg-gradient-to-t from-black via-black/85 to-transparent text-center">
+                            <span class="text-sm sm:text-lg font-black text-white text-outline-sm">${ch.name}</span>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+
+            gridEl.querySelectorAll('.char-btn').forEach(btn => {
+                btn.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    unlockAudio();
+                    const cid = btn.getAttribute('data-cid');
+                    const owner = hk.selectedChars.slice(0, n).findIndex(c => c === cid);
+                    if (owner !== -1 && owner !== hk.activeSlot) return;
+
+                    const ch = PLAYABLE_CHARS.find(c => c.id === cid);
+                    hk.selectedChars[hk.activeSlot] = cid;
+                    playQuoteVoice(ch.voiceId);
+
+                    const nextEmpty = hk.selectedChars.slice(0, n).findIndex(c => c === null);
+                    if (nextEmpty !== -1) hk.activeSlot = nextEmpty;
+                    renderCharSelectUI();
+                });
+            });
+        }
+
+        /* ==========================================================
+           4. アリーナ初期化 ＆ マルチタッチ パドル操作
+        ========================================================== */
+        function resizeArena() {
+            const wrap = document.getElementById('arenaWrap');
+            canvas.width = wrap.clientWidth || window.innerWidth;
+            canvas.height = wrap.clientHeight || (window.innerHeight - 68);
+        }
+        window.addEventListener('resize', resizeArena);
+
+        function startMatch() {
+            unlockAudio();
+            maybeRestorePreferredFs();
+            document.getElementById('setupOverlay').classList.add('hidden');
+            document.getElementById('finaleModal').classList.add('hidden');
+            resizeArena();
+
+            const W = canvas.width;
+            const H = canvas.height;
+            const sides = ['left', 'right', 'top', 'bottom'];
+            const count = hk.modeCount === 1 ? 2 : hk.modeCount;
+
+            hk.players = [];
+            for (let i = 0; i < count; i++) {
+                const isCpu = (hk.modeCount === 1 && i === 1);
+                const ch = isCpu
+                    ? CPU_BOSS
+                    : (PLAYABLE_CHARS.find(c => c.id === hk.selectedChars[i]) || PLAYABLE_CHARS[i]);
+                const side = sides[i];
+                let sx = W * 0.5, sy = H * 0.5;
+                if (side === 'left')   { sx = 95; sy = H * 0.5; }
+                if (side === 'right')  { sx = W - 95; sy = H * 0.5; }
+                if (side === 'top')    { sx = W * 0.5; sy = 85; }
+                if (side === 'bottom') { sx = W * 0.5; sy = H - 85; }
+
+                hk.players.push({
+                    idx: i,
+                    side,
+                    isCpu,
+                    label: isCpu ? 'CPU' : `${i + 1}P`,
+                    char: ch,
+                    score: 0,
+                    smashes: 0,
+                    x: sx,
+                    y: sy,
+                    vx: 0,
+                    vy: 0,
+                    baseR: count >= 3 ? 36 : 42,
+                    giantTimer: 0,
+                    guardTimer: 0,
+                    assist: false
+                });
+            }
+
+            hk.pucks = [];
+            hk.items = [];
+            hk.itemCooldown = 4.0;
+            hk.pointers.clear();
+            hk.timeLeft = 90.0;
+            hk.running = true;
+
+            spawnCenterPuck('rasengan');
+            renderScoreBar();
+            showArenaToast('🌀 チャクラスマッシュ スタート！！');
+            playGoalHornSound();
+
+            if (hk.clockTimer) clearInterval(hk.clockTimer);
+            hk.clockTimer = setInterval(() => {
+                if (!hk.running) return;
+                hk.timeLeft = Math.max(0, +(hk.timeLeft - 0.2).toFixed(1));
+                document.getElementById('hockeyTimerLabel').textContent = `${Math.ceil(hk.timeLeft)} びょう`;
+                if (hk.timeLeft <= 0) {
+                    endMatch();
+                }
+            }, 200);
+        }
+
+        function spawnCenterPuck(kind = 'rasengan', angleRad = null) {
+            const W = canvas.width;
+            const H = canvas.height;
+            const ang = angleRad !== null
+                ? angleRad
+                : (Math.random() < 0.5 ? 0 : Math.PI) + (Math.random() - 0.5) * 0.85;
+            const speed = kind === 'fireball' ? 560 : 440;
+            hk.pucks.push({
+                x: W * 0.5,
+                y: H * 0.5,
+                vx: Math.cos(ang) * speed,
+                vy: Math.sin(ang) * speed,
+                r: kind === 'fireball' ? 30 : 26,
+                rot: 0,
+                kind,
+                lastHitIdx: -1,
+                trail: []
+            });
+        }
+
+        function clampPaddleToZone(p, nx, ny) {
+            const W = canvas.width;
+            const H = canvas.height;
+            const r = getPaddleRadius(p);
+            const pad = r + 14;
+
+            if (hk.players.length <= 2) {
+                if (p.side === 'left') {
+                    p.x = Math.max(pad, Math.min(W * 0.45 - r, nx));
+                    p.y = Math.max(pad, Math.min(H - pad, ny));
+                } else {
+                    p.x = Math.max(W * 0.55 + r, Math.min(W - pad, nx));
+                    p.y = Math.max(pad, Math.min(H - pad, ny));
+                }
+            } else {
+                // 3〜4人バトルロイヤル時の各辺ホームゾーン
+                if (p.side === 'left') {
+                    p.x = Math.max(pad, Math.min(W * 0.34, nx));
+                    p.y = Math.max(H * 0.16, Math.min(H * 0.84, ny));
+                } else if (p.side === 'right') {
+                    p.x = Math.max(W * 0.66, Math.min(W - pad, nx));
+                    p.y = Math.max(H * 0.16, Math.min(H * 0.84, ny));
+                } else if (p.side === 'top') {
+                    p.x = Math.max(W * 0.20, Math.min(W * 0.80, nx));
+                    p.y = Math.max(pad, Math.min(H * 0.36, ny));
+                } else if (p.side === 'bottom') {
+                    p.x = Math.max(W * 0.20, Math.min(W * 0.80, nx));
+                    p.y = Math.max(H * 0.64, Math.min(H - pad, ny));
+                }
+            }
+        }
+
+        function findNearestHumanPlayer(x, y) {
+            let best = null;
+            let bestDist = Infinity;
+            for (const p of hk.players) {
+                if (p.isCpu) continue;
+                const d = Math.hypot(x - p.x, y - p.y);
+                if (d < bestDist) {
+                    bestDist = d;
+                    best = p;
+                }
+            }
+            return best;
+        }
+
+        canvas.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            unlockAudio();
+            if (!hk.running) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const p = findNearestHumanPlayer(x, y);
+            if (p) {
+                hk.pointers.set(e.pointerId, p.idx);
+                const prevX = p.x, prevY = p.y;
+                clampPaddleToZone(p, x, y);
+                p.vx = (p.x - prevX) * 18;
+                p.vy = (p.y - prevY) * 18;
+            }
+        });
+
+        window.addEventListener('pointermove', (e) => {
+            if (!hk.pointers.has(e.pointerId) || !hk.running) return;
+            const idx = hk.pointers.get(e.pointerId);
+            const p = hk.players[idx];
+            if (!p) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const prevX = p.x, prevY = p.y;
+            clampPaddleToZone(p, x, y);
+            p.vx = (p.x - prevX) * 28;
+            p.vy = (p.y - prevY) * 28;
+        });
+
+        function releasePointer(e) {
+            if (hk.pointers.has(e.pointerId)) {
+                const idx = hk.pointers.get(e.pointerId);
+                const p = hk.players[idx];
+                if (p) { p.vx = 0; p.vy = 0; }
+                hk.pointers.delete(e.pointerId);
+            }
+        }
+        window.addEventListener('pointerup', releasePointer);
+        window.addEventListener('pointercancel', releasePointer);
+
+        /* ==========================================================
+           5. 物理・ゴール判定・アイテム効果（影分身3分裂・豪火球・大玉盾）
+        ========================================================== */
+        function getPaddleRadius(p) {
+            let r = p.baseR;
+            if (p.giantTimer > 0) r *= 1.48;
+            else if (p.assist) r *= 1.30;
+            return r;
+        }
+
+        function getGoalHalfSpan(side) {
+            const W = canvas.width;
+            const H = canvas.height;
+            const owner = hk.players.find(p => p.side === side);
+            if (!owner) return 0; // いない辺は壁で完全ガード！
+            const base = (side === 'left' || side === 'right') ? H * 0.25 : W * 0.19;
+            return owner.guardTimer > 0 ? base * 0.48 : base;
+        }
+
+        function updateHockeyPhysics(dt) {
+            if (!hk.running) return;
+            const W = canvas.width;
+            const H = canvas.height;
+
+            const topScore = Math.max(...hk.players.map(p => p.score));
+
+            // プレイヤー状態＆CPU AI更新
+            for (const p of hk.players) {
+                p.assist = (topScore - p.score >= 3);
+                if (p.giantTimer > 0) p.giantTimer = Math.max(0, p.giantTimer - dt);
+                if (p.guardTimer > 0) p.guardTimer = Math.max(0, p.guardTimer - dt);
+
+                if (p.isCpu && hk.pucks.length > 0) {
+                    const targetPuck = [...hk.pucks].sort((a, b) => b.x - a.x)[0];
+                    const targetY = targetPuck.x > W * 0.35 ? targetPuck.y : H * 0.5;
+                    const targetX = (targetPuck.x > W * 0.62 && targetPuck.vx < 350) ? Math.max(W * 0.62, targetPuck.x - 15) : W - 95;
+                    const prevX = p.x, prevY = p.y;
+                    const nx = p.x + Math.max(-360 * dt, Math.min(360 * dt, targetX - p.x));
+                    const ny = p.y + Math.max(-400 * dt, Math.min(400 * dt, targetY - p.y));
+                    clampPaddleToZone(p, nx, ny);
+                    p.vx = (p.x - prevX) / dt;
+                    p.vy = (p.y - prevY) / dt;
+                } else {
+                    p.vx *= 0.85;
+                    p.vy *= 0.85;
+                }
+            }
+
+            // 中央の忍術巻物アイテム出現管理
+            hk.itemCooldown -= dt;
+            if (hk.itemCooldown <= 0 && hk.items.length < 2) {
+                hk.itemCooldown = 5.5 + Math.random() * 2.5;
+                const kinds = ['bunshin', 'fireball', 'giant', 'guard'];
+                const kind = kinds[Math.floor(Math.random() * kinds.length)];
+                hk.items.push({
+                    x: W * (0.38 + Math.random() * 0.24),
+                    y: H * (0.25 + Math.random() * 0.50),
+                    r: 28,
+                    kind
+                });
+            }
+
+            // パック移動・パドル衝突・アイテム取得・ゴール判定
+            for (let pi = hk.pucks.length - 1; pi >= 0; pi--) {
+                const pk = hk.pucks[pi];
+                pk.x += pk.vx * dt;
+                pk.y += pk.vy * dt;
+                pk.rot += 12 * dt;
+
+                pk.trail.push({ x: pk.x, y: pk.y });
+                if (pk.trail.length > 10) pk.trail.shift();
+
+                // 速度下限・上限キープで常に爽快なテンポ！
+                const sp = Math.hypot(pk.vx, pk.vy);
+                const maxSp = pk.kind === 'fireball' ? 880 : 740;
+                const minSp = 340;
+                if (sp > maxSp) {
+                    pk.vx = (pk.vx / sp) * maxSp;
+                    pk.vy = (pk.vy / sp) * maxSp;
+                } else if (sp > 1 && sp < minSp) {
+                    pk.vx = (pk.vx / sp) * minSp;
+                    pk.vy = (pk.vy / sp) * minSp;
+                }
+
+                // パドルとの弾き返し判定
+                for (const p of hk.players) {
+                    const pr = getPaddleRadius(p);
+                    const dx = pk.x - p.x;
+                    const dy = pk.y - p.y;
+                    const dist = Math.hypot(dx, dy);
+                    const minD = pk.r + pr;
+                    if (dist > 0 && dist < minD) {
+                        const nx = dx / dist;
+                        const ny = dy / dist;
+                        pk.x = p.x + nx * (minD + 2);
+                        pk.y = p.y + ny * (minD + 2);
+
+                        const baseBounce = p.assist ? 620 : 540;
+                        const smashAdd = Math.min(260, Math.hypot(p.vx, p.vy) * 0.35);
+                        const outSpeed = baseBounce + smashAdd;
+                        pk.vx = nx * outSpeed + p.vx * 0.18;
+                        pk.vy = ny * outSpeed + p.vy * 0.18;
+                        pk.lastHitIdx = p.idx;
+
+                        if (smashAdd > 90) p.smashes += 1;
+                        playPaddleSmashSound(smashAdd / 120);
+                        spawnBurst(pk.x, pk.y, p.char.color, 10);
+                    }
+                }
+
+                // フィールド中央の忍術アイテムとの接触判定！
+                for (let ii = hk.items.length - 1; ii >= 0; ii--) {
+                    const it = hk.items[ii];
+                    if (Math.hypot(pk.x - it.x, pk.y - it.y) <= pk.r + it.r) {
+                        activateFieldItem(it, pk);
+                        hk.items.splice(ii, 1);
+                    }
+                }
+
+                // 四方の壁＆ゴールマウス判定
+                const leftSpan = getGoalHalfSpan('left');
+                const rightSpan = getGoalHalfSpan('right');
+                const topSpan = getGoalHalfSpan('top');
+                const botSpan = getGoalHalfSpan('bottom');
+
+                // 左端
+                if (pk.x - pk.r <= 10) {
+                    if (leftSpan > 0 && Math.abs(pk.y - H * 0.5) <= leftSpan) {
+                        handleGoalScored('left', pk, pi);
+                        continue;
+                    }
+                    pk.x = 10 + pk.r;
+                    pk.vx = Math.abs(pk.vx);
+                    playWallBounceSound();
+                }
+                // 右端
+                if (pk.x + pk.r >= W - 10) {
+                    if (rightSpan > 0 && Math.abs(pk.y - H * 0.5) <= rightSpan) {
+                        handleGoalScored('right', pk, pi);
+                        continue;
+                    }
+                    pk.x = W - 10 - pk.r;
+                    pk.vx = -Math.abs(pk.vx);
+                    playWallBounceSound();
+                }
+                // 上端
+                if (pk.y - pk.r <= 10) {
+                    if (topSpan > 0 && Math.abs(pk.x - W * 0.5) <= topSpan) {
+                        handleGoalScored('top', pk, pi);
+                        continue;
+                    }
+                    pk.y = 10 + pk.r;
+                    pk.vy = Math.abs(pk.vy);
+                    playWallBounceSound();
+                }
+                // 下端
+                if (pk.y + pk.r >= H - 10) {
+                    if (botSpan > 0 && Math.abs(pk.x - W * 0.5) <= botSpan) {
+                        handleGoalScored('bottom', pk, pi);
+                        continue;
+                    }
+                    pk.y = H - 10 - pk.r;
+                    pk.vy = -Math.abs(pk.vy);
+                    playWallBounceSound();
+                }
+            }
+        }
+
+        function activateFieldItem(item, puck) {
+            const owner = hk.players[puck.lastHitIdx] || hk.players[0];
+            playGoalHornSound();
+            spawnBurst(item.x, item.y, '#fde047', 20);
+
+            if (item.kind === 'bunshin') {
+                // 👥 かげぶんしん！パックが一気に3個に分裂！！
+                showArenaToast('👥 かげぶんしん！！ らせんがんが 3こに ぶんれつ！！');
+                const baseAng = Math.atan2(puck.vy, puck.vx);
+                [-0.42, 0.42].forEach(off => {
+                    if (hk.pucks.length < 4) {
+                        hk.pucks.push({
+                            x: puck.x,
+                            y: puck.y,
+                            vx: Math.cos(baseAng + off) * 480,
+                            vy: Math.sin(baseAng + off) * 480,
+                            r: 25,
+                            rot: 0,
+                            kind: 'rasengan',
+                            lastHitIdx: puck.lastHitIdx,
+                            trail: []
+                        });
+                    }
+                });
+            } else if (item.kind === 'fireball') {
+                puck.kind = 'fireball';
+                puck.r = 31;
+                puck.vx *= 1.28;
+                puck.vy *= 1.28;
+                showArenaToast('🔥 ごうかきゅう スマッシュ！！ きめれば 2てん！！');
+            } else if (item.kind === 'giant') {
+                owner.giantTimer = 8.0;
+                showArenaToast(`🌀 ${owner.label} ${owner.char.name} の おおだま シールド！！`);
+            } else if (item.kind === 'guard') {
+                owner.guardTimer = 8.0;
+                showArenaToast(`🍜 ${owner.label} の ゴール バリア はつどう！！`);
+            }
+        }
+
+        function handleGoalScored(concededSide, puck, puckIdx) {
+            const victim = hk.players.find(p => p.side === concededSide);
+            const pts = puck.kind === 'fireball' ? 2 : 1;
+
+            let scorer = null;
+            if (puck.lastHitIdx >= 0 && hk.players[puck.lastHitIdx] && hk.players[puck.lastHitIdx].side !== concededSide) {
+                scorer = hk.players[puck.lastHitIdx];
+            } else {
+                // オウンゴール等の場合は相手（複数人なら失点者以外のトップ以外or全員）に得点
+                scorer = hk.players.find(p => p.side !== concededSide) || hk.players[0];
+            }
+
+            scorer.score += pts;
+            hk.pucks.splice(puckIdx, 1);
+
+            playGoalHornSound();
+            if (scorer.score === WIN_GOALS || pts === 2) {
+                playQuoteVoice(scorer.char.voiceId);
+            }
+            spawnBurst(puck.x, puck.y, scorer.char.color, 38);
+
+            const wrap = document.getElementById('arenaWrap');
+            wrap.classList.remove('goal-shake');
+            void wrap.offsetWidth;
+            wrap.classList.add('goal-shake');
+
+            showArenaToast(
+                pts === 2
+                    ? `🔥 ごうかきゅう ゴール！！ ${scorer.label} ${scorer.char.name} ＋2てん！！`
+                    : `🌀 ゴール！！ ${scorer.label} ${scorer.char.name} ＋1てん！！`
+            );
+            renderScoreBar();
+
+            if (scorer.score >= WIN_GOALS) {
+                setTimeout(() => endMatch(), 550);
+                return;
+            }
+
+            if (hk.pucks.length === 0) {
+                setTimeout(() => {
+                    if (hk.running && hk.pucks.length === 0) {
+                        // 失点したプレイヤー側へ優しい速度でサーブ再開
+                        const serveAngles = { left: Math.PI, right: 0, top: -Math.PI / 2, bottom: Math.PI / 2 };
+                        spawnCenterPuck('rasengan', (serveAngles[concededSide] || 0) + (Math.random() - 0.5) * 0.5);
+                    }
+                }, 650);
+            }
+        }
+
+        function showArenaToast(msg) {
+            const el = document.getElementById('arenaToast');
+            el.textContent = msg;
+            el.classList.remove('hidden');
+            clearTimeout(el._t);
+            el._t = setTimeout(() => el.classList.add('hidden'), 1550);
+        }
+
+        function renderScoreBar() {
+            const n = hk.players.length;
+            const grid = document.getElementById('hockeyScoreGrid');
+            grid.className = `flex-1 h-full grid grid-cols-${n} gap-1.5 items-stretch`;
+            const sideIcons = { left: '👈ひだり', right: '👉みぎ', top: '👆うえ', bottom: '👇した' };
+
+            grid.innerHTML = hk.players.map(p => `
+                <div class="rounded-xl px-2 py-0.5 border-2 flex items-center justify-between gap-1.5 overflow-hidden" style="border-color:${p.char.color}; background: linear-gradient(135deg, ${p.char.color}cc, #0f172a);">
+                    <div class="flex items-center gap-1.5 min-w-0">
+                        <img src="${p.char.img}" alt="" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-cover object-top border-2 border-white shrink-0">
+                        <div class="min-w-0 leading-tight">
+                            <div class="text-[9px] sm:text-[11px] font-black text-yellow-200 truncate">${p.label} ${sideIcons[p.side]}</div>
+                            <div class="text-xs sm:text-base font-black text-white text-outline-sm truncate">${p.char.name}</div>
+                        </div>
+                    </div>
+                    <div class="text-2xl sm:text-4xl font-black text-white text-outline tabular-nums pr-1">${p.score}</div>
+                </div>
+            `).join('');
+        }
+
+        /* ==========================================================
+           6. キャンバス描画ループ（チャクラコート・ゴール・軌跡）
+        ========================================================== */
+        function drawCircleImg(img, x, y, r, rot = 0, ringColor = '#fff', ringWidth = 4) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(rot);
+            ctx.beginPath();
+            ctx.arc(0, 0, r, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.clip();
+            if (img && img.complete && img.naturalWidth > 0) {
+                ctx.drawImage(img, -r, -r, r * 2, r * 2);
+            } else {
+                ctx.fillStyle = ringColor;
+                ctx.fill();
+            }
+            ctx.restore();
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.lineWidth = ringWidth;
+            ctx.strokeStyle = ringColor;
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function renderHockeyArena() {
+            const W = canvas.width;
+            const H = canvas.height;
+            ctx.clearRect(0, 0, W, H);
+
+            // 背景チャクラアリーナ床
+            const bg = ctx.createRadialGradient(W * 0.5, H * 0.5, 30, W * 0.5, H * 0.5, W * 0.65);
+            bg.addColorStop(0, '#0f2942');
+            bg.addColorStop(0.6, '#091526');
+            bg.addColorStop(1, '#040812');
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, W, H);
+
+            // センターライン＆チャクラ魔法陣サークル
+            ctx.save();
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.28)';
+            ctx.lineWidth = 4;
+            ctx.setLineDash([14, 10]);
+            ctx.beginPath();
+            ctx.moveTo(W * 0.5, 12);
+            ctx.lineTo(W * 0.5, H - 12);
+            ctx.stroke();
+            if (hk.players.length >= 3) {
+                ctx.beginPath();
+                ctx.moveTo(12, H * 0.5);
+                ctx.lineTo(W - 12, H * 0.5);
+                ctx.stroke();
+            }
+            ctx.setLineDash([]);
+            ctx.beginPath();
+            ctx.arc(W * 0.5, H * 0.5, Math.min(W, H) * 0.16, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+
+            // 外周バンパー壁と各プレイヤーのゴールマウス描画
+            ctx.save();
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 8;
+            ctx.strokeRect(8, 8, W - 16, H - 16);
+            ctx.restore();
+
+            for (const p of hk.players) {
+                const span = getGoalHalfSpan(p.side);
+                ctx.save();
+                ctx.strokeStyle = p.guardTimer > 0 ? '#fde047' : p.char.color;
+                ctx.lineWidth = 14;
+                ctx.shadowColor = p.char.color;
+                ctx.shadowBlur = 18;
+                ctx.beginPath();
+                if (p.side === 'left') {
+                    ctx.moveTo(6, H * 0.5 - span);
+                    ctx.lineTo(6, H * 0.5 + span);
+                } else if (p.side === 'right') {
+                    ctx.moveTo(W - 6, H * 0.5 - span);
+                    ctx.lineTo(W - 6, H * 0.5 + span);
+                } else if (p.side === 'top') {
+                    ctx.moveTo(W * 0.5 - span, 6);
+                    ctx.lineTo(W * 0.5 + span, 6);
+                } else if (p.side === 'bottom') {
+                    ctx.moveTo(W * 0.5 - span, H - 6);
+                    ctx.lineTo(W * 0.5 + span, H - 6);
+                }
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // フィールド中央の忍術アイテム描画
+            for (const it of hk.items) {
+                const spMap = { bunshin: SPRITES.bunshin, fireball: SPRITES.fireball, giant: SPRITES.scroll, guard: SPRITES.ramen };
+                drawCircleImg(spMap[it.kind], it.x, it.y, it.r, 0, '#fde047', 4);
+            }
+
+            // パックの軌跡＆螺旋丸・豪火球パック描画
+            for (const pk of hk.pucks) {
+                const trailCol = pk.kind === 'fireball' ? '#f97316' : '#38bdf8';
+                pk.trail.forEach((pt, idx) => {
+                    ctx.save();
+                    ctx.globalAlpha = (idx + 1) / (pk.trail.length * 2.2);
+                    ctx.fillStyle = trailCol;
+                    ctx.beginPath();
+                    ctx.arc(pt.x, pt.y, pk.r * ((idx + 1) / pk.trail.length), 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                });
+
+                const sp = pk.kind === 'fireball' ? SPRITES.fireball : SPRITES.rasengan;
+                drawCircleImg(sp, pk.x, pk.y, pk.r, pk.rot, pk.kind === 'fireball' ? '#fde047' : '#ffffff', 3);
+            }
+
+            // 各プレイヤーのチャクラ盾パドル描画
+            for (const p of hk.players) {
+                const r = getPaddleRadius(p);
+                // 外側のチャクラオーラリング
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, r + 6, 0, Math.PI * 2);
+                ctx.strokeStyle = p.assist ? '#fde047' : p.char.color;
+                ctx.lineWidth = p.assist ? 5 : 3;
+                ctx.globalAlpha = 0.75;
+                ctx.stroke();
+                ctx.restore();
+
+                const sp = p.isCpu ? SPRITES.madara : (p.assist ? SPRITES.kyuubi : SPRITES[`char_${p.char.id}`]);
+                drawCircleImg(sp, p.x, p.y, r, 0, '#ffffff', 4);
+            }
+        }
+
+        let prevNow = performance.now();
+        function mainLoop(now) {
+            const dt = Math.min(0.033, (now - prevNow) / 1000);
+            prevNow = now;
+            updateHockeyPhysics(dt);
+            renderHockeyArena();
+            requestAnimationFrame(mainLoop);
+        }
+
+        /* ==========================================================
+           7. 終了＆全員表彰フィナーレ
+        ========================================================== */
+        function endMatch() {
+            if (!hk.running) return;
+            hk.running = false;
+            if (hk.clockTimer) { clearInterval(hk.clockTimer); hk.clockTimer = null; }
+
+            playGoalHornSound();
+            const sorted = [...hk.players].sort((a, b) => (b.score * 100 + b.smashes) - (a.score * 100 + a.smashes));
+            const winner = sorted[0];
+            playQuoteVoice(winner.char.winVoiceId);
+            spawnConfetti(110);
+
+            document.getElementById('finaleHeadline').textContent = `🏆 ${winner.label} ${winner.char.name} の だいしょうり！！ 🏆`;
+
+            const badges = [
+                '👑 チャクラスマッシュ おうじゃ！',
+                '⚡ こうそく ディフェンス しょう！',
+                '🔥 ナイス ガッツ しょう！',
+                '🍀 スーパー セーブ しょう！'
+            ];
+            const grid = document.getElementById('finaleRankingGrid');
+            grid.className = `relative z-10 max-w-5xl w-full mx-auto my-auto grid grid-cols-${hk.players.length} gap-3`;
+            grid.innerHTML = sorted.map((p, i) => `
+                <div class="rounded-3xl p-1 bg-gradient-to-b ${i === 0 ? 'from-yellow-200 via-amber-400 to-orange-500 shadow-[0_0_30px_rgba(251,191,36,0.95)]' : 'from-cyan-400 to-indigo-600'}">
+                    <div class="h-full bg-slate-950 rounded-[20px] p-3 flex flex-col items-center justify-between text-center gap-2">
+                        <span class="px-3 py-0.5 rounded-full text-xs font-black ${i === 0 ? 'bg-yellow-300 text-black' : 'bg-cyan-300 text-black'}">${badges[i]}</span>
+                        <img src="${p.char.img}" alt="" class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover object-top border-3" style="border-color:${p.char.color}">
+                        <div>
+                            <div class="text-xs font-black text-cyan-300">${p.label}（ゴール ${p.score} てん）</div>
+                            <div class="text-lg sm:text-2xl font-black text-white">${p.char.name}</div>
+                        </div>
+                        <button data-vid="${p.char.winVoiceId}" class="voice-btn w-full py-1.5 rounded-xl font-black text-xs text-white border border-white/50 active:scale-95" style="background:${p.char.color}">
+                            🔊 ボイスを きく！
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            grid.querySelectorAll('.voice-btn').forEach(b => {
+                b.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    playQuoteVoice(Number(b.getAttribute('data-vid')));
+                });
+            });
+
+            document.getElementById('finaleModal').classList.remove('hidden');
+        }
+
+        /* ==========================================================
+           8. ぜんがめん ＆ エフェクトキャンバス
+        ========================================================== */
+        function getFsElement() {
+            return document.fullscreenElement || document.webkitFullscreenElement || document.webkitCurrentFullScreenElement || document.msFullscreenElement || null;
+        }
+        function isStandalonePwa() {
+            return window.navigator.standalone === true || window.matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches;
+        }
+        function syncFsButtons() {
+            const active = !!getFsElement();
+            document.querySelectorAll('.fs-label-text').forEach(el => {
+                el.textContent = active ? 'もどす' : 'ぜんがめん';
+            });
+            setTimeout(() => { resizeArena(); resizeFxCanvas(); }, 80);
+        }
+        function maybeRestorePreferredFs() {
+            try {
+                if (sessionStorage.getItem('naruto_prefer_fs') === '1' && !getFsElement()) {
+                    const docEl = document.documentElement;
+                    const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
+                    if (req) {
+                        const p = docEl.requestFullscreen ? docEl.requestFullscreen({ navigationUI: 'hide' }) : req.call(docEl);
+                        if (p && p.catch) p.catch(() => {});
+                    }
+                }
+            } catch (_) {}
+        }
+        async function toggleFullScreen() {
+            unlockAudio();
+            const docEl = document.documentElement;
+            if (getFsElement()) {
+                try { sessionStorage.setItem('naruto_prefer_fs', '0'); } catch (_) {}
+                if (document.exitFullscreen) await document.exitFullscreen().catch(() => {});
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                syncFsButtons();
+                return;
+            }
+            const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
+            if (req) {
+                try {
+                    const p = docEl.requestFullscreen ? docEl.requestFullscreen({ navigationUI: 'hide' }) : req.call(docEl);
+                    if (p && p.then) await p;
+                } catch (_) {
+                    try {
+                        const p2 = req.call(docEl);
+                        if (p2 && p2.then) await p2;
+                    } catch (_e) {}
+                }
+                await new Promise(r => setTimeout(r, 150));
+                if (getFsElement()) {
+                    try { sessionStorage.setItem('naruto_prefer_fs', '1'); } catch (_) {}
+                    syncFsButtons();
+                    return;
+                }
+            }
+            if (isStandalonePwa()) {
+                document.getElementById('fsGuideText').textContent = '✨ いま すでに ぜんがめん モード だよ！ そのまま たのしく あそんでね！';
+            }
+            document.getElementById('fsGuideModal').classList.remove('hidden');
+        }
+        document.addEventListener('fullscreenchange', syncFsButtons);
+        document.addEventListener('webkitfullscreenchange', syncFsButtons);
+
+        function toggleSound() {
+            unlockAudio();
+            hk.soundOn = !hk.soundOn;
+            if (!hk.soundOn && voiceEl) voiceEl.pause();
+            document.querySelectorAll('.sound-toggle-btn').forEach(btn => {
+                btn.innerHTML = hk.soundOn
+                    ? (btn.textContent.includes('おと') ? '<span>🔊</span><span>おと オン</span>' : '🔊')
+                    : (btn.textContent.includes('おと') ? '<span>🔇</span><span>おと オフ</span>' : '🔇');
+            });
+        }
+
+        const fxCanvas = document.getElementById('fxCanvas');
+        const fxCtx = fxCanvas.getContext('2d');
+        let sparks = [];
+        function resizeFxCanvas() {
+            fxCanvas.width = window.innerWidth;
+            fxCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeFxCanvas);
+
+        function spawnBurst(x, y, color, count = 14) {
+            const rect = canvas.getBoundingClientRect();
+            const sx = rect.left + x;
+            const sy = rect.top + y;
+            for (let i = 0; i < count; i++) {
+                sparks.push({
+                    x: sx, y: sy,
+                    vx: (Math.random() - 0.5) * 14,
+                    vy: (Math.random() - 0.5) * 14,
+                    size: Math.random() * 7 + 4,
+                    alpha: 1,
+                    color
+                });
+            }
+        }
+
+        function spawnConfetti(count = 90) {
+            const colors = ['#38bdf8', '#fde047', '#fb923c', '#f43f5e', '#34d399', '#a78bfa'];
+            for (let i = 0; i < count; i++) {
+                sparks.push({
+                    x: window.innerWidth * (0.15 + Math.random() * 0.7),
+                    y: window.innerHeight * (0.18 + Math.random() * 0.35),
+                    vx: (Math.random() - 0.5) * 12,
+                    vy: -Math.random() * 8 - 2,
+                    size: Math.random() * 8 + 5,
+                    alpha: 1,
+                    color: colors[Math.floor(Math.random() * colors.length)]
+                });
+            }
+        }
+
+        function animateFx() {
+            fxCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+            for (let i = sparks.length - 1; i >= 0; i--) {
+                const s = sparks[i];
+                s.x += s.vx;
+                s.y += s.vy;
+                s.alpha -= 0.025;
+                if (s.alpha <= 0) { sparks.splice(i, 1); continue; }
+                fxCtx.globalAlpha = s.alpha;
+                fxCtx.fillStyle = s.color;
+                fxCtx.fillRect(s.x - s.size / 2, s.y - s.size / 2, s.size, s.size);
+            }
+            fxCtx.globalAlpha = 1;
+            requestAnimationFrame(animateFx);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            resizeArena();
+            resizeFxCanvas();
+            renderCountButtons();
+            requestAnimationFrame(mainLoop);
+            animateFx();
+
+            document.getElementById('toStep2Btn').addEventListener('click', openStep2);
+            document.getElementById('backStep1Btn').addEventListener('click', () => {
+                document.getElementById('setupStep2').classList.add('hidden');
+                document.getElementById('setupStep1').classList.remove('hidden');
+                renderCountButtons();
+            });
+            document.getElementById('startHockeyBtn').addEventListener('click', startMatch);
+            document.getElementById('hockeyRematchBtn').addEventListener('click', startMatch);
+            document.getElementById('hockeyChangeCharsBtn').addEventListener('click', () => {
+                document.getElementById('finaleModal').classList.add('hidden');
+                document.getElementById('setupOverlay').classList.remove('hidden');
+                openStep2();
+            });
+            document.getElementById('hockeyQuitBtn').addEventListener('click', () => {
+                hk.running = false;
+                if (hk.clockTimer) clearInterval(hk.clockTimer);
+                document.getElementById('setupOverlay').classList.remove('hidden');
+                document.getElementById('setupStep2').classList.add('hidden');
+                document.getElementById('setupStep1').classList.remove('hidden');
+            });
+
+            document.querySelectorAll('.fs-toggle-btn').forEach(b => b.addEventListener('click', toggleFullScreen));
+            document.querySelectorAll('.sound-toggle-btn').forEach(b => b.addEventListener('click', toggleSound));
+            document.getElementById('closeFsGuideBtn').addEventListener('click', () => {
+                document.getElementById('fsGuideModal').classList.add('hidden');
+            });
+        });
+    </script>
+</body>
+</html>
