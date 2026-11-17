@@ -578,6 +578,7 @@
                     baseR: count >= 3 ? 36 : 42,
                     giantTimer: 0,
                     guardTimer: 0,
+                    strikeCooldown: 0,
                     assist: false
                 });
             }
@@ -621,6 +622,10 @@
                 rot: 0,
                 kind,
                 lastHitIdx: -1,
+                hitCd: [0, 0, 0, 0],
+                anchorX: W * 0.5,
+                anchorY: H * 0.5,
+                stuckSec: 0,
                 trail: []
             });
         }
@@ -733,6 +738,8 @@
             return owner.guardTimer > 0 ? base * 0.48 : base;
         }
 
+        const CORNER_BUMPER = 68;
+
         function updateHockeyPhysics(dt) {
             if (!hk.running) return;
             const W = canvas.width;
@@ -740,22 +747,49 @@
 
             const topScore = Math.max(...hk.players.map(p => p.score));
 
-            // プレイヤー状態＆CPU AI更新
+            // プレイヤー状態＆CPU AI更新（角ハマり完全防止スマートAI）
             for (const p of hk.players) {
                 p.assist = (topScore - p.score >= 3);
                 if (p.giantTimer > 0) p.giantTimer = Math.max(0, p.giantTimer - dt);
                 if (p.guardTimer > 0) p.guardTimer = Math.max(0, p.guardTimer - dt);
+                if (p.strikeCooldown > 0) p.strikeCooldown = Math.max(0, p.strikeCooldown - dt);
 
-                if (p.isCpu && hk.pucks.length > 0) {
-                    const targetPuck = [...hk.pucks].sort((a, b) => b.x - a.x)[0];
-                    const targetY = targetPuck.x > W * 0.35 ? targetPuck.y : H * 0.5;
-                    const targetX = (targetPuck.x > W * 0.62 && targetPuck.vx < 350) ? Math.max(W * 0.62, targetPuck.x - 15) : W - 95;
+                if (p.isCpu) {
+                    const homeX = W - 115;
+                    let targetX = homeX;
+                    let targetY = H * 0.5;
+
+                    if (hk.pucks.length > 0) {
+                        // 右側へ向かってくるパック、または一番近いパックを選択
+                        const incoming = hk.pucks.filter(pk => pk.vx > -80 || pk.x > W * 0.45);
+                        const pool = incoming.length > 0 ? incoming : hk.pucks;
+                        const targetPuck = [...pool].sort((a, b) => b.x - a.x)[0];
+
+                        if (targetPuck.x > p.x + 8) {
+                            // パックが自分の後ろに回り込んだ時は、壁に押し付けないよう前＆上下へサッとかわす！
+                            targetX = W - 185;
+                            targetY = targetPuck.y < H * 0.5
+                                ? Math.min(H - 110, targetPuck.y + 115)
+                                : Math.max(110, targetPuck.y - 115);
+                        } else if (targetPuck.x > W * 0.46 && p.strikeCooldown <= 0) {
+                            // 前方にパックが来たら迎撃スマッシュ！
+                            targetX = Math.max(W * 0.62, Math.min(W - 105, targetPuck.x - 18));
+                            targetY = Math.max(96, Math.min(H - 96, targetPuck.y));
+                        } else {
+                            // ホームポジションでゴール前を軽快にガード
+                            targetX = homeX;
+                            targetY = Math.max(100, Math.min(H - 100, targetPuck.y * 0.75 + H * 0.125));
+                        }
+                    }
+
                     const prevX = p.x, prevY = p.y;
-                    const nx = p.x + Math.max(-360 * dt, Math.min(360 * dt, targetX - p.x));
-                    const ny = p.y + Math.max(-400 * dt, Math.min(400 * dt, targetY - p.y));
+                    const maxStepX = 430 * dt;
+                    const maxStepY = 470 * dt;
+                    const nx = p.x + Math.max(-maxStepX, Math.min(maxStepX, targetX - p.x));
+                    const ny = p.y + Math.max(-maxStepY, Math.min(maxStepY, targetY - p.y));
                     clampPaddleToZone(p, nx, ny);
-                    p.vx = (p.x - prevX) / dt;
-                    p.vy = (p.y - prevY) / dt;
+                    p.vx = (p.x - prevX) / Math.max(0.008, dt);
+                    p.vy = (p.y - prevY) / Math.max(0.008, dt);
                 } else {
                     p.vx *= 0.85;
                     p.vy *= 0.85;
@@ -776,9 +810,14 @@
                 });
             }
 
-            // パック移動・パドル衝突・アイテム取得・ゴール判定
+            // パック移動・パドル衝突・角バンパー・ゴール判定
             for (let pi = hk.pucks.length - 1; pi >= 0; pi--) {
                 const pk = hk.pucks[pi];
+                if (!pk.hitCd) pk.hitCd = [0, 0, 0, 0];
+                for (let k = 0; k < 4; k++) {
+                    if (pk.hitCd[k] > 0) pk.hitCd[k] = Math.max(0, pk.hitCd[k] - dt);
+                }
+
                 pk.x += pk.vx * dt;
                 pk.y += pk.vy * dt;
                 pk.rot += 12 * dt;
@@ -786,10 +825,30 @@
                 pk.trail.push({ x: pk.x, y: pk.y });
                 if (pk.trail.length > 10) pk.trail.shift();
 
+                // スタック完全防止ウォッチドッグ（0.55秒以上同じ狭い場所に留まったら中央へ弾き出す！）
+                if (pk.anchorX === undefined) { pk.anchorX = pk.x; pk.anchorY = pk.y; pk.stuckSec = 0; }
+                if (Math.hypot(pk.x - pk.anchorX, pk.y - pk.anchorY) > 36) {
+                    pk.anchorX = pk.x;
+                    pk.anchorY = pk.y;
+                    pk.stuckSec = 0;
+                } else {
+                    pk.stuckSec += dt;
+                    if (pk.stuckSec > 0.55) {
+                        const escAng = Math.atan2(H * 0.5 - pk.y, W * 0.5 - pk.x) + (Math.random() - 0.5) * 0.35;
+                        pk.x += Math.cos(escAng) * 28;
+                        pk.y += Math.sin(escAng) * 28;
+                        pk.vx = Math.cos(escAng) * 540;
+                        pk.vy = Math.sin(escAng) * 540;
+                        pk.stuckSec = 0;
+                        pk.anchorX = pk.x;
+                        pk.anchorY = pk.y;
+                    }
+                }
+
                 // 速度下限・上限キープで常に爽快なテンポ！
                 const sp = Math.hypot(pk.vx, pk.vy);
                 const maxSp = pk.kind === 'fireball' ? 880 : 740;
-                const minSp = 340;
+                const minSp = 350;
                 if (sp > maxSp) {
                     pk.vx = (pk.vx / sp) * maxSp;
                     pk.vy = (pk.vy / sp) * maxSp;
@@ -798,29 +857,54 @@
                     pk.vy = (pk.vy / sp) * minSp;
                 }
 
-                // パドルとの弾き返し判定
+                // パドルとの弾き返し判定（壁挟み込みゼロ保証！）
                 for (const p of hk.players) {
                     const pr = getPaddleRadius(p);
                     const dx = pk.x - p.x;
                     const dy = pk.y - p.y;
                     const dist = Math.hypot(dx, dy);
                     const minD = pk.r + pr;
-                    if (dist > 0 && dist < minD) {
-                        const nx = dx / dist;
-                        const ny = dy / dist;
-                        pk.x = p.x + nx * (minD + 2);
-                        pk.y = p.y + ny * (minD + 2);
+                    if (dist < minD) {
+                        let nx = dist > 0.001 ? dx / dist : (p.side === 'right' ? -1 : 1);
+                        let ny = dist > 0.001 ? dy / dist : 0;
 
-                        const baseBounce = p.assist ? 620 : 540;
-                        const smashAdd = Math.min(260, Math.hypot(p.vx, p.vy) * 0.35);
-                        const outSpeed = baseBounce + smashAdd;
-                        pk.vx = nx * outSpeed + p.vx * 0.18;
-                        pk.vy = ny * outSpeed + p.vy * 0.18;
-                        pk.lastHitIdx = p.idx;
+                        let nextX = p.x + nx * (minD + 3);
+                        let nextY = p.y + ny * (minD + 3);
 
-                        if (smashAdd > 90) p.smashes += 1;
-                        playPaddleSmashSound(smashAdd / 120);
-                        spawnBurst(pk.x, pk.y, p.char.color, 10);
+                        // 壁際でパドルと壁の間に挟まりそうな場合は、パドル側を少し戻して中央方向へ快音イジェクト！
+                        const minWallX = 12 + pk.r;
+                        const maxWallX = W - 12 - pk.r;
+                        const minWallY = 12 + pk.r;
+                        const maxWallY = H - 12 - pk.r;
+                        const wedged = (nextX < minWallX || nextX > maxWallX || nextY < minWallY || nextY > maxWallY);
+
+                        if (wedged) {
+                            pk.x = Math.max(minWallX, Math.min(maxWallX, nextX));
+                            pk.y = Math.max(minWallY, Math.min(maxWallY, nextY));
+                            const toCenterAng = Math.atan2(H * 0.5 - pk.y, W * 0.5 - pk.x);
+                            nx = Math.cos(toCenterAng);
+                            ny = Math.sin(toCenterAng);
+                            clampPaddleToZone(p, pk.x - nx * (minD + 6), pk.y - ny * (minD + 6));
+                        } else {
+                            pk.x = nextX;
+                            pk.y = nextY;
+                        }
+
+                        if (pk.hitCd[p.idx] <= 0) {
+                            pk.hitCd[p.idx] = 0.11;
+                            if (p.isCpu) p.strikeCooldown = 0.46;
+
+                            const baseBounce = p.assist ? 620 : 540;
+                            const smashAdd = Math.min(260, Math.hypot(p.vx, p.vy) * 0.35);
+                            const outSpeed = baseBounce + smashAdd;
+                            pk.vx = nx * outSpeed + (wedged ? 0 : p.vx * 0.16);
+                            pk.vy = ny * outSpeed + (wedged ? 0 : p.vy * 0.16);
+                            pk.lastHitIdx = p.idx;
+
+                            if (smashAdd > 90) p.smashes += 1;
+                            playPaddleSmashSound(smashAdd / 120);
+                            spawnBurst(pk.x, pk.y, p.char.color, 10);
+                        }
                     }
                 }
 
@@ -831,6 +915,38 @@
                         activateFieldItem(it, pk);
                         hk.items.splice(ii, 1);
                     }
+                }
+
+                // 四隅の45度チャクラコーナーバンパー反射（角スタック完全防止！）
+                const cLimit = CORNER_BUMPER + pk.r * 1.15;
+                if (pk.x + pk.y < cLimit) {
+                    const push = (cLimit - (pk.x + pk.y)) * 0.55;
+                    pk.x += push; pk.y += push;
+                    const spNow = Math.max(460, Math.hypot(pk.vx, pk.vy));
+                    pk.vx = Math.abs(pk.vx) * 0.5 + spNow * 0.55;
+                    pk.vy = Math.abs(pk.vy) * 0.5 + spNow * 0.55;
+                    playWallBounceSound();
+                } else if ((W - pk.x) + pk.y < cLimit) {
+                    const push = (cLimit - ((W - pk.x) + pk.y)) * 0.55;
+                    pk.x -= push; pk.y += push;
+                    const spNow = Math.max(460, Math.hypot(pk.vx, pk.vy));
+                    pk.vx = -(Math.abs(pk.vx) * 0.5 + spNow * 0.55);
+                    pk.vy = Math.abs(pk.vy) * 0.5 + spNow * 0.55;
+                    playWallBounceSound();
+                } else if (pk.x + (H - pk.y) < cLimit) {
+                    const push = (cLimit - (pk.x + (H - pk.y))) * 0.55;
+                    pk.x += push; pk.y -= push;
+                    const spNow = Math.max(460, Math.hypot(pk.vx, pk.vy));
+                    pk.vx = Math.abs(pk.vx) * 0.5 + spNow * 0.55;
+                    pk.vy = -(Math.abs(pk.vy) * 0.5 + spNow * 0.55);
+                    playWallBounceSound();
+                } else if ((W - pk.x) + (H - pk.y) < cLimit) {
+                    const push = (cLimit - ((W - pk.x) + (H - pk.y))) * 0.55;
+                    pk.x -= push; pk.y -= push;
+                    const spNow = Math.max(460, Math.hypot(pk.vx, pk.vy));
+                    pk.vx = -(Math.abs(pk.vx) * 0.5 + spNow * 0.55);
+                    pk.vy = -(Math.abs(pk.vy) * 0.5 + spNow * 0.55);
+                    playWallBounceSound();
                 }
 
                 // 四方の壁＆ゴールマウス判定
@@ -902,6 +1018,10 @@
                             rot: 0,
                             kind: 'rasengan',
                             lastHitIdx: puck.lastHitIdx,
+                            hitCd: [0, 0, 0, 0],
+                            anchorX: puck.x,
+                            anchorY: puck.y,
+                            stuckSec: 0,
                             trail: []
                         });
                     }
@@ -1060,11 +1180,28 @@
             ctx.stroke();
             ctx.restore();
 
-            // 外周バンパー壁と各プレイヤーのゴールマウス描画
+            // 外周バンパー壁と四隅の45度コーナーバンパー描画
             ctx.save();
             ctx.strokeStyle = '#38bdf8';
             ctx.lineWidth = 8;
             ctx.strokeRect(8, 8, W - 16, H - 16);
+
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.25)';
+            const cb = CORNER_BUMPER;
+            [
+                [[8, 8], [8 + cb, 8], [8, 8 + cb]],
+                [[W - 8, 8], [W - 8 - cb, 8], [W - 8, 8 + cb]],
+                [[8, H - 8], [8 + cb, H - 8], [8, H - 8 - cb]],
+                [[W - 8, H - 8], [W - 8 - cb, H - 8], [W - 8, H - 8 - cb]]
+            ].forEach(tri => {
+                ctx.beginPath();
+                ctx.moveTo(tri[0][0], tri[0][1]);
+                ctx.lineTo(tri[1][0], tri[1][1]);
+                ctx.lineTo(tri[2][0], tri[2][1]);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            });
             ctx.restore();
 
             for (const p of hk.players) {
