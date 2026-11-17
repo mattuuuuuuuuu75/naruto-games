@@ -1,4 +1,4 @@
-const CACHE_NAME = 'naruto-bingo-v4';
+const CACHE_NAME = 'naruto-bingo-v6';
 const CORE_ASSETS = [
   './',
   './index.html',

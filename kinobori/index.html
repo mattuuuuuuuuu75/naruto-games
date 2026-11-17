@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="きのぼりダッシュ">
+    <meta name="theme-color" content="#ff6b00">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/icons/icon-192.png">
+    <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png">
+    <title>きのぼり・チャクラダッシュ！</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100dvh;
+            max-height: 100dvh;
+            overflow: hidden;
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            background-color: #07130d;
+            color: #fff;
+        }
+
+        html:fullscreen, html:-webkit-full-screen,
+        body:fullscreen, body:-webkit-full-screen {
+            width: 100vw !important;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
+            overflow: hidden !important;
+            background-color: #07130d;
+        }
+
+        .text-outline {
+            text-shadow:
+                -1.5px -1.5px 0 #000,
+                 1.5px -1.5px 0 #000,
+                -1.5px  1.5px 0 #000,
+                 1.5px  1.5px 0 #000,
+                 0 2px 6px rgba(0,0,0,0.9);
+        }
+
+        .text-outline-sm {
+            text-shadow:
+                -1px -1px 0 #000,
+                 1px -1px 0 #000,
+                -1px  1px 0 #000,
+                 1px  1px 0 #000;
+        }
+
+        .manga-burst {
+            background: repeating-conic-gradient(
+                from 0deg,
+                rgba(255, 195, 0, 0.14) 0deg 3deg,
+                transparent 3deg 9deg
+            );
+        }
+
+        /* 大木の樹皮テクスチャ */
+        .tree-bark {
+            background-color: #4a2c18;
+            background-image:
+                repeating-linear-gradient(
+                    90deg,
+                    rgba(28, 15, 7, 0.36) 0px,
+                    rgba(28, 15, 7, 0.36) 4px,
+                    transparent 4px,
+                    transparent 16px
+                ),
+                repeating-linear-gradient(
+                    0deg,
+                    rgba(255, 210, 150, 0.08) 0px,
+                    rgba(255, 210, 150, 0.08) 18px,
+                    rgba(0, 0, 0, 0.22) 18px,
+                    rgba(0, 0, 0, 0.22) 36px
+                );
+            background-size: 100% 72px;
+        }
+
+        @keyframes warnBlink {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50%      { transform: scale(1.22); opacity: 0.55; }
+        }
+        .warn-pulse {
+            animation: warnBlink 0.26s ease-in-out infinite;
+        }
+
+        @keyframes dashGlow {
+            0%, 100% { box-shadow: 0 0 18px #fde047, 0 0 34px #f97316; }
+            50%      { box-shadow: 0 0 30px #ffffff, 0 0 52px #ef4444; }
+        }
+        .kyuubi-dash-aura {
+            animation: dashGlow 0.28s ease-in-out infinite;
+        }
+
+        @keyframes chakraStepFade {
+            0%   { transform: scale(0.7); opacity: 0.95; }
+            100% { transform: scale(1.6); opacity: 0; }
+        }
+        .chakra-step-ring {
+            animation: chakraStepFade 0.38s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="relative w-screen h-[100dvh] overflow-hidden flex flex-col justify-between">
+
+    <audio id="voiceAudio" preload="auto" playsinline class="hidden"></audio>
+    <canvas id="fxCanvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
+
+    <!-- ==========================================================
+         スタートがめん（ステップ1：2〜4にん ＆ ステップ2：キャラえらび）
+    =========================================================== -->
+    <div id="setupOverlay" class="fixed inset-0 z-40 bg-gradient-to-br from-emerald-950 via-stone-950 to-amber-950/90 flex flex-col justify-between p-3 sm:p-5 overflow-hidden">
+        <div class="manga-burst absolute inset-0 pointer-events-none"></div>
+
+        <!-- ステップ1：にんずう えらび -->
+        <div id="setupStep1" class="relative z-10 w-full h-full max-w-5xl mx-auto flex flex-col items-center justify-between py-1 sm:py-2">
+            <div class="w-full flex items-center justify-between">
+                <a href="../index.html" class="px-3 py-1.5 rounded-2xl bg-stone-800/90 border-2 border-amber-400 text-amber-200 font-black text-xs sm:text-sm flex items-center gap-1.5 active:scale-95">
+                    <span>🏠</span><span>ゲーム いちらんへ</span>
+                </a>
+                <div class="flex items-center gap-2">
+                    <button class="fs-toggle-btn px-3 py-1.5 rounded-2xl bg-emerald-950/90 border-2 border-emerald-400 text-emerald-100 font-black text-xs sm:text-sm flex items-center gap-1.5 active:scale-95">
+                        <span>⛶</span><span class="fs-label-text">ぜんがめん</span>
+                    </button>
+                    <button class="sound-toggle-btn px-3 py-1.5 rounded-2xl bg-amber-900/90 border-2 border-amber-400 text-amber-100 font-black text-xs sm:text-sm flex items-center gap-1.5 active:scale-95">
+                        <span>🔊</span><span>おと オン</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-center text-center gap-1.5">
+                <div class="flex items-center justify-center gap-2 sm:gap-3">
+                    <img src="../bingo/assets/cards/leader_naruto.webp" alt="" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover object-top border-3 border-orange-400 shadow-lg -rotate-6">
+                    <img src="../assets/game_art/sacred_shinobi_tree.webp" alt="" class="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl object-cover border-4 border-emerald-300 shadow-[0_0_28px_rgba(52,211,153,0.9)] z-10">
+                    <img src="../bingo/assets/cards/leader_sasuke.webp" alt="" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover object-top border-3 border-purple-400 shadow-lg rotate-6">
+                </div>
+                <div class="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 text-black font-black text-xs sm:text-sm px-4 py-0.5 rounded-full border border-white shadow">
+                    <span>🌲 がめん ぶんかつ・みんなで どうじに れんだ レース！！</span>
+                </div>
+                <h1 class="text-3xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-emerald-200 via-yellow-300 to-orange-500 drop-shadow-[0_4px_12px_rgba(16,185,129,0.5)]">
+                    きのぼり・チャクラダッシュ！
+                </h1>
+                <p class="text-xl sm:text-3xl font-black text-white text-outline mt-1">
+                    🙌 なんにんで きょうそう する？
+                </p>
+            </div>
+
+            <div id="countButtonsRow" class="w-full max-w-3xl grid grid-cols-3 gap-3 sm:gap-5"></div>
+
+            <button id="toStep2Btn" class="px-9 py-3.5 sm:py-4 rounded-3xl font-black text-lg sm:text-2xl text-black bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 border-4 border-white shadow-[0_0_28px_rgba(251,191,36,0.95)] active:scale-95 transition flex items-center gap-3">
+                <span>👟 つぎへ！ キャラを えらぼう！ ➡️</span>
+            </button>
+        </div>
+
+        <!-- ステップ2：キャラ えらび -->
+        <div id="setupStep2" class="relative z-10 hidden w-full h-full max-w-6xl mx-auto flex flex-col justify-between gap-2 overflow-hidden">
+            <div class="flex items-center justify-between gap-2 shrink-0">
+                <div class="flex items-center gap-1.5">
+                    <button id="backStep1Btn" class="px-3 py-1.5 rounded-2xl bg-stone-800 border-2 border-stone-500 text-stone-200 font-black text-xs sm:text-sm active:scale-95">
+                        ◀ にんずうを かえる
+                    </button>
+                    <button class="fs-toggle-btn px-2.5 py-1.5 rounded-2xl bg-emerald-950/90 border-2 border-emerald-400 text-emerald-100 font-black text-xs sm:text-sm flex items-center gap-1 active:scale-95">
+                        <span>⛶</span><span class="fs-label-text hidden sm:inline">ぜんがめん</span>
+                    </button>
+                </div>
+                <div id="charPromptLabel" class="text-base sm:text-2xl font-black text-yellow-300 text-outline truncate">
+                    👇 1P の キャラを タッチしてね！
+                </div>
+                <button id="launchRaceBtn" disabled class="px-5 py-2 rounded-2xl font-black text-sm sm:text-lg bg-stone-800 text-stone-500 border-2 border-stone-700 shrink-0">
+                    🏁 レース スタート！
+                </button>
+            </div>
+
+            <div id="playerSlotsBar" class="grid grid-cols-3 gap-2 shrink-0"></div>
+            <div id="charSelectGrid" class="flex-1 min-h-0 grid grid-cols-6 grid-rows-2 gap-2 sm:gap-2.5"></div>
+        </div>
+    </div>
+
+    <!-- ==========================================================
+         メイン 画面分割 レース ステージ（100dvh 固定）
+    =========================================================== -->
+    <header class="relative z-20 h-[8dvh] min-h-[44px] max-h-[58px] bg-stone-950 border-b-2 border-emerald-500 px-2.5 flex items-center justify-between gap-2 shrink-0">
+        <div class="flex items-center gap-1.5">
+            <a href="../index.html" class="w-8 h-8 rounded-xl bg-stone-800 border border-amber-400/80 flex items-center justify-center text-sm active:scale-95">🏠</a>
+            <button class="sound-toggle-btn w-8 h-8 rounded-xl bg-amber-900/90 border border-amber-400 flex items-center justify-center text-sm active:scale-95">🔊</button>
+            <button class="fs-toggle-btn w-8 h-8 rounded-xl bg-emerald-950/90 border border-emerald-400 flex items-center justify-center text-sm font-black text-emerald-200 active:scale-95">⛶</button>
+            <button id="raceQuitBtn" class="px-2.5 h-8 rounded-xl bg-red-950 border border-red-400 text-xs font-black text-red-200 active:scale-95">🔄 さいしょ</button>
+        </div>
+
+        <div class="text-xs sm:text-lg font-black text-emerald-300 text-outline truncate">
+            🌲 てっぺん 100メートル の ほかげ フラッグを めざせ！！
+        </div>
+
+        <div class="text-xs sm:text-sm font-black text-yellow-300 bg-stone-900 border border-yellow-400/60 px-3 py-1 rounded-full">
+            🍜 ラーメンで ちょう かそく！
+        </div>
+    </header>
+
+    <!-- カウントダウン オーバーレイ -->
+    <div id="countdownOverlay" class="hidden fixed inset-0 z-30 bg-black/65 flex items-center justify-center pointer-events-none">
+        <div id="countdownText" class="text-6xl sm:text-8xl font-black text-yellow-300 text-outline animate-bounce">
+            3
+        </div>
+    </div>
+
+    <!-- 人数分（2〜4レーン）均等分割エリア -->
+    <main id="lanesContainer" class="relative z-10 flex-1 min-h-0 w-full grid grid-cols-3 divide-x-2 divide-emerald-500/50 overflow-hidden">
+        <!-- JSで各プレイヤーの専用縦レーン＋左右特大ボタンを生成 -->
+    </main>
+
+    <!-- ==========================================================
+         🏁 てっぺん とうちゃく！ フィナーレ ひょうしょう モーダル
+    =========================================================== -->
+    <div id="finishModal" class="hidden fixed inset-0 z-40 bg-stone-950/95 flex flex-col justify-between p-4 sm:p-6 overflow-hidden">
+        <img src="../assets/game_art/sacred_shinobi_tree.webp" alt="" class="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none">
+        <div class="manga-burst absolute inset-0 pointer-events-none"></div>
+
+        <div class="relative z-10 text-center">
+            <div class="inline-block bg-gradient-to-r from-yellow-200 via-amber-400 to-orange-400 text-black font-black text-xs sm:text-base px-5 py-1 rounded-full shadow-lg animate-bounce">
+                🎊 てっぺん 100メートル とうちゃく！！ 🎊
+            </div>
+            <h2 id="finishWinnerHeadline" class="mt-2 text-2xl sm:text-5xl font-black text-yellow-300 text-outline">
+                🏆 1P ナルト が 1ばん のり！！
+            </h2>
+        </div>
+
+        <div id="finishRankingGrid" class="relative z-10 max-w-5xl w-full mx-auto my-auto grid grid-cols-3 gap-3"></div>
+
+        <div class="relative z-10 flex items-center justify-center gap-3 sm:gap-4">
+            <button class="fs-toggle-btn px-4 py-3 rounded-2xl font-black text-xs sm:text-base bg-emerald-950 border-2 border-emerald-400 text-emerald-100 active:scale-95 flex items-center gap-1.5">
+                <span>⛶</span><span class="fs-label-text">ぜんがめん</span>
+            </button>
+            <button id="changeCharsBtn" class="px-6 py-3.5 rounded-2xl font-black text-sm sm:text-lg bg-stone-800 border-2 border-stone-400 text-white active:scale-95">
+                👥 キャラを かえる
+            </button>
+            <button id="rematchBtn" class="px-8 py-3.5 rounded-2xl font-black text-base sm:text-2xl bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 text-black border-4 border-white shadow-xl active:scale-95">
+                🔄 もう 1かい レース！
+            </button>
+        </div>
+    </div>
+
+    <!-- ぜんがめん ガイドモーダル（漢字ゼロ） -->
+    <div id="fsGuideModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-stone-900 border-4 border-emerald-400 rounded-3xl p-6 max-w-md w-full text-center space-y-4 shadow-2xl">
+            <div class="text-xl sm:text-2xl font-black text-emerald-300">📱 ぜんがめんで あそぶ ほうほう！</div>
+            <p id="fsGuideText" class="text-sm sm:text-base text-white font-bold leading-relaxed">
+                サファリの「ぁあ」マーク →「ツールバーを かくす」を タッチするか、「ホームがめんに ついか」を すると バーが きえて ひろびろ ぜんがめんで あそべるよ！
+            </p>
+            <button id="closeFsGuideBtn" class="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 text-black font-black text-base sm:text-lg border-2 border-white active:scale-95">
+                わかった！ とじる ✨
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================================
+           1. えらべる 12キャラ ＆ アイテム・じゃまもの 定義（漢字ゼロ）
+        ========================================================== */
+        const PLAYABLE_CHARS = [
+            { id: 'naruto',    name: 'ナルト',     tag: '🌀 らせん！',     color: '#f97316', img: '../bingo/assets/cards/leader_naruto.webp',    voiceId: 1,  winVoiceId: 61 },
+            { id: 'sasuke',    name: 'サスケ',     tag: '⚡ ちどり！',     color: '#8b5cf6', img: '../bingo/assets/cards/leader_sasuke.webp',    voiceId: 2,  winVoiceId: 62 },
+            { id: 'sakura',    name: 'サクラ',     tag: '🌸 おうかしょう', color: '#ec4899', img: '../bingo/assets/cards/leader_sakura.webp',    voiceId: 3,  winVoiceId: 3  },
+            { id: 'kakashi',   name: 'カカシ',     tag: '⚡ らいきり！',   color: '#0ea5e9', img: '../bingo/assets/cards/leader_kakashi.webp',   voiceId: 4,  winVoiceId: 68 },
+            { id: 'hinata',    name: 'ヒナタ',     tag: '🦁 そうしけん',   color: '#a78bfa', img: '../bingo/assets/cards/leader_hinata.webp',    voiceId: 12, winVoiceId: 12 },
+            { id: 'minato',    name: 'ミナト',     tag: '🟨 ひらいしん',   color: '#eab308', img: '../bingo/assets/cards/leader_minato.webp',    voiceId: 5,  winVoiceId: 5  },
+            { id: 'gaara',     name: 'ガアラ',     tag: '🏜️ すなのたて',   color: '#dc2626', img: '../bingo/assets/cards/leader_gaara.webp',     voiceId: 24, winVoiceId: 24 },
+            { id: 'shikamaru', name: 'シカマル',   tag: '🦌 かげまね',     color: '#10b981', img: '../bingo/assets/cards/leader_shikamaru.webp', voiceId: 10, winVoiceId: 10 },
+            { id: 'itachi',    name: 'イタチ',     tag: '🐦‍⬛ アマテラス',   color: '#e11d48', img: '../bingo/assets/cards/leader_itachi.webp',    voiceId: 31, winVoiceId: 31 },
+            { id: 'jiraiya',   name: 'ジライヤ',   tag: '🐸 ガマせんにん', color: '#ea580c', img: '../bingo/assets/cards/leader_jiraiya.webp',   voiceId: 6,  winVoiceId: 6  },
+            { id: 'tsunade',   name: 'ツナデ',     tag: '💎 びゃくごう',   color: '#14b8a6', img: '../bingo/assets/cards/char_07.webp',          voiceId: 7,  winVoiceId: 7  },
+            { id: 'killerbee', name: 'キラービー', tag: '🐙 ラリアット',   color: '#3b82f6', img: '../bingo/assets/cards/char_27.webp',          voiceId: 27, winVoiceId: 27 }
+        ];
+
+        const OBSTACLE_TYPES = [
+            { id: 'chestnut', label: 'イガグリ',   img: '../assets/game_art/spiky_chestnut_kunai.webp' },
+            { id: 'log',      label: 'まるた',     img: '../sugoroku/assets/kawarimi_log.webp' },
+            { id: 'bomb',     label: 'きばくふだ', img: '../assets/game_art/kibakufuda_barrel.webp' }
+        ];
+
+        const ITEM_TYPES = [
+            { id: 'ramen',  label: '🍜 ラーメン', img: '../assets/game_art/ichiraku_ramen_glow.webp' },
+            { id: 'scroll', label: '📜 まきもの', img: '../sugoroku/assets/chakra_scroll.webp' }
+        ];
+
+        const GOAL_METERS = 100;
+
+        /* ==========================================================
+           2. ゲーム じょうたい ＆ サウンド
+        ========================================================== */
+        const race = {
+            soundOn: true,
+            playerCount: 3,
+            selectedChars: [null, null, null, null],
+            activeSlot: 0,
+            running: false,
+            players: [],
+            rafId: null,
+            lastTs: 0
+        };
+
+        const voiceEl = document.getElementById('voiceAudio');
+        let audioCtx = null;
+        let audioUnlocked = false;
+
+        function getCtx() {
+            if (!audioCtx) {
+                const AC = window.AudioContext || window.webkitAudioContext;
+                if (AC) audioCtx = new AC();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }
+
+        function unlockAudio() {
+            if (audioUnlocked) return;
+            audioUnlocked = true;
+            getCtx();
+            if (voiceEl && !voiceEl.src) {
+                voiceEl.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+                voiceEl.play().then(() => voiceEl.pause()).catch(() => {});
+            }
+        }
+
+        function playQuoteVoice(voiceId) {
+            if (!race.soundOn || !voiceId) return;
+            const sid = String(voiceId).padStart(2, '0');
+            voiceEl.src = `../assets/audio/quotes/${sid}.mp3?v=6`;
+            try { voiceEl.currentTime = 0; } catch (_) {}
+            voiceEl.play().catch(() => {});
+        }
+
+        function playStepShubaSound(laneIdx = 0) {
+            if (!race.soundOn) return;
+            const ctx = getCtx();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            const base = 360 + laneIdx * 55;
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(base, now);
+            osc.frequency.exponentialRampToValueAtTime(base * 1.45, now + 0.065);
+            g.gain.setValueAtTime(0.14, now);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 0.075);
+            osc.connect(g);
+            g.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.08);
+        }
+
+        function playDashBoostSound() {
+            if (!race.soundOn) return;
+            const ctx = getCtx();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+            [440, 554.37, 659.25, 880, 1174.66].forEach((f, i) => {
+                const osc = ctx.createOscillator();
+                const g = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(f, now + i * 0.045);
+                g.gain.setValueAtTime(0.16, now + i * 0.045);
+                g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.045 + 0.18);
+                osc.connect(g);
+                g.connect(ctx.destination);
+                osc.start(now + i * 0.045);
+                osc.stop(now + i * 0.045 + 0.19);
+            });
+        }
+
+        function playStunPuffSound() {
+            if (!race.soundOn) return;
+            const ctx = getCtx();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(240, now);
+            osc.frequency.linearRampToValueAtTime(110, now + 0.19);
+            g.gain.setValueAtTime(0.22, now);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 0.21);
+            osc.connect(g);
+            g.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.22);
+        }
+
+        function playFanfare() {
+            if (!race.soundOn) return;
+            const ctx = getCtx();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+            [[523,0,0.13],[659,0.12,0.13],[784,0.24,0.13],[1046,0.38,0.5]].forEach(([f,d,dur]) => {
+                const osc = ctx.createOscillator();
+                const g = ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(f, now + d);
+                g.gain.setValueAtTime(0.28, now + d);
+                g.gain.exponentialRampToValueAtTime(0.001, now + d + dur);
+                osc.connect(g);
+                g.connect(ctx.destination);
+                osc.start(now + d);
+                osc.stop(now + d + dur + 0.02);
+            });
+        }
+
+        /* ==========================================================
+           3. スタートがめん（2〜4にん ＆ キャラえらび）
+        ========================================================== */
+        function renderCountButtons() {
+            const row = document.getElementById('countButtonsRow');
+            const previews = {
+                2: '../bingo/assets/cards/char_75.webp',
+                3: '../bingo/assets/cards/char_69.webp',
+                4: '../bingo/assets/cards/char_05.webp'
+            };
+            row.innerHTML = [2, 3, 4].map(n => {
+                const active = race.playerCount === n;
+                return `
+                    <button data-cnt="${n}" class="cnt-btn py-4 px-3 rounded-3xl border-4 transition flex flex-col items-center gap-1.5 ${
+                        active
+                            ? 'bg-gradient-to-b from-emerald-400 via-amber-400 to-orange-500 text-black border-white scale-105 shadow-[0_0_26px_rgba(251,191,36,0.9)]'
+                            : 'bg-stone-900/90 border-stone-600 text-stone-200'
+                    }">
+                        <img src="${previews[n]}" alt="" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover object-top border-2 border-white shadow">
+                        <span class="text-2xl sm:text-3xl font-black">${n} にん</span>
+                        <span class="text-xs font-black ${active ? 'bg-black/80 text-yellow-300 px-2.5 py-0.5 rounded-full' : 'text-stone-400'}">
+                            ${active ? 'えらんでるよ！' : `${n} ぶんかつ レース`}
+                        </span>
+                    </button>
+                `;
+            }).join('');
+
+            row.querySelectorAll('.cnt-btn').forEach(btn => {
+                btn.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    unlockAudio();
+                    maybeRestorePreferredFs();
+                    race.playerCount = Number(btn.getAttribute('data-cnt'));
+                    playStepShubaSound(race.playerCount);
+                    renderCountButtons();
+                });
+            });
+        }
+
+        function openCharSelect() {
+            unlockAudio();
+            maybeRestorePreferredFs();
+            playStepShubaSound(2);
+            for (let i = race.playerCount; i < 4; i++) race.selectedChars[i] = null;
+            const emptyIdx = race.selectedChars.slice(0, race.playerCount).findIndex(x => x === null);
+            race.activeSlot = emptyIdx !== -1 ? emptyIdx : 0;
+            document.getElementById('setupStep1').classList.add('hidden');
+            document.getElementById('setupStep2').classList.remove('hidden');
+            renderCharSelectUI();
+        }
+
+        function renderCharSelectUI() {
+            const n = race.playerCount;
+            const slotsEl = document.getElementById('playerSlotsBar');
+            slotsEl.className = `grid grid-cols-${n} gap-2 shrink-0`;
+            slotsEl.innerHTML = Array.from({ length: n }, (_, i) => {
+                const cid = race.selectedChars[i];
+                const ch = PLAYABLE_CHARS.find(c => c.id === cid);
+                const isSel = i === race.activeSlot;
+                return `
+                    <button data-slot="${i}" class="slot-pick-btn rounded-2xl p-2 border-3 flex items-center gap-2 text-left transition ${
+                        isSel ? 'border-yellow-300 ring-4 ring-yellow-300/60 scale-[1.02]' : 'border-stone-600'
+                    }" style="background:${ch ? `linear-gradient(135deg, ${ch.color}dd, #1c1917)` : '#1c1917'}">
+                        <div class="w-11 h-11 rounded-xl bg-stone-800 border-2 border-white overflow-hidden shrink-0 flex items-center justify-center">
+                            ${ch ? `<img src="${ch.img}" alt="" class="w-full h-full object-cover object-top">` : '<span class="text-xl">❓</span>'}
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="text-[11px] font-black text-yellow-200">${i + 1}P ${isSel ? '👈 えらぶ ばん！' : ''}</div>
+                            <div class="text-sm sm:text-lg font-black text-white text-outline-sm truncate">${ch ? ch.name : 'タッチしてね'}</div>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+
+            slotsEl.querySelectorAll('.slot-pick-btn').forEach(b => {
+                b.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    race.activeSlot = Number(b.getAttribute('data-slot'));
+                    renderCharSelectUI();
+                });
+            });
+
+            const allReady = race.selectedChars.slice(0, n).every(c => c !== null);
+            const promptEl = document.getElementById('charPromptLabel');
+            const goBtn = document.getElementById('launchRaceBtn');
+            if (allReady) {
+                promptEl.textContent = '🎉 ぜんいん そろったよ！「レース スタート！」を タッチ！！';
+                goBtn.disabled = false;
+                goBtn.className = 'px-6 py-2 rounded-2xl font-black text-base sm:text-xl text-black bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 border-4 border-white shadow-[0_0_24px_rgba(251,191,36,1)] animate-bounce shrink-0';
+            } else {
+                promptEl.textContent = `👇 ${race.activeSlot + 1}P の すきな キャラを タッチしてね！`;
+                goBtn.disabled = true;
+                goBtn.className = 'px-5 py-2 rounded-2xl font-black text-sm sm:text-lg bg-stone-800 text-stone-500 border-2 border-stone-700 shrink-0';
+            }
+
+            const gridEl = document.getElementById('charSelectGrid');
+            gridEl.innerHTML = PLAYABLE_CHARS.map(ch => {
+                const owner = race.selectedChars.slice(0, n).findIndex(c => c === ch.id);
+                const taken = owner !== -1;
+                return `
+                    <button data-cid="${ch.id}" class="char-card-btn relative rounded-2xl overflow-hidden border-3 flex flex-col justify-between transition active:scale-95 ${
+                        taken ? 'border-yellow-300 shadow-[0_0_16px_rgba(250,204,21,0.9)]' : 'border-stone-600'
+                    }">
+                        <img src="${ch.img}" alt="" class="absolute inset-0 w-full h-full object-cover object-top">
+                        <div class="relative z-10 p-1">
+                            <span class="px-1.5 py-0.5 rounded-full text-[9px] sm:text-[11px] font-black text-white shadow" style="background:${ch.color}">${ch.tag}</span>
+                        </div>
+                        ${taken ? `<div class="relative z-10 mx-auto bg-yellow-300 text-black font-black text-[10px] sm:text-xs px-2 py-0.5 rounded-full border-2 border-black">✨ ${owner + 1}P</div>` : '<div></div>'}
+                        <div class="relative z-10 w-full py-1 bg-gradient-to-t from-black via-black/85 to-transparent text-center">
+                            <span class="text-sm sm:text-lg font-black text-white text-outline-sm">${ch.name}</span>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+
+            gridEl.querySelectorAll('.char-card-btn').forEach(btn => {
+                btn.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    unlockAudio();
+                    const cid = btn.getAttribute('data-cid');
+                    const owner = race.selectedChars.slice(0, n).findIndex(c => c === cid);
+                    if (owner !== -1 && owner !== race.activeSlot) return;
+
+                    const ch = PLAYABLE_CHARS.find(c => c.id === cid);
+                    race.selectedChars[race.activeSlot] = cid;
+                    playQuoteVoice(ch.voiceId);
+
+                    const nextEmpty = race.selectedChars.slice(0, n).findIndex(c => c === null);
+                    if (nextEmpty !== -1) race.activeSlot = nextEmpty;
+                    renderCharSelectUI();
+                });
+            });
+        }
+
+        /* ==========================================================
+           4. 画面分割 レーン構築 ＆ マルチタッチ きのぼり エンジン
+        ========================================================== */
+        function buildSplitLanesAndStart() {
+            unlockAudio();
+            maybeRestorePreferredFs();
+            document.getElementById('setupOverlay').classList.add('hidden');
+            document.getElementById('finishModal').classList.add('hidden');
+
+            const n = race.playerCount;
+            const container = document.getElementById('lanesContainer');
+            container.className = `relative z-10 flex-1 min-h-0 w-full grid grid-cols-${n} divide-x-2 divide-emerald-500/60 overflow-hidden`;
+            container.innerHTML = '';
+
+            race.players = race.selectedChars.slice(0, n).map((cid, idx) => {
+                const ch = PLAYABLE_CHARS.find(c => c.id === cid) || PLAYABLE_CHARS[idx];
+                return {
+                    idx,
+                    label: `${idx + 1}P`,
+                    char: ch,
+                    dist: 0,
+                    side: idx % 2, // 0: left, 1: right
+                    lastSide: -1,
+                    stunTimer: 0,
+                    dashTimer: 0,
+                    assistActive: false,
+                    spawnCooldown: 1.2 + Math.random() * 0.9,
+                    entities: [] // { kind:'obs'|'item', side:0|1, yPct: -15..110, warnTimer:0.75, meta }
+                };
+            });
+
+            race.players.forEach((p) => {
+                const lane = document.createElement('div');
+                lane.className = 'relative h-full flex flex-col justify-between overflow-hidden bg-gradient-to-b from-sky-950 via-emerald-950 to-stone-950';
+                lane.innerHTML = `
+                    <!-- レーン上部：順位・メートル・追い上げ/ダッシュ表示 -->
+                    <div class="relative z-20 px-2 py-1.5 bg-black/70 border-b border-white/15 flex items-center justify-between gap-1 shrink-0">
+                        <div class="flex items-center gap-1.5 min-w-0">
+                            <img src="${p.char.img}" alt="" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl object-cover object-top border-2" style="border-color:${p.char.color}">
+                            <div class="min-w-0 leading-tight">
+                                <div class="text-[10px] sm:text-xs font-black text-yellow-300">${p.label} ${p.char.name}</div>
+                                <div id="lane-meter-${p.idx}" class="text-sm sm:text-xl font-black text-white text-outline-sm tabular-nums">0 m</div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end gap-0.5 shrink-0">
+                            <span id="lane-rank-${p.idx}" class="px-2 py-0.2 rounded-full text-xs sm:text-sm font-black bg-amber-400 text-black">1い</span>
+                            <span id="lane-buff-${p.idx}" class="hidden px-1.5 py-0.2 rounded-full text-[9px] sm:text-[10px] font-black bg-gradient-to-r from-yellow-300 to-orange-500 text-black animate-pulse">🔥 おいあげ！</span>
+                        </div>
+                    </div>
+
+                    <!-- 進捗プログレスバー -->
+                    <div class="relative z-20 w-full h-2.5 bg-stone-900 shrink-0">
+                        <div id="lane-prog-${p.idx}" class="h-full transition-all duration-75" style="width:0%; background:${p.char.color}"></div>
+                    </div>
+
+                    <!-- 中央：スクロールする大木トラック -->
+                    <div id="lane-track-${p.idx}" class="relative flex-1 min-h-0 w-full overflow-hidden flex justify-center">
+                        <!-- 背景の木の葉 -->
+                        <div class="absolute inset-0 opacity-25 pointer-events-none" style="background-image: radial-gradient(circle at 15% 30%, #22c55e 0%, transparent 35%), radial-gradient(circle at 85% 65%, #10b981 0%, transparent 35%);"></div>
+
+                        <!-- てっぺんゴール神木バナー（84m以降で上から降りてくる！） -->
+                        <div id="lane-summit-${p.idx}" class="absolute inset-x-2 z-10 flex flex-col items-center pointer-events-none" style="top: -220px;">
+                            <img src="../assets/game_art/sacred_shinobi_tree.webp" alt="" class="w-28 h-24 sm:w-36 sm:h-28 rounded-2xl object-cover border-3 border-yellow-300 shadow-[0_0_25px_rgba(250,204,21,0.95)]">
+                            <span class=" -mt-3 px-3 py-0.5 rounded-full bg-yellow-300 text-black font-black text-xs sm:text-sm border-2 border-black shadow">🏁 100m ゴール！！</span>
+                        </div>
+
+                        <!-- 大木の幹（中央） -->
+                        <div id="lane-bark-${p.idx}" class="tree-bark relative w-[36%] h-full border-x-4 border-amber-950 shadow-2xl pointer-events-none"></div>
+
+                        <!-- 予告マーク ⚠️（左・右） -->
+                        <div id="lane-warn-0-${p.idx}" class="hidden absolute top-2 left-[10%] z-30 px-2 py-0.5 rounded-xl bg-red-600 border-2 border-yellow-300 text-yellow-200 font-black text-xs sm:text-sm warn-pulse pointer-events-none">⚠️ あぶない！</div>
+                        <div id="lane-warn-1-${p.idx}" class="hidden absolute top-2 right-[10%] z-30 px-2 py-0.5 rounded-xl bg-red-600 border-2 border-yellow-300 text-yellow-200 font-black text-xs sm:text-sm warn-pulse pointer-events-none">⚠️ あぶない！</div>
+
+                        <!-- 落下ジャマもの＆ラーメン描画レイヤー -->
+                        <div id="lane-entities-${p.idx}" class="absolute inset-0 z-20 pointer-events-none"></div>
+
+                        <!-- チャクラ足跡エフェクトレイヤー -->
+                        <div id="lane-steps-${p.idx}" class="absolute inset-0 z-20 pointer-events-none"></div>
+
+                        <!-- プレイヤーのキャラランナー -->
+                        <div id="lane-runner-${p.idx}" class="absolute bottom-[12%] z-30 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-3 border-white shadow-[0_4px_16px_rgba(0,0,0,0.9)] transition-all duration-75 pointer-events-none flex flex-col items-center justify-center overflow-visible" style="left: 10%; background:${p.char.color}">
+                            <img id="lane-runner-img-${p.idx}" src="${p.char.img}" alt="" class="w-full h-full rounded-xl object-cover object-top">
+                            <span id="lane-state-tag-${p.idx}" class="hidden absolute -top-6 px-2 py-0.2 rounded-full bg-yellow-300 text-black font-black text-[10px] sm:text-xs border border-black whitespace-nowrap shadow">⚡ ダッシュ！</span>
+                        </div>
+                    </div>
+
+                    <!-- レーン下部：専用マルチタッチ ◀ ひだり / みぎ ▶ 特大2ボタン -->
+                    <div class="relative z-30 h-[17dvh] min-h-[78px] max-h-[118px] bg-stone-950 border-t-2 border-white/20 p-1.5 sm:p-2 grid grid-cols-2 gap-1.5 sm:gap-2 shrink-0">
+                        <button data-lane="${p.idx}" data-side="0" class="climb-pad-btn rounded-2xl font-black text-lg sm:text-2xl text-white border-3 border-white/85 shadow-lg active:scale-95 flex flex-col items-center justify-center leading-none" style="background: linear-gradient(180deg, ${p.char.color}, #1c1917);">
+                            <span>◀ ひだり</span>
+                            <span class="text-[10px] sm:text-xs text-yellow-200 mt-1">シュバッ！</span>
+                        </button>
+                        <button data-lane="${p.idx}" data-side="1" class="climb-pad-btn rounded-2xl font-black text-lg sm:text-2xl text-white border-3 border-white/85 shadow-lg active:scale-95 flex flex-col items-center justify-center leading-none" style="background: linear-gradient(180deg, ${p.char.color}, #1c1917);">
+                            <span>みぎ ▶</span>
+                            <span class="text-[10px] sm:text-xs text-yellow-200 mt-1">シュバッ！</span>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(lane);
+            });
+
+            // 各ボタンに個別の pointerdown を登録（4人・8ボタン同時連打でも完全独立！）
+            container.querySelectorAll('.climb-pad-btn').forEach(btn => {
+                btn.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    const laneIdx = Number(btn.getAttribute('data-lane'));
+                    const side = Number(btn.getAttribute('data-side'));
+                    handleClimbInput(laneIdx, side);
+                });
+            });
+
+            updateAllLanesVisual();
+            runStartCountdown();
+        }
+
+        function runStartCountdown() {
+            if (race.rafId) cancelAnimationFrame(race.rafId);
+            race.running = false;
+            const ov = document.getElementById('countdownOverlay');
+            const tx = document.getElementById('countdownText');
+            ov.classList.remove('hidden');
+
+            const seq = ['3', '2', '1', 'スタート！！'];
+            let i = 0;
+            const step = () => {
+                tx.textContent = seq[i];
+                if (i < 3) playStepShubaSound(i + 1);
+                else playFanfare();
+                i++;
+                if (i < seq.length) {
+                    setTimeout(step, 680);
+                } else {
+                    setTimeout(() => {
+                        ov.classList.add('hidden');
+                        race.running = true;
+                        race.lastTs = performance.now();
+                        race.rafId = requestAnimationFrame(raceLoop);
+                    }, 480);
+                }
+            };
+            step();
+        }
+
+        function handleClimbInput(laneIdx, targetSide) {
+            if (!race.running) return;
+            const p = race.players[laneIdx];
+            if (!p || p.stunTimer > 0) return;
+
+            const switched = p.side !== targetSide;
+            p.side = targetSide;
+
+            // 左右交互に押すと少しボーナス！同じ側連打でもしっかり登れる設計
+            let gain = switched ? 1.45 : 1.05;
+            if (p.assistActive) gain *= 1.38;
+            if (p.dashTimer > 0) gain *= 1.5;
+
+            p.dist = Math.min(GOAL_METERS, p.dist + gain);
+            playStepShubaSound(laneIdx);
+            spawnChakraFootstep(p);
+
+            if (p.dist >= GOAL_METERS) {
+                triggerRaceFinish(p);
+            }
+        }
+
+        function spawnChakraFootstep(p) {
+            const holder = document.getElementById(`lane-steps-${p.idx}`);
+            if (!holder) return;
+            const ring = document.createElement('div');
+            const posCls = p.side === 0 ? 'left-[14%]' : 'right-[14%]';
+            ring.className = `chakra-step-ring absolute bottom-[10%] ${posCls} w-12 h-6 rounded-full border-3 border-cyan-300 bg-cyan-400/30`;
+            holder.appendChild(ring);
+            setTimeout(() => ring.remove(), 390);
+        }
+
+        function raceLoop(now) {
+            if (!race.running) return;
+            const dt = Math.min(0.05, (now - race.lastTs) / 1000);
+            race.lastTs = now;
+
+            const leaderDist = Math.max(...race.players.map(x => x.dist));
+
+            for (const p of race.players) {
+                // 5歳児も勝てる「追い上げチャクラアシスト」判定（トップと12m以上差）
+                p.assistActive = (leaderDist - p.dist >= 12);
+
+                if (p.stunTimer > 0) {
+                    p.stunTimer = Math.max(0, p.stunTimer - dt);
+                } else {
+                    // ベース自然上昇＋きゅうびチャクラダッシュ急上昇（約15〜20m加速！）
+                    let autoRate = 0.45;
+                    if (p.dashTimer > 0) {
+                        p.dashTimer = Math.max(0, p.dashTimer - dt);
+                        autoRate = p.assistActive ? 14.5 : 11.2;
+                    }
+                    p.dist = Math.min(GOAL_METERS, p.dist + autoRate * dt);
+                }
+
+                // ジャマもの＆ラーメン出現管理
+                p.spawnCooldown -= dt;
+                if (p.spawnCooldown <= 0 && p.dist < 94) {
+                    p.spawnCooldown = 1.35 + Math.random() * 0.85;
+                    const side = Math.random() < 0.5 ? 0 : 1;
+                    const itemChance = p.assistActive ? 0.56 : 0.28;
+                    if (Math.random() < itemChance) {
+                        const meta = ITEM_TYPES[Math.floor(Math.random() * ITEM_TYPES.length)];
+                        p.entities.push({ kind: 'item', side, yPct: -10, warnTimer: 0, meta });
+                    } else {
+                        const meta = OBSTACLE_TYPES[Math.floor(Math.random() * OBSTACLE_TYPES.length)];
+                        p.entities.push({ kind: 'obs', side, yPct: -12, warnTimer: 0.72, meta });
+                    }
+                }
+
+                // 落下＆当たり判定
+                for (let i = p.entities.length - 1; i >= 0; i--) {
+                    const ent = p.entities[i];
+                    if (ent.warnTimer > 0) {
+                        ent.warnTimer = Math.max(0, ent.warnTimer - dt);
+                        continue;
+                    }
+                    const fallSpeed = ent.kind === 'item' ? 54 : 66;
+                    ent.yPct += fallSpeed * dt;
+
+                    // ランナー位置（約 yPct 72〜88%）との接触判定
+                    if (ent.side === p.side && ent.yPct >= 68 && ent.yPct <= 88) {
+                        if (ent.kind === 'item') {
+                            // 🍜 ラーメン or 📜 まきもの 取得 → 無敵のきゅうびチャクラダッシュ発動！
+                            p.dashTimer = 1.45;
+                            p.stunTimer = 0;
+                            playDashBoostSound();
+                            p.entities.splice(i, 1);
+                            continue;
+                        } else if (ent.kind === 'obs') {
+                            if (p.dashTimer > 0) {
+                                // ダッシュ中はジャマものを豪快に吹き飛ばす！
+                                playStepShubaSound(3);
+                                p.entities.splice(i, 1);
+                                continue;
+                            } else if (p.stunTimer <= 0) {
+                                // ボフッ！と白煙が出て1秒だけコミカル足止め
+                                p.stunTimer = 0.95;
+                                playStunPuffSound();
+                                p.entities.splice(i, 1);
+                                continue;
+                            }
+                        }
+                    }
+
+                    if (ent.yPct > 108) {
+                        p.entities.splice(i, 1);
+                    }
+                }
+
+                if (p.dist >= GOAL_METERS) {
+                    updateAllLanesVisual();
+                    triggerRaceFinish(p);
+                    return;
+                }
+            }
+
+            updateAllLanesVisual();
+            race.rafId = requestAnimationFrame(raceLoop);
+        }
+
+        function updateAllLanesVisual() {
+            const sorted = [...race.players].sort((a, b) => b.dist - a.dist);
+            const rankMap = {};
+            sorted.forEach((p, idx) => { rankMap[p.idx] = idx + 1; });
+
+            for (const p of race.players) {
+                const mEl = document.getElementById(`lane-meter-${p.idx}`);
+                const rEl = document.getElementById(`lane-rank-${p.idx}`);
+                const bEl = document.getElementById(`lane-buff-${p.idx}`);
+                const progEl = document.getElementById(`lane-prog-${p.idx}`);
+                const barkEl = document.getElementById(`lane-bark-${p.idx}`);
+                const sumEl = document.getElementById(`lane-summit-${p.idx}`);
+                const runEl = document.getElementById(`lane-runner-${p.idx}`);
+                const runImg = document.getElementById(`lane-runner-img-${p.idx}`);
+                const tagEl = document.getElementById(`lane-state-tag-${p.idx}`);
+                const entHolder = document.getElementById(`lane-entities-${p.idx}`);
+                const w0 = document.getElementById(`lane-warn-0-${p.idx}`);
+                const w1 = document.getElementById(`lane-warn-1-${p.idx}`);
+
+                if (!mEl) continue;
+                mEl.textContent = `${Math.floor(p.dist)} m`;
+                const rk = rankMap[p.idx];
+                rEl.textContent = rk === 1 ? '👑 1い' : `${rk}い`;
+                rEl.className = rk === 1
+                    ? 'px-2 py-0.2 rounded-full text-xs sm:text-sm font-black bg-yellow-300 text-black shadow'
+                    : 'px-2 py-0.2 rounded-full text-xs sm:text-sm font-black bg-stone-700 text-stone-200';
+
+                if (p.dashTimer > 0) {
+                    bEl.textContent = '🦊 きゅうび ダッシュ！';
+                    bEl.classList.remove('hidden');
+                } else if (p.assistActive) {
+                    bEl.textContent = '🔥 おいあげ アシスト！';
+                    bEl.classList.remove('hidden');
+                } else {
+                    bEl.classList.add('hidden');
+                }
+
+                progEl.style.width = `${Math.min(100, p.dist)}%`;
+                barkEl.style.backgroundPositionY = `${Math.round(p.dist * 26)}px`;
+
+                // 82m以上で上空からゴール神木が近づいてくる！
+                if (p.dist >= 82) {
+                    const ratio = (p.dist - 82) / 18;
+                    sumEl.style.top = `${Math.round(-180 + ratio * 210)}px`;
+                } else {
+                    sumEl.style.top = '-220px';
+                }
+
+                // ランナー左右配置＆状態表示
+                runEl.style.left = p.side === 0 ? '8%' : 'calc(92% - 4.5rem)';
+                if (p.dashTimer > 0) {
+                    runEl.classList.add('kyuubi-dash-aura');
+                    runImg.src = '../sugoroku/assets/kyuubi_mode.webp';
+                    tagEl.textContent = '🦊 ちょう かそく！！';
+                    tagEl.className = 'absolute -top-6 px-2 py-0.2 rounded-full bg-yellow-300 text-black font-black text-[10px] sm:text-xs border border-black whitespace-nowrap shadow';
+                } else if (p.stunTimer > 0) {
+                    runEl.classList.remove('kyuubi-dash-aura');
+                    runImg.src = '../sugoroku/assets/smoke_bomb.webp';
+                    tagEl.textContent = '💨 ボフッ！';
+                    tagEl.className = 'absolute -top-6 px-2 py-0.2 rounded-full bg-rose-500 text-white font-black text-[10px] sm:text-xs border border-white whitespace-nowrap shadow';
+                } else {
+                    runEl.classList.remove('kyuubi-dash-aura');
+                    runImg.src = p.char.img;
+                    tagEl.classList.add('hidden');
+                }
+
+                // 予告マーク
+                const hasWarn0 = p.entities.some(e => e.kind === 'obs' && e.side === 0 && e.warnTimer > 0);
+                const hasWarn1 = p.entities.some(e => e.kind === 'obs' && e.side === 1 && e.warnTimer > 0);
+                w0.classList.toggle('hidden', !hasWarn0);
+                w1.classList.toggle('hidden', !hasWarn1);
+
+                // 落下中のアイテム＆障害物描画
+                entHolder.innerHTML = p.entities
+                    .filter(e => e.warnTimer <= 0)
+                    .map(e => {
+                        const sideStyle = e.side === 0 ? 'left: 9%;' : 'right: 9%;';
+                        const borderCls = e.kind === 'item'
+                            ? 'border-yellow-300 ring-2 ring-amber-400 shadow-[0_0_16px_rgba(250,204,21,0.95)]'
+                            : 'border-red-500 shadow-lg';
+                        return `
+                            <div class="absolute w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-3 ${borderCls} overflow-hidden bg-stone-900" style="${sideStyle} top:${e.yPct}%;">
+                                <img src="${e.meta.img}" alt="" class="w-full h-full object-cover">
+                            </div>
+                        `;
+                    }).join('');
+            }
+        }
+
+        function triggerRaceFinish(winner) {
+            race.running = false;
+            if (race.rafId) { cancelAnimationFrame(race.rafId); race.rafId = null; }
+
+            playFanfare();
+            playQuoteVoice(winner.char.winVoiceId);
+            spawnConfettiBurst(120);
+
+            document.getElementById('finishWinnerHeadline').textContent = `🏆 ${winner.label} ${winner.char.name} が てっぺん 1ばん のり！！ 🏆`;
+
+            const sorted = [...race.players].sort((a, b) => b.dist - a.dist);
+            const awards = ['👑 てっぺん チャンピオン！', '⚡ こうそく にんじゃ しょう！', '🔥 ガッツ きのぼり しょう！', '🍀 ナイス ファイト しょう！'];
+            const grid = document.getElementById('finishRankingGrid');
+            grid.className = `relative z-10 max-w-5xl w-full mx-auto my-auto grid grid-cols-${race.playerCount} gap-3`;
+            grid.innerHTML = sorted.map((p, i) => `
+                <div class="rounded-3xl p-1 bg-gradient-to-b ${i === 0 ? 'from-yellow-200 via-amber-400 to-orange-500 shadow-[0_0_30px_rgba(251,191,36,0.9)]' : 'from-emerald-400 to-cyan-600'}">
+                    <div class="h-full bg-stone-950 rounded-[20px] p-3 flex flex-col items-center justify-between text-center gap-2">
+                        <span class="px-3 py-0.5 rounded-full text-xs font-black ${i === 0 ? 'bg-yellow-300 text-black' : 'bg-emerald-300 text-black'}">${i + 1}い・${awards[i]}</span>
+                        <img src="${p.char.img}" alt="" class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover object-top border-3" style="border-color:${p.char.color}">
+                        <div>
+                            <div class="text-xs font-black text-amber-300">${p.label}（${Math.floor(p.dist)} m）</div>
+                            <div class="text-lg sm:text-2xl font-black text-white">${p.char.name}</div>
+                        </div>
+                        <button data-vid="${p.char.winVoiceId}" class="voice-replay-btn w-full py-1.5 rounded-xl font-black text-xs text-white border border-white/50 active:scale-95" style="background:${p.char.color}">
+                            🔊 ボイスを きく！
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            grid.querySelectorAll('.voice-replay-btn').forEach(btn => {
+                btn.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    playQuoteVoice(Number(btn.getAttribute('data-vid')));
+                });
+            });
+
+            document.getElementById('finishModal').classList.remove('hidden');
+        }
+
+        /* ==========================================================
+           5. ぜんがめん ＆ サウンド ＆ かみふぶき
+        ========================================================== */
+        function getFsElement() {
+            return document.fullscreenElement || document.webkitFullscreenElement || document.webkitCurrentFullScreenElement || document.msFullscreenElement || null;
+        }
+        function isStandalonePwa() {
+            return window.navigator.standalone === true || window.matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches;
+        }
+        function syncFsButtons() {
+            const active = !!getFsElement();
+            document.querySelectorAll('.fs-label-text').forEach(el => {
+                el.textContent = active ? 'もどす' : 'ぜんがめん';
+            });
+            setTimeout(resizeFxCanvas, 80);
+        }
+        function maybeRestorePreferredFs() {
+            try {
+                if (sessionStorage.getItem('naruto_prefer_fs') === '1' && !getFsElement()) {
+                    const docEl = document.documentElement;
+                    const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
+                    if (req) {
+                        const p = docEl.requestFullscreen ? docEl.requestFullscreen({ navigationUI: 'hide' }) : req.call(docEl);
+                        if (p && p.catch) p.catch(() => {});
+                    }
+                }
+            } catch (_) {}
+        }
+        async function toggleFullScreen() {
+            unlockAudio();
+            const docEl = document.documentElement;
+            if (getFsElement()) {
+                try { sessionStorage.setItem('naruto_prefer_fs', '0'); } catch (_) {}
+                if (document.exitFullscreen) await document.exitFullscreen().catch(() => {});
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                syncFsButtons();
+                return;
+            }
+            const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
+            if (req) {
+                try {
+                    const p = docEl.requestFullscreen ? docEl.requestFullscreen({ navigationUI: 'hide' }) : req.call(docEl);
+                    if (p && p.then) await p;
+                } catch (_) {
+                    try {
+                        const p2 = req.call(docEl);
+                        if (p2 && p2.then) await p2;
+                    } catch (_e) {}
+                }
+                await new Promise(r => setTimeout(r, 150));
+                if (getFsElement()) {
+                    try { sessionStorage.setItem('naruto_prefer_fs', '1'); } catch (_) {}
+                    syncFsButtons();
+                    return;
+                }
+            }
+            if (isStandalonePwa()) {
+                document.getElementById('fsGuideText').textContent = '✨ いま すでに ぜんがめん モード だよ！ そのまま たのしく あそんでね！';
+            }
+            document.getElementById('fsGuideModal').classList.remove('hidden');
+        }
+        document.addEventListener('fullscreenchange', syncFsButtons);
+        document.addEventListener('webkitfullscreenchange', syncFsButtons);
+
+        function toggleSound() {
+            unlockAudio();
+            race.soundOn = !race.soundOn;
+            if (!race.soundOn && voiceEl) voiceEl.pause();
+            document.querySelectorAll('.sound-toggle-btn').forEach(btn => {
+                btn.innerHTML = race.soundOn
+                    ? (btn.textContent.includes('おと') ? '<span>🔊</span><span>おと オン</span>' : '🔊')
+                    : (btn.textContent.includes('おと') ? '<span>🔇</span><span>おと オフ</span>' : '🔇');
+            });
+        }
+
+        const fxCanvas = document.getElementById('fxCanvas');
+        const fxCtx = fxCanvas.getContext('2d');
+        let confetti = [];
+        function resizeFxCanvas() {
+            fxCanvas.width = window.innerWidth;
+            fxCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeFxCanvas);
+
+        function spawnConfettiBurst(count = 50) {
+            const colors = ['#fde047', '#34d399', '#fb923c', '#38bdf8', '#f43f5e', '#a78bfa'];
+            for (let i = 0; i < count; i++) {
+                confetti.push({
+                    x: window.innerWidth * (0.15 + Math.random() * 0.7),
+                    y: window.innerHeight * (0.18 + Math.random() * 0.35),
+                    vx: (Math.random() - 0.5) * 11,
+                    vy: -Math.random() * 9 - 2,
+                    size: Math.random() * 8 + 5,
+                    alpha: 1,
+                    color: colors[Math.floor(Math.random() * colors.length)]
+                });
+            }
+        }
+
+        function animateFx() {
+            fxCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+            for (let i = confetti.length - 1; i >= 0; i--) {
+                const c = confetti[i];
+                c.x += c.vx;
+                c.y += c.vy;
+                c.vy += 0.22;
+                c.alpha -= 0.014;
+                if (c.alpha <= 0) { confetti.splice(i, 1); continue; }
+                fxCtx.globalAlpha = c.alpha;
+                fxCtx.fillStyle = c.color;
+                fxCtx.fillRect(c.x - c.size / 2, c.y - c.size / 2, c.size, c.size * 0.7);
+            }
+            fxCtx.globalAlpha = 1;
+            requestAnimationFrame(animateFx);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            resizeFxCanvas();
+            renderCountButtons();
+            animateFx();
+
+            document.getElementById('toStep2Btn').addEventListener('click', openCharSelect);
+            document.getElementById('backStep1Btn').addEventListener('click', () => {
+                document.getElementById('setupStep2').classList.add('hidden');
+                document.getElementById('setupStep1').classList.remove('hidden');
+                renderCountButtons();
+            });
+            document.getElementById('launchRaceBtn').addEventListener('click', buildSplitLanesAndStart);
+            document.getElementById('rematchBtn').addEventListener('click', buildSplitLanesAndStart);
+            document.getElementById('changeCharsBtn').addEventListener('click', () => {
+                document.getElementById('finishModal').classList.add('hidden');
+                document.getElementById('setupOverlay').classList.remove('hidden');
+                openCharSelect();
+            });
+            document.getElementById('raceQuitBtn').addEventListener('click', () => {
+                race.running = false;
+                if (race.rafId) cancelAnimationFrame(race.rafId);
+                document.getElementById('countdownOverlay').classList.add('hidden');
+                document.getElementById('setupOverlay').classList.remove('hidden');
+                document.getElementById('setupStep2').classList.add('hidden');
+                document.getElementById('setupStep1').classList.remove('hidden');
+            });
+
+            document.querySelectorAll('.fs-toggle-btn').forEach(b => b.addEventListener('click', toggleFullScreen));
+            document.querySelectorAll('.sound-toggle-btn').forEach(b => b.addEventListener('click', toggleSound));
+            document.getElementById('closeFsGuideBtn').addEventListener('click', () => {
+                document.getElementById('fsGuideModal').classList.add('hidden');
+            });
+        });
+    </script>
+</body>
+</html>

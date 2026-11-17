@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="まとあてどうじょう">
+    <meta name="theme-color" content="#ff6b00">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/icons/icon-192.png">
+    <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png">
+    <title>しゅりけん＆らせんがん・まとあてどうじょう！</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100dvh;
+            max-height: 100dvh;
+            overflow: hidden;
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            background-color: #0f0a07;
+            color: #fff;
+        }
+
+        html:fullscreen, html:-webkit-full-screen,
+        body:fullscreen, body:-webkit-full-screen {
+            width: 100vw !important;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
+            overflow: hidden !important;
+            background-color: #0f0a07;
+        }
+
+        .text-outline {
+            text-shadow:
+                -1.5px -1.5px 0 #000,
+                 1.5px -1.5px 0 #000,
+                -1.5px  1.5px 0 #000,
+                 1.5px  1.5px 0 #000,
+                 0 2px 6px rgba(0,0,0,0.9);
+        }
+
+        .text-outline-sm {
+            text-shadow:
+                -1px -1px 0 #000,
+                 1px -1px 0 #000,
+                -1px  1px 0 #000,
+                 1px  1px 0 #000;
+        }
+
+        .manga-burst {
+            background: repeating-conic-gradient(
+                from 0deg,
+                rgba(255, 180, 0, 0.14) 0deg 3deg,
+                transparent 3deg 9deg
+            );
+        }
+
+        @keyframes screenBoom {
+            0%, 100% { transform: translate(0, 0); }
+            20% { transform: translate(-10px, 6px); }
+            45% { transform: translate(10px, -7px); }
+            70% { transform: translate(-7px, -4px); }
+        }
+        .boom-shake {
+            animation: screenBoom 0.34s ease-out;
+        }
+
+        @keyframes spinSlow {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+        .spin-orb {
+            animation: spinSlow 2.2s linear infinite;
+        }
+    </style>
+</head>
+<body class="relative w-screen h-[100dvh] overflow-hidden flex flex-col justify-between">
+
+    <audio id="voiceAudio" preload="auto" playsinline class="hidden"></audio>
+
+    <!-- ==========================================================
+         スタートがめん（ステップ1：1〜6にん ＆ ステップ2：キャラえらび）
+    =========================================================== -->
+    <div id="setupOverlay" class="fixed inset-0 z-40 bg-gradient-to-br from-stone-950 via-amber-950/95 to-red-950/90 flex flex-col justify-between p-3 sm:p-5 overflow-hidden">
+        <div class="manga-burst absolute inset-0 pointer-events-none"></div>
+
+        <!-- ステップ1 -->
+        <div id="setupStep1" class="relative z-10 w-full h-full max-w-5xl mx-auto flex flex-col items-center justify-between py-1 sm:py-2">
+            <div class="w-full flex items-center justify-between">
+                <a href="../index.html" class="px-3 py-1.5 rounded-2xl bg-stone-800/90 border-2 border-amber-400 text-amber-200 font-black text-xs sm:text-sm flex items-center gap-1.5 active:scale-95">
+                    <span>🏠</span><span>ゲーム いちらんへ</span>
+                </a>
+                <div class="flex items-center gap-2">
+                    <button class="fs-toggle-btn px-3 py-1.5 rounded-2xl bg-emerald-950/90 border-2 border-emerald-400 text-emerald-100 font-black text-xs sm:text-sm flex items-center gap-1.5 active:scale-95">
+                        <span>⛶</span><span class="fs-label-text">ぜんがめん</span>
+                    </button>
+                    <button class="sound-toggle-btn px-3 py-1.5 rounded-2xl bg-amber-900/90 border-2 border-amber-400 text-amber-100 font-black text-xs sm:text-sm flex items-center gap-1.5 active:scale-95">
+                        <span>🔊</span><span>おと オン</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-center text-center gap-1.5">
+                <div class="flex items-center justify-center gap-2 sm:gap-3">
+                    <img src="../assets/game_art/slingshot_turret.webp" alt="" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-3 border-cyan-300 shadow-lg -rotate-6">
+                    <img src="../assets/game_art/giant_rasengan_orb.webp" alt="" class="w-18 h-18 sm:w-22 sm:h-22 rounded-2xl object-cover border-3 border-sky-300 shadow-lg -rotate-2">
+                    <img src="../assets/game_art/goukakyuu_fireball.webp" alt="" class="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl object-cover border-4 border-yellow-300 shadow-[0_0_28px_rgba(251,191,36,0.95)] z-10">
+                    <img src="../assets/game_art/kibakufuda_barrel.webp" alt="" class="w-18 h-18 sm:w-22 sm:h-22 rounded-2xl object-cover border-3 border-red-400 shadow-lg rotate-2">
+                    <img src="../assets/game_art/akatsuki_target_shield.webp" alt="" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-3 border-amber-300 shadow-lg rotate-6">
+                </div>
+                <div class="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 via-orange-500 to-amber-400 text-black font-black text-xs sm:text-sm px-4 py-0.5 rounded-full border border-white shadow">
+                    <span>🎯 ゆびで ひっぱって ドッカーン！！ ぶつり まとあて パーティ！</span>
+                </div>
+                <h1 class="text-2xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-yellow-200 via-orange-400 to-red-500 drop-shadow-[0_4px_12px_rgba(255,107,0,0.6)]">
+                    しゅりけん＆らせんがん・まとあてどうじょう！
+                </h1>
+                <p class="text-xl sm:text-3xl font-black text-white text-outline mt-1">
+                    🙌 なんにんで あそぶ？（じゅんばんに 3とう ずつ！）
+                </p>
+            </div>
+
+            <div id="countButtonsRow" class="w-full max-w-4xl grid grid-cols-6 gap-2 sm:gap-3"></div>
+
+            <button id="toStep2Btn" class="px-9 py-3.5 sm:py-4 rounded-3xl font-black text-lg sm:text-2xl text-black bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 border-4 border-white shadow-[0_0_30px_rgba(251,191,36,0.95)] active:scale-95 transition flex items-center gap-3">
+                <img src="../sugoroku/assets/fuma_shuriken.webp" alt="" class="w-8 h-8 rounded-full object-cover spin-orb">
+                <span>つぎへ！ キャラを えらぼう！ ➡️</span>
+            </button>
+        </div>
+
+        <!-- ステップ2 -->
+        <div id="setupStep2" class="relative z-10 hidden w-full h-full max-w-6xl mx-auto flex flex-col justify-between gap-2 overflow-hidden">
+            <div class="flex items-center justify-between gap-2 shrink-0">
+                <div class="flex items-center gap-1.5">
+                    <button id="backStep1Btn" class="px-3 py-1.5 rounded-2xl bg-stone-800 border-2 border-stone-500 text-stone-200 font-black text-xs sm:text-sm active:scale-95">
+                        ◀ にんずうを かえる
+                    </button>
+                    <button class="fs-toggle-btn px-2.5 py-1.5 rounded-2xl bg-emerald-950/90 border-2 border-emerald-400 text-emerald-100 font-black text-xs sm:text-sm flex items-center gap-1 active:scale-95">
+                        <span>⛶</span><span class="fs-label-text hidden sm:inline">ぜんがめん</span>
+                    </button>
+                </div>
+                <div id="charPromptLabel" class="text-base sm:text-2xl font-black text-yellow-300 text-outline truncate">
+                    👇 1P の キャラを タッチしてね！
+                </div>
+                <button id="startDojoBtn" disabled class="px-5 py-2 rounded-2xl font-black text-sm sm:text-lg bg-stone-800 text-stone-500 border-2 border-stone-700 shrink-0">
+                    🎯 どうじょう スタート！
+                </button>
+            </div>
+
+            <div id="playerSlotsBar" class="grid grid-cols-3 gap-2 shrink-0"></div>
+            <div id="charSelectGrid" class="flex-1 min-h-0 grid grid-cols-6 grid-rows-2 gap-2 sm:gap-2.5"></div>
+        </div>
+    </div>
+
+    <!-- ==========================================================
+         メイン まとあて どうじょう ステージ（100dvh 固定）
+    =========================================================== -->
+    <!-- 1. じょうぶ プレイヤースコア ＆ ラウンド情報バー -->
+    <header class="relative z-20 h-[11.5dvh] min-h-[60px] max-h-[84px] bg-gradient-to-r from-stone-950 via-amber-950 to-stone-950 border-b-2 border-amber-500 px-2 py-1 flex items-center gap-2 shrink-0">
+        <div class="flex flex-col gap-1 shrink-0">
+            <div class="flex items-center gap-1">
+                <a href="../index.html" class="w-8 h-7 rounded-lg bg-stone-800 border border-amber-400/70 flex items-center justify-center text-sm active:scale-95">🏠</a>
+                <button class="sound-toggle-btn w-8 h-7 rounded-lg bg-amber-900/90 border border-amber-400 flex items-center justify-center text-sm active:scale-95">🔊</button>
+                <button class="fs-toggle-btn w-8 h-7 rounded-lg bg-emerald-950/90 border border-emerald-400 flex items-center justify-center text-sm font-black text-emerald-200 active:scale-95">⛶</button>
+            </div>
+            <button id="dojoQuitBtn" class="w-full px-1.5 h-6 rounded-lg bg-red-950 border border-red-400 text-[10px] font-black text-red-200 active:scale-95">
+                🔄 さいしょ
+            </button>
+        </div>
+
+        <!-- ラウンド ＆ 何投目バッジ -->
+        <div class="bg-stone-900 border-2 border-amber-400 rounded-xl px-2.5 py-1 text-center shrink-0">
+            <div id="roundBadgeText" class="text-[10px] sm:text-xs font-black text-amber-300 leading-none">ラウンド 1 / 3</div>
+            <div id="shotBadgeText" class="text-sm sm:text-lg font-black text-white text-outline-sm leading-tight mt-0.5">1 とうめ！</div>
+        </div>
+
+        <!-- 参加プレイヤー スコアボード -->
+        <div id="dojoScoreGrid" class="flex-1 h-full grid grid-cols-2 gap-1.5 items-stretch"></div>
+    </header>
+
+    <!-- 2. ぶつり どうじょう キャンバス ステージ -->
+    <main id="dojoArenaWrap" class="relative z-10 flex-1 min-h-0 w-full overflow-hidden bg-gradient-to-b from-indigo-950 via-stone-900 to-amber-950">
+        <canvas id="dojoCanvas" class="w-full h-full block"></canvas>
+
+        <!-- 左上 ガイドバナー -->
+        <div id="aimGuideBanner" class="pointer-events-none absolute top-2.5 left-3 z-20 px-4 py-1.5 rounded-2xl bg-black/75 border-2 border-cyan-300 text-xs sm:text-base font-black text-cyan-200 shadow-lg">
+            👈 パチンコを うしろに ひっぱって はなそう！
+        </div>
+
+        <!-- 🌀 3とうめ 専用！「えらべる ひっさつ にんじゅつ ショット」パネル -->
+        <div id="jutsuSelectorBar" class="hidden absolute bottom-2.5 left-3 z-30 bg-stone-950/95 border-3 border-yellow-300 rounded-3xl p-2 shadow-[0_0_30px_rgba(251,191,36,0.95)] flex items-center gap-2">
+            <span class="px-2 text-xs sm:text-sm font-black text-yellow-300 leading-tight">
+                🌟 3とうめ<br>ひっさつわざ！
+            </span>
+            <button data-jutsu="rasengan" class="jutsu-pick-btn px-3 py-1.5 rounded-2xl border-2 flex items-center gap-1.5 font-black text-xs sm:text-sm transition active:scale-95">
+                <img src="../assets/game_art/giant_rasengan_orb.webp" alt="" class="w-8 h-8 rounded-full object-cover">
+                <div class="text-left leading-tight">
+                    <div>🌀 らせんがん</div>
+                    <div class="text-[9px] text-cyan-200">ぜんぶ かんつう！</div>
+                </div>
+            </button>
+            <button data-jutsu="goukakyuu" class="jutsu-pick-btn px-3 py-1.5 rounded-2xl border-2 flex items-center gap-1.5 font-black text-xs sm:text-sm transition active:scale-95">
+                <img src="../assets/game_art/goukakyuu_fireball.webp" alt="" class="w-8 h-8 rounded-full object-cover">
+                <div class="text-left leading-tight">
+                    <div>🔥 ごうかきゅう</div>
+                    <div class="text-[9px] text-orange-200">とくだい ばくはつ！</div>
+                </div>
+            </button>
+            <button data-jutsu="bunshin" class="jutsu-pick-btn px-3 py-1.5 rounded-2xl border-2 flex items-center gap-1.5 font-black text-xs sm:text-sm transition active:scale-95">
+                <img src="../sugoroku/assets/kage_bunshin.webp" alt="" class="w-8 h-8 rounded-full object-cover">
+                <div class="text-left leading-tight">
+                    <div>👥 かげぶんしん</div>
+                    <div class="text-[9px] text-yellow-200">タッチで 5ぶんれつ！</div>
+                </div>
+            </button>
+        </div>
+
+        <!-- ターン交代・ステージ告知トースト -->
+        <div id="turnCutinBanner" class="hidden pointer-events-none absolute inset-x-0 top-1/3 -translate-y-1/2 z-30 flex justify-center">
+            <div class="px-8 py-3 rounded-3xl bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 border-4 border-white shadow-[0_0_45px_rgba(251,191,36,1)] text-black font-black text-xl sm:text-4xl text-center">
+                <span id="turnCutinText">1P ナルト の ばん！</span>
+            </div>
+        </div>
+    </main>
+
+    <!-- ==========================================================
+         🏆 ぜんいん ひょうしょう フィナーレ モーダル
+    =========================================================== -->
+    <div id="finaleModal" class="hidden fixed inset-0 z-40 bg-stone-950/95 flex flex-col justify-between p-4 sm:p-6 overflow-hidden">
+        <div class="manga-burst absolute inset-0 pointer-events-none"></div>
+
+        <div class="relative z-10 text-center">
+            <div class="inline-block bg-gradient-to-r from-yellow-200 via-amber-400 to-orange-400 text-black font-black text-xs sm:text-base px-5 py-1 rounded-full shadow-lg animate-bounce">
+                🎊 ぜん 3ラウンド しゅうりょう！！ みんな ナイス ショット！！ 🎊
+            </div>
+            <h2 id="finaleHeadline" class="mt-1.5 text-2xl sm:text-4xl font-black text-yellow-300 text-outline">
+                🏆 まとあて どうじょう けっか はっぴょう！！ 🏆
+            </h2>
+        </div>
+
+        <div id="finaleCardsGrid" class="relative z-10 max-w-6xl w-full mx-auto my-2 flex-1 min-h-0 grid grid-cols-3 gap-3 items-stretch"></div>
+
+        <div class="relative z-10 flex items-center justify-center gap-3 sm:gap-4 shrink-0">
+            <button class="fs-toggle-btn px-4 py-3 rounded-2xl font-black text-xs sm:text-base bg-emerald-950 border-2 border-emerald-400 text-emerald-100 active:scale-95 flex items-center gap-1.5">
+                <span>⛶</span><span class="fs-label-text">ぜんがめん</span>
+            </button>
+            <button id="dojoChangeMemberBtn" class="px-6 py-3 rounded-2xl font-black text-sm sm:text-lg bg-stone-800 border-2 border-stone-400 text-white active:scale-95">
+                👥 メンバーを かえる
+            </button>
+            <button id="dojoReplayBtn" class="px-8 py-3 rounded-2xl font-black text-base sm:text-2xl bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 text-black border-4 border-white shadow-xl active:scale-95">
+                🔄 もう 1かい あそぶ！
+            </button>
+        </div>
+    </div>
+
+    <!-- ぜんがめん ガイドモーダル（漢字ゼロ） -->
+    <div id="fsGuideModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-stone-900 border-4 border-emerald-400 rounded-3xl p-6 max-w-md w-full text-center space-y-4 shadow-2xl">
+            <div class="text-xl sm:text-2xl font-black text-emerald-300">📱 ぜんがめんで あそぶ ほうほう！</div>
+            <p id="fsGuideText" class="text-sm sm:text-base text-white font-bold leading-relaxed">
+                サファリの「ぁあ」マーク →「ツールバーを かくす」を タッチするか、「ホームがめんに ついか」を すると バーが きえて ひろびろ ぜんがめんで あそべるよ！
+            </p>
+            <button id="closeFsGuideBtn" class="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 text-black font-black text-base sm:text-lg border-2 border-white active:scale-95">
+                わかった！ とじる ✨
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================================
+           1. キャラクター ＆ アセット プリロード（漢字ゼロ）
+        ========================================================== */
+        const PLAYABLE_CHARS = [
+            { id: 'naruto',    name: 'ナルト',     defJutsu: 'rasengan',  color: '#f97316', img: '../bingo/assets/cards/leader_naruto.webp',    voiceId: 1,  winVoiceId: 61 },
+            { id: 'sasuke',    name: 'サスケ',     defJutsu: 'goukakyuu', color: '#8b5cf6', img: '../bingo/assets/cards/leader_sasuke.webp',    voiceId: 2,  winVoiceId: 62 },
+            { id: 'sakura',    name: 'サクラ',     defJutsu: 'goukakyuu', color: '#ec4899', img: '../bingo/assets/cards/leader_sakura.webp',    voiceId: 3,  winVoiceId: 3  },
+            { id: 'kakashi',   name: 'カカシ',     defJutsu: 'bunshin',   color: '#0ea5e9', img: '../bingo/assets/cards/leader_kakashi.webp',   voiceId: 4,  winVoiceId: 68 },
+            { id: 'hinata',    name: 'ヒナタ',     defJutsu: 'rasengan',  color: '#a78bfa', img: '../bingo/assets/cards/leader_hinata.webp',    voiceId: 12, winVoiceId: 12 },
+            { id: 'minato',    name: 'ミナト',     defJutsu: 'rasengan',  color: '#eab308', img: '../bingo/assets/cards/leader_minato.webp',    voiceId: 5,  winVoiceId: 5  },
+            { id: 'gaara',     name: 'ガアラ',     defJutsu: 'goukakyuu', color: '#dc2626', img: '../bingo/assets/cards/leader_gaara.webp',     voiceId: 24, winVoiceId: 24 },
+            { id: 'shikamaru', name: 'シカマル',   defJutsu: 'bunshin',   color: '#10b981', img: '../bingo/assets/cards/leader_shikamaru.webp', voiceId: 10, winVoiceId: 10 },
+            { id: 'itachi',    name: 'イタチ',     defJutsu: 'goukakyuu', color: '#e11d48', img: '../bingo/assets/cards/leader_itachi.webp',    voiceId: 31, winVoiceId: 31 },
+            { id: 'jiraiya',   name: 'ジライヤ',   defJutsu: 'rasengan',  color: '#ea580c', img: '../bingo/assets/cards/leader_jiraiya.webp',   voiceId: 6,  winVoiceId: 6  },
+            { id: 'tsunade',   name: 'ツナデ',     defJutsu: 'goukakyuu', color: '#14b8a6', img: '../bingo/assets/cards/char_07.webp',          voiceId: 7,  winVoiceId: 7  },
+            { id: 'killerbee', name: 'キラービー', defJutsu: 'bunshin',   color: '#3b82f6', img: '../bingo/assets/cards/char_27.webp',          voiceId: 27, winVoiceId: 27 }
+        ];
+
+        const SPRITE_PATHS = {
+            slingshot: '../assets/game_art/slingshot_turret.webp',
+            shuriken:  '../sugoroku/assets/fuma_shuriken.webp',
+            rasengan:  '../assets/game_art/giant_rasengan_orb.webp',
+            goukakyuu: '../assets/game_art/goukakyuu_fireball.webp',
+            bunshin:   '../sugoroku/assets/kage_bunshin.webp',
+            barrel:    '../assets/game_art/kibakufuda_barrel.webp',
+            log:       '../sugoroku/assets/kawarimi_log.webp',
+            target:    '../assets/game_art/akatsuki_target_shield.webp',
+            ramen:     '../assets/game_art/ichiraku_ramen_glow.webp',
+            hokageBg:  '../sugoroku/assets/hokage_goal.webp',
+            bossMadara:'../bingo/assets/cards/char_42.webp',
+            bossJuubi: '../bingo/assets/cards/char_59.webp'
+        };
+        const sprites = {};
+        Object.entries(SPRITE_PATHS).forEach(([k, src]) => {
+            const im = new Image();
+            im.src = src;
+            sprites[k] = im;
+        });
+        PLAYABLE_CHARS.forEach(c => {
+            const im = new Image();
+            im.src = c.img;
+            sprites[`char_${c.id}`] = im;
+        });
+
+        /* ==========================================================
+           2. ゲーム じょうたい ＆ サウンド
+        ========================================================== */
+        const dojo = {
+            soundOn: true,
+            playerCount: 2,
+            selectedChars: ['naruto', 'sasuke', null, null, null, null],
+            activeSlot: 0,
+            players: [],
+            round: 1,      // 1..3
+            turnIdx: 0,    // 0..playerCount-1
+            shotNum: 1,    // 1..3
+            selectedJutsu: 'rasengan',
+            phase: 'setup', // setup | aiming | flying | settling | finale
+            dragging: false,
+            dragX: 0,
+            dragY: 0,
+            slingX: 190,
+            slingY: 420,
+            groundY: 560,
+            gravity: 680,
+            projectiles: [],
+            blocks: [],
+            explosions: [],
+            popups: [],
+            settleTimer: 0,
+            flightTimer: 0
+        };
+
+        const canvas = document.getElementById('dojoCanvas');
+        const ctx = canvas.getContext('2d');
+        const voiceEl = document.getElementById('voiceAudio');
+        let audioCtx = null;
+        let audioUnlocked = false;
+
+        function getAC() {
+            if (!audioCtx) {
+                const AC = window.AudioContext || window.webkitAudioContext;
+                if (AC) audioCtx = new AC();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }
+
+        function unlockAudio() {
+            if (audioUnlocked) return;
+            audioUnlocked = true;
+            getAC();
+            if (voiceEl && !voiceEl.src) {
+                voiceEl.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+                voiceEl.play().then(() => voiceEl.pause()).catch(() => {});
+            }
+        }
+
+        function playQuoteVoice(voiceId) {
+            if (!dojo.soundOn || !voiceId) return;
+            const sid = String(voiceId).padStart(2, '0');
+            voiceEl.src = `../assets/audio/quotes/${sid}.mp3?v=6`;
+            try { voiceEl.currentTime = 0; } catch (_) {}
+            voiceEl.play().catch(() => {});
+        }
+
+        function playShubaLaunchSound() {
+            if (!dojo.soundOn) return;
+            const ac = getAC();
+            if (!ac) return;
+            const now = ac.currentTime;
+            const osc = ac.createOscillator();
+            const g = ac.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(260, now);
+            osc.frequency.exponentialRampToValueAtTime(920, now + 0.14);
+            g.gain.setValueAtTime(0.24, now);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+            osc.connect(g);
+            g.connect(ac.destination);
+            osc.start(now);
+            osc.stop(now + 0.17);
+        }
+
+        function playWoodHitSound() {
+            if (!dojo.soundOn) return;
+            const ac = getAC();
+            if (!ac) return;
+            const now = ac.currentTime;
+            const osc = ac.createOscillator();
+            const g = ac.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(320 + Math.random() * 180, now);
+            osc.frequency.exponentialRampToValueAtTime(110, now + 0.09);
+            g.gain.setValueAtTime(0.18, now);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 0.10);
+            osc.connect(g);
+            g.connect(ac.destination);
+            osc.start(now);
+            osc.stop(now + 0.11);
+        }
+
+        function playKaboomSound() {
+            if (!dojo.soundOn) return;
+            const ac = getAC();
+            if (!ac) return;
+            const now = ac.currentTime;
+            const len = Math.floor(ac.sampleRate * 0.42);
+            const buf = ac.createBuffer(1, len, ac.sampleRate);
+            const d = buf.getChannelData(0);
+            for (let i = 0; i < len; i++) {
+                d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ac.sampleRate * 0.11));
+            }
+            const src = ac.createBufferSource();
+            src.buffer = buf;
+            const flt = ac.createBiquadFilter();
+            flt.type = 'lowpass';
+            flt.frequency.setValueAtTime(480, now);
+            const g = ac.createGain();
+            g.gain.setValueAtTime(0.55, now);
+            src.connect(flt);
+            flt.connect(g);
+            g.connect(ac.destination);
+            src.start(now);
+        }
+
+        function playFanfare() {
+            if (!dojo.soundOn) return;
+            const ac = getAC();
+            if (!ac) return;
+            const now = ac.currentTime;
+            [[523,0,0.13],[659,0.12,0.13],[784,0.24,0.13],[1046,0.38,0.48]].forEach(([f,d,dur]) => {
+                const osc = ac.createOscillator();
+                const g = ac.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(f, now + d);
+                g.gain.setValueAtTime(0.28, now + d);
+                g.gain.exponentialRampToValueAtTime(0.001, now + d + dur);
+                osc.connect(g);
+                g.connect(ac.destination);
+                osc.start(now + d);
+                osc.stop(now + d + dur + 0.02);
+            });
+        }
+
+        /* ==========================================================
+           3. スタートがめん（1〜6にん ＆ キャラえらび）
+        ========================================================== */
+        function renderCountButtons() {
+            const row = document.getElementById('countButtonsRow');
+            const imgs = [1, 75, 69, 5, 24, 73].map(n => `../bingo/assets/cards/char_${String(n).padStart(2, '0')}.webp`);
+            row.innerHTML = [1, 2, 3, 4, 5, 6].map((n, idx) => {
+                const active = dojo.playerCount === n;
+                return `
+                    <button data-cnt="${n}" class="cnt-btn py-3 px-2 rounded-3xl border-4 transition flex flex-col items-center gap-1 ${
+                        active
+                            ? 'bg-gradient-to-b from-yellow-300 via-amber-400 to-orange-500 text-black border-white scale-105 shadow-[0_0_24px_rgba(251,191,36,0.95)]'
+                            : 'bg-stone-900/90 border-stone-600 text-stone-200'
+                    }">
+                        <img src="${imgs[idx]}" alt="" class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl object-cover object-top border-2 border-white shadow">
+                        <span class="text-xl sm:text-2xl font-black">${n} にん</span>
+                    </button>
+                `;
+            }).join('');
+
+            row.querySelectorAll('.cnt-btn').forEach(btn => {
+                btn.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    unlockAudio();
+                    maybeRestorePreferredFs();
+                    dojo.playerCount = Number(btn.getAttribute('data-cnt'));
+                    playWoodHitSound();
+                    renderCountButtons();
+                });
+            });
+        }
+
+        function openStep2() {
+            unlockAudio();
+            maybeRestorePreferredFs();
+            for (let i = 0; i < dojo.playerCount; i++) {
+                if (!dojo.selectedChars[i]) dojo.selectedChars[i] = null;
+            }
+            for (let i = dojo.playerCount; i < 6; i++) dojo.selectedChars[i] = null;
+            const firstEmpty = dojo.selectedChars.slice(0, dojo.playerCount).findIndex(c => c === null);
+            dojo.activeSlot = firstEmpty !== -1 ? firstEmpty : 0;
+
+            document.getElementById('setupStep1').classList.add('hidden');
+            document.getElementById('setupStep2').classList.remove('hidden');
+            renderCharSelectUI();
+        }
+
+        function renderCharSelectUI() {
+            const n = dojo.playerCount;
+            const slotsEl = document.getElementById('playerSlotsBar');
+            slotsEl.className = `grid grid-cols-${n} gap-2 shrink-0`;
+            slotsEl.innerHTML = Array.from({ length: n }, (_, i) => {
+                const cid = dojo.selectedChars[i];
+                const ch = PLAYABLE_CHARS.find(c => c.id === cid);
+                const isSel = i === dojo.activeSlot;
+                return `
+                    <button data-slot="${i}" class="slot-btn rounded-2xl p-2 border-3 flex items-center gap-2 text-left transition ${
+                        isSel ? 'border-yellow-300 ring-4 ring-yellow-300/60 scale-[1.02]' : 'border-stone-600'
+                    }" style="background:${ch ? `linear-gradient(135deg, ${ch.color}dd, #1c1917)` : '#1c1917'}">
+                        <div class="w-10 h-10 rounded-xl bg-stone-800 border-2 border-white overflow-hidden shrink-0 flex items-center justify-center">
+                            ${ch ? `<img src="${ch.img}" alt="" class="w-full h-full object-cover object-top">` : '<span>❓</span>'}
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="text-[10px] font-black text-yellow-200">${i + 1}P ${isSel ? '👈' : ''}</div>
+                            <div class="text-xs sm:text-base font-black text-white text-outline-sm truncate">${ch ? ch.name : 'えらぶ'}</div>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+
+            slotsEl.querySelectorAll('.slot-btn').forEach(b => {
+                b.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    dojo.activeSlot = Number(b.getAttribute('data-slot'));
+                    renderCharSelectUI();
+                });
+            });
+
+            const allReady = dojo.selectedChars.slice(0, n).every(c => c !== null);
+            const promptEl = document.getElementById('charPromptLabel');
+            const goBtn = document.getElementById('startDojoBtn');
+            if (allReady) {
+                promptEl.textContent = '🎉 ぜんいん そろったよ！「どうじょう スタート！」を タッチ！！';
+                goBtn.disabled = false;
+                goBtn.className = 'px-6 py-2 rounded-2xl font-black text-base sm:text-xl text-black bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 border-4 border-white shadow-[0_0_24px_rgba(251,191,36,1)] animate-bounce shrink-0';
+            } else {
+                promptEl.textContent = `👇 ${dojo.activeSlot + 1}P の すきな キャラを タッチしてね！`;
+                goBtn.disabled = true;
+                goBtn.className = 'px-5 py-2 rounded-2xl font-black text-sm sm:text-lg bg-stone-800 text-stone-500 border-2 border-stone-700 shrink-0';
+            }
+
+            const gridEl = document.getElementById('charSelectGrid');
+            gridEl.innerHTML = PLAYABLE_CHARS.map(ch => {
+                const owner = dojo.selectedChars.slice(0, n).findIndex(c => c === ch.id);
+                const taken = owner !== -1;
+                const jLabel = ch.defJutsu === 'rasengan' ? '🌀 らせんがん' : ch.defJutsu === 'goukakyuu' ? '🔥 ごうかきゅう' : '👥 かげぶんしん';
+                return `
+                    <button data-cid="${ch.id}" class="char-btn relative rounded-2xl overflow-hidden border-3 flex flex-col justify-between transition active:scale-95 ${
+                        taken ? 'border-yellow-300 shadow-[0_0_16px_rgba(250,204,21,0.9)]' : 'border-stone-600'
+                    }">
+                        <img src="${ch.img}" alt="" class="absolute inset-0 w-full h-full object-cover object-top">
+                        <div class="relative z-10 p-1">
+                            <span class="px-1.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black text-white shadow" style="background:${ch.color}">${jLabel}</span>
+                        </div>
+                        ${taken ? `<div class="relative z-10 mx-auto bg-yellow-300 text-black font-black text-[10px] sm:text-xs px-2 py-0.5 rounded-full border-2 border-black">✨ ${owner + 1}P</div>` : '<div></div>'}
+                        <div class="relative z-10 w-full py-1 bg-gradient-to-t from-black via-black/85 to-transparent text-center">
+                            <span class="text-sm sm:text-lg font-black text-white text-outline-sm">${ch.name}</span>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+
+            gridEl.querySelectorAll('.char-btn').forEach(btn => {
+                btn.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    unlockAudio();
+                    const cid = btn.getAttribute('data-cid');
+                    const owner = dojo.selectedChars.slice(0, n).findIndex(c => c === cid);
+                    if (owner !== -1 && owner !== dojo.activeSlot) return;
+
+                    const ch = PLAYABLE_CHARS.find(c => c.id === cid);
+                    dojo.selectedChars[dojo.activeSlot] = cid;
+                    playQuoteVoice(ch.voiceId);
+
+                    const nextEmpty = dojo.selectedChars.slice(0, n).findIndex(c => c === null);
+                    if (nextEmpty !== -1) dojo.activeSlot = nextEmpty;
+                    renderCharSelectUI();
+                });
+            });
+        }
+
+        /* ==========================================================
+           4. まとあて ステージ構築 ＆ 物理エンジン
+        ========================================================== */
+        function resizeDojoCanvas() {
+            const wrap = document.getElementById('dojoArenaWrap');
+            canvas.width = wrap.clientWidth || window.innerWidth;
+            canvas.height = wrap.clientHeight || (window.innerHeight - 72);
+            dojo.groundY = canvas.height - 42;
+            dojo.slingX = Math.max(150, Math.round(canvas.width * 0.17));
+            dojo.slingY = dojo.groundY - 115;
+        }
+        window.addEventListener('resize', () => {
+            resizeDojoCanvas();
+            if (dojo.phase === 'aiming' && dojo.blocks.length === 0) buildTowerStage();
+        });
+
+        function startDojoMatch() {
+            unlockAudio();
+            maybeRestorePreferredFs();
+            document.getElementById('setupOverlay').classList.add('hidden');
+            document.getElementById('finaleModal').classList.add('hidden');
+            resizeDojoCanvas();
+
+            dojo.players = dojo.selectedChars.slice(0, dojo.playerCount).map((cid, idx) => {
+                const ch = PLAYABLE_CHARS.find(c => c.id === cid) || PLAYABLE_CHARS[idx];
+                return {
+                    idx,
+                    label: `${idx + 1}P`,
+                    char: ch,
+                    score: 0,
+                    booms: 0,
+                    directTargets: 0,
+                    jutsuHits: 0
+                };
+            });
+
+            dojo.round = 1;
+            dojo.turnIdx = 0;
+            startPlayerTurn();
+        }
+
+        function startPlayerTurn() {
+            dojo.shotNum = 1;
+            const p = dojo.players[dojo.turnIdx];
+            dojo.selectedJutsu = p.char.defJutsu;
+            buildTowerStage();
+            prepareNextShot(true);
+        }
+
+        function buildTowerStage() {
+            dojo.blocks = [];
+            dojo.projectiles = [];
+            const W = canvas.width;
+            const G = dojo.groundY;
+            const mult = dojo.round === 3 ? 2 : 1;
+
+            const baseX = Math.round(W * 0.54);
+            const spanW = Math.round(W * 0.38);
+            const col1 = baseX + Math.round(spanW * 0.14);
+            const col2 = baseX + Math.round(spanW * 0.48);
+            const col3 = baseX + Math.round(spanW * 0.80);
+
+            // 3つのタワー土台に丸太ブロック＆起爆札タル＆あかつき的を積む！
+            const cols = [col1, col2, col3];
+            cols.forEach((cx, ci) => {
+                const tiers = dojo.round === 1 ? 3 : 4;
+                for (let t = 0; t < tiers; t++) {
+                    const y = G - 28 - t * 56;
+                    const isBarrel = (t === 1 && ci !== 1) || (t === 2 && ci === 1);
+                    if (isBarrel) {
+                        dojo.blocks.push({
+                            kind: 'barrel',
+                            x: cx, y, r: 27, vx: 0, vy: 0, rot: 0, vrot: 0,
+                            pts: 250 * mult, hp: 1, alive: true
+                        });
+                    } else {
+                        dojo.blocks.push({
+                            kind: 'log',
+                            x: cx, y, r: 26, vx: 0, vy: 0, rot: 0, vrot: 0,
+                            pts: 80 * mult, hp: 1, alive: true
+                        });
+                    }
+                }
+                // てっぺんに高得点あかつきターゲット！
+                dojo.blocks.push({
+                    kind: 'target',
+                    x: cx,
+                    y: G - 28 - tiers * 56,
+                    r: 28, vx: 0, vy: 0, rot: 0, vrot: 0,
+                    pts: 300 * mult, hp: 1, alive: true
+                });
+            });
+
+            // 上空をふわふわ動くボーナス的＆ラーメン！
+            dojo.blocks.push({
+                kind: 'moving_target',
+                x: col1 + 40, y: Math.max(95, G - 320), baseY: Math.max(95, G - 320),
+                r: 28, vx: 0, vy: 0, rot: 0, vrot: 0, phase: 0,
+                pts: 400 * mult, hp: 1, alive: true
+            });
+            dojo.blocks.push({
+                kind: 'ramen',
+                x: col3 - 20, y: Math.max(90, G - 340), baseY: Math.max(90, G - 340),
+                r: 27, vx: 0, vy: 0, rot: 0, vrot: 0, phase: 1.8,
+                pts: 500 * mult, hp: 1, alive: true
+            });
+
+            // 🔥 最終3ラウンド目：得点2倍「きょだい ボスまと」登場！！
+            if (dojo.round === 3) {
+                dojo.blocks.push({
+                    kind: 'boss',
+                    x: col2 + 30,
+                    y: Math.max(125, G - 295),
+                    baseY: Math.max(125, G - 295),
+                    r: 48, vx: 0, vy: 0, rot: 0, vrot: 0, phase: 0.7,
+                    pts: 1200, hp: 2, alive: true
+                });
+                // 追加の起爆札タルでド派手大逆転チャンス！
+                dojo.blocks.push({
+                    kind: 'barrel',
+                    x: col1 - 52, y: G - 28, r: 28, vx: 0, vy: 0, rot: 0, vrot: 0,
+                    pts: 400, hp: 1, alive: true
+                });
+            }
+        }
+
+        function prepareNextShot(announceTurn = false) {
+            dojo.projectiles = [];
+            dojo.dragging = false;
+            dojo.phase = 'aiming';
+
+            // 全滅していたら新しいタワーを補充ボーナス！
+            if (dojo.blocks.filter(b => b.alive).length === 0) {
+                buildTowerStage();
+            }
+
+            const p = dojo.players[dojo.turnIdx];
+            const jutsuBar = document.getElementById('jutsuSelectorBar');
+            const guide = document.getElementById('aimGuideBanner');
+
+            if (dojo.shotNum === 3) {
+                jutsuBar.classList.remove('hidden');
+                syncJutsuPickerUI();
+                guide.textContent = '🌟 3とうめは ちょう ひっさつわざ！ えらんで ひっぱろう！！';
+            } else {
+                jutsuBar.classList.add('hidden');
+                guide.textContent = `👈 ${p.label} ${p.char.name} の ${dojo.shotNum}とうめ！ うしろに ひっぱって はなそう！`;
+            }
+
+            renderScoreHeader();
+
+            if (announceTurn) {
+                const banner = document.getElementById('turnCutinBanner');
+                const txt = document.getElementById('turnCutinText');
+                txt.textContent = dojo.round === 3
+                    ? `🔥 2ばい ボーナス！ ${p.label} ${p.char.name} の ばん！`
+                    : `🎯 ${p.label} ${p.char.name} の ばん！（3とう チャレンジ）`;
+                banner.classList.remove('hidden');
+                playFanfare();
+                clearTimeout(banner._t);
+                banner._t = setTimeout(() => banner.classList.add('hidden'), 1550);
+            }
+        }
+
+        function syncJutsuPickerUI() {
+            document.querySelectorAll('.jutsu-pick-btn').forEach(btn => {
+                const j = btn.getAttribute('data-jutsu');
+                const active = dojo.selectedJutsu === j;
+                btn.className = `jutsu-pick-btn px-3 py-1.5 rounded-2xl border-2 flex items-center gap-1.5 font-black text-xs sm:text-sm transition active:scale-95 ${
+                    active
+                        ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-black border-white scale-105 shadow-lg'
+                        : 'bg-stone-800 text-stone-200 border-stone-600'
+                }`;
+            });
+        }
+
+        function renderScoreHeader() {
+            const n = dojo.players.length;
+            const grid = document.getElementById('dojoScoreGrid');
+            grid.className = `flex-1 h-full grid grid-cols-${n} gap-1.5 items-stretch`;
+
+            const rBadge = document.getElementById('roundBadgeText');
+            const sBadge = document.getElementById('shotBadgeText');
+            rBadge.textContent = dojo.round === 3 ? '🔥 ラウンド 3/3 (2ばい！)' : `ラウンド ${dojo.round} / 3`;
+            sBadge.textContent = dojo.shotNum === 3 ? '🌟 3とうめ ひっさつ！' : `${dojo.shotNum} とうめ`;
+
+            grid.innerHTML = dojo.players.map((p, idx) => {
+                const active = idx === dojo.turnIdx && dojo.phase !== 'finale';
+                return `
+                    <div class="rounded-xl px-2 py-1 border-2 flex items-center gap-1.5 overflow-hidden transition ${
+                        active ? 'border-yellow-300 ring-2 ring-yellow-300/70 scale-[1.01]' : 'border-stone-700 opacity-85'
+                    }" style="background: linear-gradient(135deg, ${p.char.color}dd, #18181b);">
+                        <img src="${p.char.img}" alt="" class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl object-cover object-top border-2 border-white shrink-0">
+                        <div class="min-w-0 flex-1 leading-tight">
+                            <div class="text-[10px] sm:text-xs font-black text-yellow-200 truncate">${p.label} ${p.char.name}</div>
+                            <div class="text-sm sm:text-xl font-black text-white text-outline-sm tabular-nums">${p.score} <span class="text-[10px]">てん</span></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        /* ==========================================================
+           5. ひっぱり 操作 ＆ 発射 ＆ 分裂ギミック
+        ========================================================== */
+        function getPullVector() {
+            let dx = dojo.slingX - dojo.dragX;
+            let dy = dojo.slingY - dojo.dragY;
+            // 小さい子が前に引っ張っても飛ばせるよう親切補正
+            if (dx < 20) dx = Math.max(35, Math.abs(dx));
+            const maxPull = 135;
+            const len = Math.hypot(dx, dy);
+            if (len > maxPull) {
+                dx = (dx / len) * maxPull;
+                dy = (dy / len) * maxPull;
+            }
+            const speedScale = 7.9;
+            return { vx: dx * speedScale, vy: dy * speedScale, pullRatio: Math.min(1, len / maxPull) };
+        }
+
+        canvas.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            unlockAudio();
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            // かげぶんしん手裏剣の飛行中タップ → 5方向分裂発動！！
+            if (dojo.phase === 'flying') {
+                const bunshinProj = dojo.projectiles.find(pr => pr.type === 'bunshin' && !pr.hasSplit && pr.active);
+                if (bunshinProj) {
+                    splitKageBunshinProjectile(bunshinProj);
+                }
+                return;
+            }
+
+            if (dojo.phase !== 'aiming') return;
+            if (Math.hypot(x - dojo.slingX, y - dojo.slingY) < 185 || x < canvas.width * 0.42) {
+                dojo.dragging = true;
+                dojo.dragX = x;
+                dojo.dragY = y;
+            }
+        });
+
+        window.addEventListener('pointermove', (e) => {
+            if (!dojo.dragging) return;
+            const rect = canvas.getBoundingClientRect();
+            dojo.dragX = e.clientX - rect.left;
+            dojo.dragY = e.clientY - rect.top;
+        });
+
+        window.addEventListener('pointerup', () => {
+            if (!dojo.dragging) return;
+            dojo.dragging = false;
+            fireCurrentShot();
+        });
+
+        function fireCurrentShot() {
+            const { vx, vy } = getPullVector();
+            const isSpecial = dojo.shotNum === 3;
+            const type = isSpecial ? dojo.selectedJutsu : 'shuriken';
+            const p = dojo.players[dojo.turnIdx];
+
+            dojo.projectiles.push({
+                type,
+                x: dojo.slingX,
+                y: dojo.slingY,
+                vx,
+                vy,
+                r: type === 'rasengan' || type === 'goukakyuu' ? 32 : 22,
+                rot: 0,
+                hasSplit: false,
+                active: true
+            });
+
+            dojo.phase = 'flying';
+            dojo.flightTimer = 0;
+            dojo.settleTimer = 0;
+            document.getElementById('jutsuSelectorBar').classList.add('hidden');
+
+            playShubaLaunchSound();
+            if (isSpecial) {
+                playQuoteVoice(p.char.voiceId);
+                if (type === 'bunshin') {
+                    document.getElementById('aimGuideBanner').textContent = '👆 いまだ！ がめんを タッチすると 5ぶんれつ するぞ！！';
+                } else if (type === 'rasengan') {
+                    document.getElementById('aimGuideBanner').textContent = '🌀 らせんがん だま！ ぜんぶ つきぬけろーっ！！';
+                } else {
+                    document.getElementById('aimGuideBanner').textContent = '🔥 ごうかきゅう だま！ だいばくはつ させろーっ！！';
+                }
+            } else {
+                document.getElementById('aimGuideBanner').textContent = '💨 シュバッ！！ あたれーっ！！';
+            }
+        }
+
+        function splitKageBunshinProjectile(proj) {
+            proj.hasSplit = true;
+            playShubaLaunchSound();
+            dojo.explosions.push({ x: proj.x, y: proj.y, r: 12, maxR: 75, alpha: 1, color: '#38bdf8' });
+            [-190, -95, 95, 190].forEach(vyOffset => {
+                dojo.projectiles.push({
+                    type: 'shuriken',
+                    x: proj.x,
+                    y: proj.y,
+                    vx: proj.vx * 1.04,
+                    vy: proj.vy + vyOffset,
+                    r: 20,
+                    rot: 0,
+                    hasSplit: true,
+                    active: true
+                });
+            });
+            document.getElementById('aimGuideBanner').textContent = '👥 ボフッ！！ かげぶんしん 5れんしゃ！！';
+        }
+
+        function triggerExplosion(cx, cy, blastRadius, isFireball = false) {
+            playKaboomSound();
+            const p = dojo.players[dojo.turnIdx];
+            p.booms += 1;
+
+            const wrap = document.getElementById('dojoArenaWrap');
+            wrap.classList.remove('boom-shake');
+            void wrap.offsetWidth;
+            wrap.classList.add('boom-shake');
+
+            dojo.explosions.push({
+                x: cx,
+                y: cy,
+                r: 18,
+                maxR: blastRadius,
+                alpha: 1,
+                color: isFireball ? '#f97316' : '#ef4444'
+            });
+
+            for (const b of dojo.blocks) {
+                if (!b.alive) continue;
+                const d = Math.hypot(b.x - cx, b.y - cy);
+                if (d <= blastRadius + b.r) {
+                    if (b.kind === 'barrel' && d > 10) {
+                        // 連鎖大爆発！！
+                        b.alive = false;
+                        awardScore(b.pts, b.x, b.y, '💥 れんさ！');
+                        setTimeout(() => triggerExplosion(b.x, b.y, 165, false), 90);
+                    } else if (d <= blastRadius * 0.85) {
+                        destroyBlock(b, '💥 ドカン！');
+                    } else {
+                        const ang = Math.atan2(b.y - cy, b.x - cx);
+                        b.vx += Math.cos(ang) * 420;
+                        b.vy += Math.sin(ang) * 420 - 180;
+                    }
+                }
+            }
+        }
+
+        function destroyBlock(b, tag = '') {
+            if (!b.alive) return;
+            if (b.kind === 'boss' && b.hp > 1) {
+                b.hp -= 1;
+                awardScore(400, b.x, b.y, '⚡ ボス ヒット！');
+                playWoodHitSound();
+                return;
+            }
+            b.alive = false;
+            const p = dojo.players[dojo.turnIdx];
+            if (b.kind === 'target' || b.kind === 'moving_target' || b.kind === 'boss') {
+                p.directTargets += 1;
+            }
+            if (dojo.shotNum === 3) p.jutsuHits += 1;
+
+            if (b.kind === 'barrel') {
+                awardScore(b.pts, b.x, b.y, '💥 だいばくはつ！');
+                triggerExplosion(b.x, b.y, 175, false);
+            } else {
+                playWoodHitSound();
+                awardScore(b.pts, b.x, b.y, tag || `＋${b.pts}`);
+            }
+        }
+
+        function awardScore(pts, x, y, label) {
+            const p = dojo.players[dojo.turnIdx];
+            p.score += pts;
+            dojo.popups.push({
+                x, y,
+                text: `${label} ＋${pts}`,
+                alpha: 1,
+                vy: -75
+            });
+            renderScoreHeader();
+        }
+
+        /* ==========================================================
+           6. メイン 60fps 物理＆描画ループ
+        ========================================================== */
+        let lastFrame = performance.now();
+        function dojoLoop(now) {
+            const dt = Math.min(0.033, (now - lastFrame) / 1000);
+            lastFrame = now;
+
+            updatePhysics(dt, now / 1000);
+            drawDojoScene();
+            requestAnimationFrame(dojoLoop);
+        }
+
+        function updatePhysics(dt, timeSec) {
+            if (dojo.phase === 'setup' || dojo.phase === 'finale') return;
+
+            // 空中ターゲットの上下ゆらゆら移動
+            for (const b of dojo.blocks) {
+                if (!b.alive) continue;
+                if (b.kind === 'moving_target' || b.kind === 'ramen' || b.kind === 'boss') {
+                    b.y = b.baseY + Math.sin(timeSec * 2.3 + b.phase) * 34;
+                } else {
+                    // 通常ブロック＆タルの重力と接地・転がり崩れ物理
+                    b.vy += dojo.gravity * dt;
+                    b.x += b.vx * dt;
+                    b.y += b.vy * dt;
+                    b.rot += b.vrot * dt;
+                    b.vx *= 0.96;
+
+                    if (b.y + b.r > dojo.groundY) {
+                        b.y = dojo.groundY - b.r;
+                        if (Math.abs(b.vy) > 260 && b.kind === 'barrel') {
+                            destroyBlock(b);
+                            continue;
+                        }
+                        b.vy *= -0.25;
+                        b.vx *= 0.82;
+                    }
+                }
+            }
+
+            // ブロック同士の簡易スタック支え＆押し出し衝突
+            const solidBlocks = dojo.blocks.filter(b => b.alive && (b.kind === 'log' || b.kind === 'barrel' || b.kind === 'target'));
+            for (let i = 0; i < solidBlocks.length; i++) {
+                for (let j = i + 1; j < solidBlocks.length; j++) {
+                    const a = solidBlocks[i];
+                    const b = solidBlocks[j];
+                    const dx = b.x - a.x;
+                    const dy = b.y - a.y;
+                    const dist = Math.hypot(dx, dy);
+                    const minD = a.r + b.r - 2;
+                    if (dist > 0 && dist < minD) {
+                        const overlap = minD - dist;
+                        const nx = dx / dist;
+                        const ny = dy / dist;
+                        a.x -= nx * overlap * 0.5;
+                        a.y -= ny * overlap * 0.5;
+                        b.x += nx * overlap * 0.5;
+                        b.y += ny * overlap * 0.5;
+                        const relVy = b.vy - a.vy;
+                        if (relVy > 0 && ny < -0.5) {
+                            b.vy = a.vy * 0.3;
+                        } else if (relVy < 0 && ny > 0.5) {
+                            a.vy = b.vy * 0.3;
+                        }
+                    }
+                }
+            }
+
+            // 飛行中の手裏剣・必殺技ボールの更新
+            if (dojo.phase === 'flying') {
+                dojo.flightTimer += dt;
+                for (const pr of dojo.projectiles) {
+                    if (!pr.active) continue;
+                    pr.vy += dojo.gravity * (pr.type === 'rasengan' ? 0.35 : 1.0) * dt;
+                    pr.x += pr.vx * dt;
+                    pr.y += pr.vy * dt;
+                    pr.rot += 14 * dt;
+
+                    // かげぶんしん弾を押し忘れてもタワー手前で自動5分裂アシスト！
+                    if (pr.type === 'bunshin' && !pr.hasSplit && pr.x > canvas.width * 0.44) {
+                        splitKageBunshinProjectile(pr);
+                    }
+
+                    // まと・ブロックとの衝突判定
+                    for (const b of dojo.blocks) {
+                        if (!b.alive) continue;
+                        if (Math.hypot(pr.x - b.x, pr.y - b.y) <= pr.r + b.r) {
+                            if (pr.type === 'rasengan') {
+                                // 🌀 らせんがん弾：減速せず全部貫通して吹き飛ばす！！
+                                destroyBlock(b, '🌀 かんつう！');
+                            } else if (pr.type === 'goukakyuu') {
+                                // 🔥 ごうかきゅう弾：着弾した瞬間に特大火炎爆発！！
+                                triggerExplosion(pr.x, pr.y, 215, true);
+                                pr.active = false;
+                                break;
+                            } else {
+                                destroyBlock(b);
+                                pr.vx *= 0.58;
+                                pr.vy = -Math.abs(pr.vy) * 0.45 - 80;
+                            }
+                        }
+                    }
+
+                    // 地面・画面外判定
+                    if (pr.y + pr.r >= dojo.groundY) {
+                        if (pr.type === 'goukakyuu') {
+                            triggerExplosion(pr.x, dojo.groundY - 12, 200, true);
+                            pr.active = false;
+                        } else {
+                            pr.y = dojo.groundY - pr.r;
+                            pr.vy *= -0.42;
+                            pr.vx *= 0.72;
+                            if (Math.hypot(pr.vx, pr.vy) < 55) pr.active = false;
+                        }
+                    }
+                    if (pr.x > canvas.width + 80 || pr.x < -80 || pr.y > canvas.height + 80) {
+                        pr.active = false;
+                    }
+                }
+
+                const anyFlying = dojo.projectiles.some(p => p.active);
+                if (!anyFlying || dojo.flightTimer > 4.2) {
+                    dojo.phase = 'settling';
+                    dojo.settleTimer = 0.55;
+                }
+            } else if (dojo.phase === 'settling') {
+                dojo.settleTimer -= dt;
+                if (dojo.settleTimer <= 0) {
+                    advanceShotOrTurn();
+                }
+            }
+
+            // 爆発エフェクト更新
+            for (let i = dojo.explosions.length - 1; i >= 0; i--) {
+                const ex = dojo.explosions[i];
+                ex.r += (ex.maxR - ex.r) * 10 * dt;
+                ex.alpha -= 2.1 * dt;
+                if (ex.alpha <= 0) dojo.explosions.splice(i, 1);
+            }
+
+            // スコアポップアップ更新
+            for (let i = dojo.popups.length - 1; i >= 0; i--) {
+                const pp = dojo.popups[i];
+                pp.y += pp.vy * dt;
+                pp.alpha -= 1.35 * dt;
+                if (pp.alpha <= 0) dojo.popups.splice(i, 1);
+            }
+        }
+
+        function advanceShotOrTurn() {
+            if (dojo.shotNum < 3) {
+                dojo.shotNum += 1;
+                prepareNextShot(false);
+                return;
+            }
+            // 次のプレイヤーへ交代
+            if (dojo.turnIdx + 1 < dojo.players.length) {
+                dojo.turnIdx += 1;
+                startPlayerTurn();
+                return;
+            }
+            // 次のラウンドへ
+            if (dojo.round < 3) {
+                dojo.round += 1;
+                dojo.turnIdx = 0;
+                startPlayerTurn();
+                return;
+            }
+            // 全3ラウンド終了 → 全員表彰画面へ！
+            openDojoFinale();
+        }
+
+        function drawSpriteCircle(img, x, y, r, rot = 0, borderColor = '#fff') {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(rot);
+            ctx.beginPath();
+            ctx.arc(0, 0, r, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.clip();
+            if (img && img.complete && img.naturalWidth > 0) {
+                ctx.drawImage(img, -r, -r, r * 2, r * 2);
+            } else {
+                ctx.fillStyle = borderColor;
+                ctx.fill();
+            }
+            ctx.restore();
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = borderColor;
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawDojoScene() {
+            const W = canvas.width;
+            const H = canvas.height;
+            ctx.clearRect(0, 0, W, H);
+
+            // 背景の木ノ葉修練場グラデーション＆遠景の火影岩シルエット
+            const grad = ctx.createLinearGradient(0, 0, 0, H);
+            grad.addColorStop(0, dojo.round === 3 ? '#2e1065' : '#0f172a');
+            grad.addColorStop(0.55, dojo.round === 3 ? '#7f1d1d' : '#1e3a2f');
+            grad.addColorStop(1, '#291d12');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, W, H);
+
+            // 満月（3ラウンド目は赤い無限月読風！）
+            ctx.save();
+            ctx.globalAlpha = 0.26;
+            ctx.fillStyle = dojo.round === 3 ? '#f43f5e' : '#fef08a';
+            ctx.beginPath();
+            ctx.arc(W * 0.78, H * 0.22, 64, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            if (sprites.hokageBg && sprites.hokageBg.complete && sprites.hokageBg.naturalWidth > 0) {
+                ctx.save();
+                ctx.globalAlpha = 0.16;
+                ctx.drawImage(sprites.hokageBg, 0, 0, W, dojo.groundY);
+                ctx.restore();
+            }
+
+            // 地面（修練場の土と芝）
+            ctx.fillStyle = '#3f2714';
+            ctx.fillRect(0, dojo.groundY, W, H - dojo.groundY);
+            ctx.fillStyle = '#22c55e';
+            ctx.fillRect(0, dojo.groundY - 4, W, 6);
+
+            // 現在の投擲キャラ応援立ち絵＆角丸フレーム付きパチンコ発射台
+            const curP = dojo.players[dojo.turnIdx];
+            if (curP) {
+                const cImg = sprites[`char_${curP.char.id}`];
+                drawSpriteCircle(cImg, dojo.slingX - 72, dojo.groundY - 38, 34, 0, curP.char.color);
+            }
+
+            const sImg = sprites.slingshot;
+            if (sImg && sImg.complete && sImg.naturalWidth > 0) {
+                ctx.save();
+                ctx.beginPath();
+                if (ctx.roundRect) ctx.roundRect(dojo.slingX - 48, dojo.groundY - 134, 96, 134, 18);
+                else ctx.rect(dojo.slingX - 48, dojo.groundY - 134, 96, 134);
+                ctx.clip();
+                ctx.drawImage(sImg, dojo.slingX - 48, dojo.groundY - 134, 96, 134);
+                ctx.restore();
+                ctx.save();
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                if (ctx.roundRect) ctx.roundRect(dojo.slingX - 48, dojo.groundY - 134, 96, 134, 18);
+                else ctx.rect(dojo.slingX - 48, dojo.groundY - 134, 96, 134);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // 🎯 キラキラ予測ガイド線（ひっぱり中）
+            if (dojo.phase === 'aiming' && dojo.dragging) {
+                const { vx, vy } = getPullVector();
+                const gScale = (dojo.shotNum === 3 && dojo.selectedJutsu === 'rasengan') ? 0.35 : 1.0;
+
+                // チャクラゴムバンド
+                ctx.save();
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 5;
+                ctx.beginPath();
+                ctx.moveTo(dojo.slingX - 16, dojo.slingY);
+                ctx.lineTo(dojo.dragX, dojo.dragY);
+                ctx.lineTo(dojo.slingX + 16, dojo.slingY);
+                ctx.stroke();
+                ctx.restore();
+
+                // 軌道ドット22個キラキラ描画！
+                for (let step = 1; step <= 22; step++) {
+                    const t = step * 0.055;
+                    const px = dojo.slingX + vx * t;
+                    const py = dojo.slingY + vy * t + 0.5 * dojo.gravity * gScale * t * t;
+                    if (py > dojo.groundY) break;
+                    ctx.save();
+                    ctx.globalAlpha = Math.max(0.18, 1 - step / 24);
+                    ctx.fillStyle = step % 2 === 0 ? '#fde047' : '#38bdf8';
+                    ctx.beginPath();
+                    ctx.arc(px, py, Math.max(3.5, 8 - step * 0.2), 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                // 手元の弾プレビュー
+                const previewKey = dojo.shotNum === 3 ? dojo.selectedJutsu : 'shuriken';
+                drawSpriteCircle(sprites[previewKey], dojo.dragX, dojo.dragY, dojo.shotNum === 3 ? 28 : 21, 0, '#fde047');
+            } else if (dojo.phase === 'aiming') {
+                // 待機中の発射台上の弾＋矢印ヒント
+                const previewKey = dojo.shotNum === 3 ? dojo.selectedJutsu : 'shuriken';
+                drawSpriteCircle(sprites[previewKey], dojo.slingX, dojo.slingY, dojo.shotNum === 3 ? 28 : 21, 0, '#fde047');
+            }
+
+            // タワーのブロック・起爆札タル・的の描画
+            for (const b of dojo.blocks) {
+                if (!b.alive) continue;
+                let sp = sprites.log;
+                let border = '#d97706';
+                if (b.kind === 'barrel') { sp = sprites.barrel; border = '#ef4444'; }
+                else if (b.kind === 'target' || b.kind === 'moving_target') { sp = sprites.target; border = '#fde047'; }
+                else if (b.kind === 'ramen') { sp = sprites.ramen; border = '#34d399'; }
+                else if (b.kind === 'boss') { sp = sprites.bossMadara; border = '#f43f5e'; }
+
+                drawSpriteCircle(sp, b.x, b.y, b.r, b.rot, border);
+            }
+
+            // 飛んでいる手裏剣・忍術ショット描画
+            for (const pr of dojo.projectiles) {
+                if (!pr.active) continue;
+                const border = pr.type === 'rasengan' ? '#38bdf8' : pr.type === 'goukakyuu' ? '#f97316' : '#fde047';
+                drawSpriteCircle(sprites[pr.type] || sprites.shuriken, pr.x, pr.y, pr.r, pr.rot, border);
+            }
+
+            // 爆発ショックウェーブ描画
+            for (const ex of dojo.explosions) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, ex.alpha);
+                ctx.fillStyle = ex.color;
+                ctx.beginPath();
+                ctx.arc(ex.x, ex.y, ex.r, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.lineWidth = 6;
+                ctx.strokeStyle = '#fde047';
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // スコアポップアップ（漢字ゼロ）
+            ctx.save();
+            ctx.font = '900 20px "M PLUS Rounded 1c", sans-serif';
+            ctx.textAlign = 'center';
+            for (const pp of dojo.popups) {
+                ctx.globalAlpha = Math.max(0, pp.alpha);
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = '#000';
+                ctx.strokeText(pp.text, pp.x, pp.y);
+                ctx.fillStyle = '#fde047';
+                ctx.fillText(pp.text, pp.x, pp.y);
+            }
+            ctx.restore();
+        }
+
+        /* ==========================================================
+           7. 全員にキラキラ称号が贈られるフィナーレ表彰式
+        ========================================================== */
+        function openDojoFinale() {
+            dojo.phase = 'finale';
+            playFanfare();
+
+            const sorted = [...dojo.players].sort((a, b) => b.score - a.score);
+            const winner = sorted[0];
+            playQuoteVoice(winner.char.winVoiceId);
+
+            const assigned = new Map();
+            assigned.set(winner.idx, { badge: '👑 まとあて チャンピオンしょう', desc: `${winner.score} てんで どうじょう ナンバーワン！` });
+
+            const rest = sorted.slice(1);
+            const awardPool = [
+                { badge: '💥 だいばくはつ しょう', desc: 'きばくふだ タルを ドッカーンと ばくは！', key: 'booms' },
+                { badge: '🎯 スナイパー しょう',   desc: 'たかい まとを バッチリ いぬいたよ！',   key: 'directTargets' },
+                { badge: '🌀 にんじゅつ マスターしょう', desc: '3とうめの ひっさつわざが ちょう キレキレ！', key: 'jutsuHits' },
+                { badge: '🔥 れんさ コンボしょう', desc: 'まるた タワーを たくさん くずしたよ！', key: 'score' },
+                { badge: '🍀 ミラクル ショットしょう', desc: 'さいごまで かっこよく なげきったよ！', key: 'score' }
+            ];
+
+            rest.forEach((p, idx) => {
+                const aw = awardPool[idx % awardPool.length];
+                assigned.set(p.idx, aw);
+            });
+
+            document.getElementById('finaleHeadline').textContent = `🏆 ${winner.label} ${winner.char.name} チャンピオン おめでとう！！ 🏆`;
+
+            const n = dojo.players.length;
+            const grid = document.getElementById('finaleCardsGrid');
+            grid.className = `relative z-10 max-w-6xl w-full mx-auto my-2 flex-1 min-h-0 grid ${n <= 3 ? `grid-cols-${n}` : 'grid-cols-3 grid-rows-2'} gap-3 items-stretch`;
+
+            grid.innerHTML = sorted.map((p, rankIdx) => {
+                const aw = assigned.get(p.idx);
+                const isTop = rankIdx === 0;
+                return `
+                    <div class="rounded-3xl p-1 bg-gradient-to-br ${isTop ? 'from-yellow-200 via-amber-400 to-orange-500 shadow-[0_0_28px_rgba(251,191,36,0.95)]' : 'from-cyan-400 to-indigo-600'} flex">
+                        <div class="w-full bg-stone-950 rounded-[20px] p-3 flex flex-col items-center justify-between text-center">
+                            <span class="px-3 py-0.5 rounded-full text-xs sm:text-sm font-black ${isTop ? 'bg-yellow-300 text-black' : 'bg-amber-300 text-black'}">${aw.badge}</span>
+                            <div class="flex items-center gap-3 my-1">
+                                <img src="${p.char.img}" alt="" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover object-top border-3" style="border-color:${p.char.color}">
+                                <div class="text-left">
+                                    <div class="text-xs font-black text-amber-300">${p.label}・${rankIdx + 1}い（${p.score} てん）</div>
+                                    <div class="text-lg sm:text-2xl font-black text-white">${p.char.name}</div>
+                                    <div class="text-[11px] font-bold text-stone-300">${aw.desc}</div>
+                                </div>
+                            </div>
+                            <button data-vid="${p.char.winVoiceId}" class="finale-voice-btn w-full py-1.5 rounded-xl font-black text-xs sm:text-sm text-white border border-white/50 active:scale-95" style="background:${p.char.color}">
+                                🔊 ${p.char.name} の ボイスを きく！
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            grid.querySelectorAll('.finale-voice-btn').forEach(btn => {
+                btn.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    playQuoteVoice(Number(btn.getAttribute('data-vid')));
+                });
+            });
+
+            document.getElementById('finaleModal').classList.remove('hidden');
+        }
+
+        /* ==========================================================
+           8. ぜんがめん ＆ サウンド ＆ 初期化
+        ========================================================== */
+        function getFsElement() {
+            return document.fullscreenElement || document.webkitFullscreenElement || document.webkitCurrentFullScreenElement || document.msFullscreenElement || null;
+        }
+        function isStandalonePwa() {
+            return window.navigator.standalone === true || window.matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches;
+        }
+        function syncFsButtons() {
+            const active = !!getFsElement();
+            document.querySelectorAll('.fs-label-text').forEach(el => {
+                el.textContent = active ? 'もどす' : 'ぜんがめん';
+            });
+            setTimeout(resizeDojoCanvas, 80);
+        }
+        function maybeRestorePreferredFs() {
+            try {
+                if (sessionStorage.getItem('naruto_prefer_fs') === '1' && !getFsElement()) {
+                    const docEl = document.documentElement;
+                    const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
+                    if (req) {
+                        const p = docEl.requestFullscreen ? docEl.requestFullscreen({ navigationUI: 'hide' }) : req.call(docEl);
+                        if (p && p.catch) p.catch(() => {});
+                    }
+                }
+            } catch (_) {}
+        }
+        async function toggleFullScreen() {
+            unlockAudio();
+            const docEl = document.documentElement;
+            if (getFsElement()) {
+                try { sessionStorage.setItem('naruto_prefer_fs', '0'); } catch (_) {}
+                if (document.exitFullscreen) await document.exitFullscreen().catch(() => {});
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                syncFsButtons();
+                return;
+            }
+            const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
+            if (req) {
+                try {
+                    const p = docEl.requestFullscreen ? docEl.requestFullscreen({ navigationUI: 'hide' }) : req.call(docEl);
+                    if (p && p.then) await p;
+                } catch (_) {
+                    try {
+                        const p2 = req.call(docEl);
+                        if (p2 && p2.then) await p2;
+                    } catch (_e) {}
+                }
+                await new Promise(r => setTimeout(r, 150));
+                if (getFsElement()) {
+                    try { sessionStorage.setItem('naruto_prefer_fs', '1'); } catch (_) {}
+                    syncFsButtons();
+                    return;
+                }
+            }
+            if (isStandalonePwa()) {
+                document.getElementById('fsGuideText').textContent = '✨ いま すでに ぜんがめん モード だよ！ そのまま たのしく あそんでね！';
+            }
+            document.getElementById('fsGuideModal').classList.remove('hidden');
+        }
+        document.addEventListener('fullscreenchange', syncFsButtons);
+        document.addEventListener('webkitfullscreenchange', syncFsButtons);
+
+        function toggleSound() {
+            unlockAudio();
+            dojo.soundOn = !dojo.soundOn;
+            if (!dojo.soundOn && voiceEl) voiceEl.pause();
+            document.querySelectorAll('.sound-toggle-btn').forEach(btn => {
+                btn.innerHTML = dojo.soundOn
+                    ? (btn.textContent.includes('おと') ? '<span>🔊</span><span>おと オン</span>' : '🔊')
+                    : (btn.textContent.includes('おと') ? '<span>🔇</span><span>おと オフ</span>' : '🔇');
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderCountButtons();
+            resizeDojoCanvas();
+            requestAnimationFrame(dojoLoop);
+
+            document.getElementById('toStep2Btn').addEventListener('click', openStep2);
+            document.getElementById('backStep1Btn').addEventListener('click', () => {
+                document.getElementById('setupStep2').classList.add('hidden');
+                document.getElementById('setupStep1').classList.remove('hidden');
+                renderCountButtons();
+            });
+            document.getElementById('startDojoBtn').addEventListener('click', startDojoMatch);
+            document.getElementById('dojoReplayBtn').addEventListener('click', startDojoMatch);
+            document.getElementById('dojoChangeMemberBtn').addEventListener('click', () => {
+                document.getElementById('finaleModal').classList.add('hidden');
+                document.getElementById('setupOverlay').classList.remove('hidden');
+                openStep2();
+            });
+            document.getElementById('dojoQuitBtn').addEventListener('click', () => {
+                dojo.phase = 'setup';
+                document.getElementById('setupOverlay').classList.remove('hidden');
+                document.getElementById('setupStep2').classList.add('hidden');
+                document.getElementById('setupStep1').classList.remove('hidden');
+            });
+
+            document.querySelectorAll('.jutsu-pick-btn').forEach(btn => {
+                btn.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    dojo.selectedJutsu = btn.getAttribute('data-jutsu');
+                    playWoodHitSound();
+                    syncJutsuPickerUI();
+                });
+            });
+
+            document.querySelectorAll('.fs-toggle-btn').forEach(b => b.addEventListener('click', toggleFullScreen));
+            document.querySelectorAll('.sound-toggle-btn').forEach(b => b.addEventListener('click', toggleSound));
+            document.getElementById('closeFsGuideBtn').addEventListener('click', () => {
+                document.getElementById('fsGuideModal').classList.add('hidden');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -70,64 +70,135 @@
         </div>
     </header>
 
-    <!-- ゲーム選択カードグリッド -->
-    <main class="max-w-5xl w-full mx-auto my-6 grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-7 items-stretch">
+    <!-- ゲーム選択カードグリッド（全5任務！） -->
+    <main class="max-w-6xl w-full mx-auto my-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 items-stretch">
 
-        <!-- 任務1：ビンゴ大会（プレイ可能！） -->
-        <a href="./bingo/index.html" class="float-card group relative rounded-3xl p-1.5 bg-gradient-to-br from-yellow-300 via-orange-500 to-red-600 shadow-[0_0_35px_rgba(255,107,0,0.6)] hover:shadow-[0_0_50px_rgba(251,191,36,0.9)] active:scale-[0.98] transition block">
-            <div class="h-full bg-stone-950 rounded-[20px] p-5 sm:p-6 flex flex-col justify-between overflow-hidden relative">
+        <!-- 任務1：ビンゴ大会 -->
+        <a href="./bingo/index.html" class="float-card group relative rounded-3xl p-1 bg-gradient-to-br from-yellow-300 via-orange-500 to-red-600 shadow-[0_0_28px_rgba(255,107,0,0.55)] hover:shadow-[0_0_45px_rgba(251,191,36,0.9)] active:scale-[0.98] transition block">
+            <div class="h-full bg-stone-950 rounded-[20px] p-4 flex flex-col justify-between overflow-hidden relative">
                 <div>
-                    <div class="flex items-center justify-between gap-2 mb-3">
-                        <span class="bg-gradient-to-r from-amber-300 to-orange-500 text-black font-black text-xs px-3 py-1 rounded-full">🔥 任務①・公開中！</span>
-                        <span class="text-xs font-bold text-cyan-300 bg-cyan-950 border border-cyan-400/50 px-2.5 py-0.5 rounded-full">1〜3人対戦・フルボイス</span>
+                    <div class="flex items-center justify-between gap-1.5 mb-2">
+                        <span class="bg-gradient-to-r from-amber-300 to-orange-500 text-black font-black text-[11px] px-2.5 py-0.5 rounded-full">🔥 任務①</span>
+                        <span class="text-[11px] font-bold text-cyan-300 bg-cyan-950 border border-cyan-400/50 px-2 py-0.5 rounded-full">1〜3人・フルボイス</span>
                     </div>
-
-                    <!-- キャラカード3連プレビュー -->
-                    <div class="grid grid-cols-3 gap-2 my-3">
-                        <img src="./bingo/assets/cards/leader_naruto.webp" alt="ナルト" class="w-full aspect-square object-cover object-top rounded-2xl border-2 border-orange-400 shadow-lg group-hover:scale-105 transition">
-                        <img src="./bingo/assets/cards/leader_sasuke.webp" alt="サスケ" class="w-full aspect-square object-cover object-top rounded-2xl border-2 border-purple-400 shadow-lg group-hover:scale-105 transition delay-75">
-                        <img src="./bingo/assets/cards/leader_sakura.webp" alt="サクラ" class="w-full aspect-square object-cover object-top rounded-2xl border-2 border-pink-400 shadow-lg group-hover:scale-105 transition delay-150">
+                    <div class="grid grid-cols-3 gap-1.5 my-2">
+                        <img src="./bingo/assets/cards/leader_naruto.webp" alt="ナルト" class="w-full aspect-square object-cover object-top rounded-xl border-2 border-orange-400 shadow">
+                        <img src="./bingo/assets/cards/leader_sasuke.webp" alt="サスケ" class="w-full aspect-square object-cover object-top rounded-xl border-2 border-purple-400 shadow">
+                        <img src="./bingo/assets/cards/leader_sakura.webp" alt="サクラ" class="w-full aspect-square object-top object-cover rounded-xl border-2 border-pink-400 shadow">
                     </div>
-
-                    <h2 class="font-manga text-xl sm:text-2xl text-white text-stroke-black mt-3">
+                    <h2 class="font-manga text-lg sm:text-xl text-white text-stroke-black mt-2">
                         超S級・忍界大戦ビンゴ大会！
                     </h2>
-                    <p class="text-xs sm:text-sm text-stone-300 font-bold mt-1.5 leading-relaxed">
-                        12人の推しキャラから専用ビンゴカードを選ぼう！全75枚の忍キラカード＆キャラクターボイス付き！
+                    <p class="text-xs text-stone-300 font-bold mt-1 leading-relaxed">
+                        12人の推しキャラから専用ビンゴカードを選ぼう！全75枚の忍キラカード＆ボイス付き！
                     </p>
                 </div>
-
-                <div class="mt-5 w-full py-3 rounded-2xl font-manga text-base sm:text-lg text-center text-black bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-400 border-2 border-white shadow-xl group-hover:brightness-110 transition">
-                    🍥 今すぐビンゴであそぶ！！ →
+                <div class="mt-3 w-full py-2.5 rounded-2xl font-manga text-sm sm:text-base text-center text-black bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-400 border-2 border-white shadow-lg group-hover:brightness-110 transition">
+                    🍥 ビンゴであそぶ！ →
                 </div>
             </div>
         </a>
 
-        <!-- 任務2：すごろくゲーム（プレイ可能！） -->
-        <a href="./sugoroku/index.html" class="float-card group relative rounded-3xl p-1.5 bg-gradient-to-br from-cyan-300 via-blue-500 to-indigo-600 shadow-[0_0_35px_rgba(56,189,248,0.55)] hover:shadow-[0_0_50px_rgba(56,189,248,0.9)] active:scale-[0.98] transition block" style="animation-delay: 0.8s;">
-            <div class="h-full bg-stone-950 rounded-[20px] p-5 sm:p-6 flex flex-col justify-between relative overflow-hidden">
+        <!-- 任務2：すごろく -->
+        <a href="./sugoroku/index.html" class="float-card group relative rounded-3xl p-1 bg-gradient-to-br from-cyan-300 via-blue-500 to-indigo-600 shadow-[0_0_28px_rgba(56,189,248,0.5)] hover:shadow-[0_0_45px_rgba(56,189,248,0.9)] active:scale-[0.98] transition block" style="animation-delay: 0.3s;">
+            <div class="h-full bg-stone-950 rounded-[20px] p-4 flex flex-col justify-between relative overflow-hidden">
                 <div>
-                    <div class="flex items-center justify-between gap-2 mb-3">
-                        <span class="bg-gradient-to-r from-cyan-300 to-sky-400 text-black font-black text-xs px-3 py-1 rounded-full">🎲 任務②・公開中！</span>
-                        <span class="text-xs font-bold text-amber-200 bg-amber-950 border border-amber-400/50 px-2.5 py-0.5 rounded-full">2〜6人・ひらがな対応</span>
+                    <div class="flex items-center justify-between gap-1.5 mb-2">
+                        <span class="bg-gradient-to-r from-cyan-300 to-sky-400 text-black font-black text-[11px] px-2.5 py-0.5 rounded-full">🎲 任務②</span>
+                        <span class="text-[11px] font-bold text-amber-200 bg-amber-950 border border-amber-400/50 px-2 py-0.5 rounded-full">2〜6人・ひらがな</span>
                     </div>
-
-                    <div class="grid grid-cols-3 gap-2 my-3">
-                        <img src="./sugoroku/assets/kyuubi_mode.webp" alt="きゅうびモード" class="w-full aspect-square object-cover object-top rounded-2xl border-2 border-amber-400 shadow-lg group-hover:scale-105 transition">
-                        <img src="./sugoroku/assets/kage_bunshin.webp" alt="かげぶんしん" class="w-full aspect-square object-cover object-top rounded-2xl border-2 border-cyan-400 shadow-lg group-hover:scale-105 transition delay-75">
-                        <img src="./sugoroku/assets/hokage_goal.webp" alt="ほかげいわゴール" class="w-full aspect-square object-cover object-top rounded-2xl border-2 border-yellow-300 shadow-lg group-hover:scale-105 transition delay-150">
+                    <div class="grid grid-cols-3 gap-1.5 my-2">
+                        <img src="./sugoroku/assets/kyuubi_mode.webp" alt="きゅうび" class="w-full aspect-square object-cover object-top rounded-xl border-2 border-amber-400 shadow">
+                        <img src="./sugoroku/assets/kage_bunshin.webp" alt="かげぶんしん" class="w-full aspect-square object-cover object-top rounded-xl border-2 border-cyan-400 shadow">
+                        <img src="./sugoroku/assets/hokage_goal.webp" alt="ほかげいわ" class="w-full aspect-square object-cover object-top rounded-xl border-2 border-yellow-300 shadow">
                     </div>
-
-                    <h2 class="font-manga text-xl sm:text-2xl text-white text-stroke-black mt-3">
+                    <h2 class="font-manga text-lg sm:text-xl text-white text-stroke-black mt-2">
                         にんかい すごろく だいぼうけん！
                     </h2>
-                    <p class="text-xs sm:text-sm text-stone-300 font-bold mt-1.5 leading-relaxed">
-                        2〜6にんで あそべる ドはで ボードゲーム！らせんがん れんだ・すずとり・あかつき ボスバトルつき！
+                    <p class="text-xs text-stone-300 font-bold mt-1 leading-relaxed">
+                        全45マスすべてがNARUTOキャラ絵巻！らせんがん連打・すずとり・あかつきボス関門つき！
                     </p>
                 </div>
+                <div class="mt-3 w-full py-2.5 rounded-2xl font-manga text-sm sm:text-base text-center text-black bg-gradient-to-r from-cyan-300 via-sky-400 to-emerald-400 border-2 border-white shadow-lg group-hover:brightness-110 transition">
+                    🎲 すごろくであそぶ！ →
+                </div>
+            </div>
+        </a>
 
-                <div class="mt-5 w-full py-3 rounded-2xl font-manga text-base sm:text-lg text-center text-black bg-gradient-to-r from-cyan-300 via-sky-400 to-emerald-400 border-2 border-white shadow-xl group-hover:brightness-110 transition">
-                    🎲 今すぐすごろくであそぶ！！ →
+        <!-- 任務3：かげぶんしん・ドロンパニック！（モグラたたき） -->
+        <a href="./mogura/index.html" class="float-card group relative rounded-3xl p-1 bg-gradient-to-br from-emerald-300 via-green-500 to-amber-500 shadow-[0_0_28px_rgba(34,197,94,0.5)] hover:shadow-[0_0_45px_rgba(52,211,153,0.9)] active:scale-[0.98] transition block" style="animation-delay: 0.6s;">
+            <div class="h-full bg-stone-950 rounded-[20px] p-4 flex flex-col justify-between relative overflow-hidden">
+                <div>
+                    <div class="flex items-center justify-between gap-1.5 mb-2">
+                        <span class="bg-gradient-to-r from-emerald-300 to-lime-400 text-black font-black text-[11px] px-2.5 py-0.5 rounded-full">🪵 任務③ NEW!</span>
+                        <span class="text-[11px] font-bold text-emerald-200 bg-emerald-950 border border-emerald-400/50 px-2 py-0.5 rounded-full">みんなで同時タッチ</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1.5 my-2">
+                        <img src="./assets/game_art/konoha_bush_hole.webp" alt="しげみ" class="w-full aspect-square object-cover rounded-xl border-2 border-emerald-400 shadow">
+                        <img src="./sugoroku/assets/kawarimi_log.webp" alt="まるた" class="w-full aspect-square object-cover rounded-xl border-2 border-amber-400 shadow">
+                        <img src="./assets/game_art/ichiraku_ramen_glow.webp" alt="ラーメン" class="w-full aspect-square object-cover rounded-xl border-2 border-yellow-300 shadow">
+                    </div>
+                    <h2 class="font-manga text-lg sm:text-xl text-white text-stroke-black mt-2">
+                        かげぶんしん・ドロンパニック！
+                    </h2>
+                    <p class="text-xs text-stone-300 font-bold mt-1 leading-relaxed">
+                        みんなで一斉タッチ！ボフッと丸太に変わる爽快モグラ叩き＆ラスト10秒巨大ボス連打！
+                    </p>
+                </div>
+                <div class="mt-3 w-full py-2.5 rounded-2xl font-manga text-sm sm:text-base text-center text-black bg-gradient-to-r from-emerald-300 via-lime-400 to-amber-300 border-2 border-white shadow-lg group-hover:brightness-110 transition">
+                    🪵 ドロンパニックであそぶ！ →
+                </div>
+            </div>
+        </a>
+
+        <!-- 任務4：きのぼり・チャクラダッシュ！ -->
+        <a href="./kinobori/index.html" class="float-card group relative rounded-3xl p-1 bg-gradient-to-br from-teal-300 via-emerald-500 to-cyan-600 shadow-[0_0_28px_rgba(20,184,166,0.5)] hover:shadow-[0_0_45px_rgba(45,212,191,0.9)] active:scale-[0.98] transition block" style="animation-delay: 0.9s;">
+            <div class="h-full bg-stone-950 rounded-[20px] p-4 flex flex-col justify-between relative overflow-hidden">
+                <div>
+                    <div class="flex items-center justify-between gap-1.5 mb-2">
+                        <span class="bg-gradient-to-r from-teal-200 to-emerald-400 text-black font-black text-[11px] px-2.5 py-0.5 rounded-full">🌲 任務④ NEW!</span>
+                        <span class="text-[11px] font-bold text-teal-200 bg-teal-950 border border-teal-400/50 px-2 py-0.5 rounded-full">2〜4人・画面分割競争</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1.5 my-2">
+                        <img src="./assets/game_art/sacred_shinobi_tree.webp" alt="神木" class="w-full aspect-square object-cover rounded-xl border-2 border-emerald-300 shadow">
+                        <img src="./assets/game_art/spiky_chestnut_kunai.webp" alt="イガグリ" class="w-full aspect-square object-cover rounded-xl border-2 border-amber-400 shadow">
+                        <img src="./sugoroku/assets/kyuubi_mode.webp" alt="チャクラダッシュ" class="w-full aspect-square object-cover object-top rounded-xl border-2 border-yellow-300 shadow">
+                    </div>
+                    <h2 class="font-manga text-lg sm:text-xl text-white text-stroke-black mt-2">
+                        きのぼり・チャクラダッシュ！
+                    </h2>
+                    <p class="text-xs text-stone-300 font-bold mt-1 leading-relaxed">
+                        2〜4人で画面分割スピード競争！イガグリを避けてラーメンで100mの頂上へ超加速！
+                    </p>
+                </div>
+                <div class="mt-3 w-full py-2.5 rounded-2xl font-manga text-sm sm:text-base text-center text-black bg-gradient-to-r from-teal-300 via-emerald-300 to-yellow-300 border-2 border-white shadow-lg group-hover:brightness-110 transition">
+                    👟 きのぼり競争であそぶ！ →
+                </div>
+            </div>
+        </a>
+
+        <!-- 任務5：しゅりけん＆らせんがん・まとあてどうじょう！ -->
+        <a href="./matoate/index.html" class="float-card group relative rounded-3xl p-1 bg-gradient-to-br from-rose-400 via-orange-500 to-amber-400 shadow-[0_0_28px_rgba(244,63,94,0.5)] hover:shadow-[0_0_45px_rgba(251,146,60,0.9)] active:scale-[0.98] transition block" style="animation-delay: 1.2s;">
+            <div class="h-full bg-stone-950 rounded-[20px] p-4 flex flex-col justify-between relative overflow-hidden">
+                <div>
+                    <div class="flex items-center justify-between gap-1.5 mb-2">
+                        <span class="bg-gradient-to-r from-rose-300 to-amber-300 text-black font-black text-[11px] px-2.5 py-0.5 rounded-full">🎯 任務⑤ NEW!</span>
+                        <span class="text-[11px] font-bold text-rose-200 bg-rose-950 border border-rose-400/50 px-2 py-0.5 rounded-full">1〜6人・物理アクション</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1.5 my-2">
+                        <img src="./assets/game_art/slingshot_turret.webp" alt="パチンコ" class="w-full aspect-square object-cover rounded-xl border-2 border-cyan-300 shadow">
+                        <img src="./assets/game_art/goukakyuu_fireball.webp" alt="ごうかきゅう" class="w-full aspect-square object-cover rounded-xl border-2 border-orange-400 shadow">
+                        <img src="./assets/game_art/kibakufuda_barrel.webp" alt="きばくふだ" class="w-full aspect-square object-cover rounded-xl border-2 border-red-400 shadow">
+                    </div>
+                    <h2 class="font-manga text-lg sm:text-xl text-white text-stroke-black mt-2">
+                        しゅりけん＆らせんがん・まとあてどうじょう！
+                    </h2>
+                    <p class="text-xs text-stone-300 font-bold mt-1 leading-relaxed">
+                        指で引っ張って起爆札タルを大連鎖爆破！3投目は螺旋丸・豪火球・影分身の超必殺ショット！
+                    </p>
+                </div>
+                <div class="mt-3 w-full py-2.5 rounded-2xl font-manga text-sm sm:text-base text-center text-black bg-gradient-to-r from-rose-300 via-orange-400 to-yellow-300 border-2 border-white shadow-lg group-hover:brightness-110 transition">
+                    🎯 まとあて道場であそぶ！ →
                 </div>
             </div>
         </a>

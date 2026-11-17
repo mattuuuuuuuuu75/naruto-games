@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ドロンパニック">
+    <meta name="theme-color" content="#ff6b00">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/icons/icon-192.png">
+    <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png">
+    <title>かげぶんしん・ドロンパニック！</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100dvh;
+            max-height: 100dvh;
+            overflow: hidden;
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            background-color: #08120c;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(34, 197, 94, 0.22) 0%, transparent 45%),
+                radial-gradient(circle at 80% 25%, rgba(249, 115, 22, 0.20) 0%, transparent 45%),
+                radial-gradient(circle at 50% 90%, rgba(16, 185, 129, 0.18) 0%, transparent 50%);
+            color: #fff;
+        }
+
+        html:fullscreen, html:-webkit-full-screen,
+        body:fullscreen, body:-webkit-full-screen {
+            width: 100vw !important;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
+            overflow: hidden !important;
+            background-color: #08120c;
+        }
+
+        .text-outline {
+            text-shadow:
+                -1.5px -1.5px 0 #000,
+                 1.5px -1.5px 0 #000,
+                -1.5px  1.5px 0 #000,
+                 1.5px  1.5px 0 #000,
+                 0 2px 6px rgba(0,0,0,0.9);
+        }
+
+        .text-outline-sm {
+            text-shadow:
+                -1px -1px 0 #000,
+                 1px -1px 0 #000,
+                -1px  1px 0 #000,
+                 1px  1px 0 #000;
+        }
+
+        .manga-burst {
+            background: repeating-conic-gradient(
+                from 0deg,
+                rgba(255, 180, 0, 0.14) 0deg 3deg,
+                transparent 3deg 9deg
+            );
+        }
+
+        @keyframes popTarget {
+            0%   { transform: translateY(55%) scale(0.55); opacity: 0; }
+            65%  { transform: translateY(-6%) scale(1.06); opacity: 1; }
+            100% { transform: translateY(0%) scale(1); opacity: 1; }
+        }
+        .target-pop {
+            animation: popTarget 0.19s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes logFlyOut {
+            0%   { transform: translateY(0) rotate(0deg) scale(0.85); opacity: 1; }
+            45%  { transform: translateY(-42px) rotate(195deg) scale(1.18); opacity: 1; }
+            100% { transform: translateY(-85px) rotate(390deg) scale(0.55); opacity: 0; }
+        }
+        .log-fly {
+            animation: logFlyOut 0.52s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        @keyframes floatScore {
+            0%   { transform: translate(-50%, 0) scale(0.7); opacity: 1; }
+            40%  { transform: translate(-50%, -24px) scale(1.15); opacity: 1; }
+            100% { transform: translate(-50%, -52px) scale(0.95); opacity: 0; }
+        }
+        .score-float {
+            animation: floatScore 0.65s ease-out forwards;
+        }
+
+        @keyframes kyuubiBorderGlow {
+            0%, 100% { box-shadow: inset 0 0 28px rgba(251, 191, 36, 0.65), 0 0 22px rgba(234, 88, 12, 0.8); }
+            50%      { box-shadow: inset 0 0 56px rgba(254, 240, 138, 0.95), 0 0 42px rgba(220, 38, 38, 0.95); }
+        }
+        .fever-frame {
+            animation: kyuubiBorderGlow 0.55s ease-in-out infinite;
+            border: 4px solid #fde047 !important;
+        }
+
+        @keyframes shakeComic {
+            0%, 100% { transform: translate(0, 0); }
+            20% { transform: translate(-9px, 5px); }
+            40% { transform: translate(9px, -6px); }
+            60% { transform: translate(-7px, -4px); }
+            80% { transform: translate(7px, 4px); }
+        }
+        .shake-ally {
+            animation: shakeComic 0.36s ease-out;
+        }
+
+        @keyframes spinOrb {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+        .orb-spin {
+            animation: spinOrb 0.65s linear infinite;
+        }
+    </style>
+</head>
+<body id="gameBody" class="relative w-screen h-[100dvh] overflow-hidden flex flex-col justify-between">
+
+    <audio id="voiceAudio" preload="auto" playsinline class="hidden"></audio>
+    <canvas id="fxCanvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
+
+    <!-- ==========================================================
+         スタートがめん（むずかしさ えらび）
+    =========================================================== -->
+    <div id="startOverlay" class="fixed inset-0 z-40 bg-gradient-to-br from-stone-950 via-emerald-950/95 to-orange-950/90 flex flex-col justify-between p-3 sm:p-6 overflow-hidden">
+        <div class="manga-burst absolute inset-0 pointer-events-none"></div>
+
+        <div class="relative z-10 w-full max-w-5xl mx-auto flex items-center justify-between">
+            <a id="homeLinkStart" href="../index.html" class="px-3 py-1.5 rounded-2xl bg-stone-800/90 border-2 border-amber-400 text-amber-200 font-black text-xs sm:text-sm flex items-center gap-1.5 active:scale-95">
+                <span>🏠</span><span>ゲーム いちらんへ</span>
+            </a>
+            <div class="flex items-center gap-2">
+                <button id="fsBtnStart" class="fs-toggle-btn px-3 py-1.5 rounded-2xl bg-emerald-950/90 border-2 border-emerald-400 text-emerald-100 font-black text-xs sm:text-sm flex items-center gap-1.5 active:scale-95">
+                    <span>⛶</span><span class="fs-label-text">ぜんがめん</span>
+                </button>
+                <button id="soundBtnStart" class="sound-toggle-btn px-3 py-1.5 rounded-2xl bg-amber-900/90 border-2 border-amber-400 text-amber-100 font-black text-xs sm:text-sm flex items-center gap-1.5 active:scale-95">
+                    <span>🔊</span><span>おと オン</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="relative z-10 max-w-5xl w-full mx-auto flex flex-col items-center text-center my-auto gap-2 sm:gap-3">
+            <div class="flex items-center justify-center gap-2 sm:gap-3">
+                <img src="../sugoroku/assets/kage_bunshin.webp" alt="" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-3 border-cyan-300 shadow-lg -rotate-6">
+                <img src="../sugoroku/assets/kawarimi_log.webp" alt="" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-3 border-amber-300 shadow-lg -rotate-2">
+                <img src="../sugoroku/assets/kyuubi_mode.webp" alt="" class="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl object-cover object-top border-4 border-yellow-300 shadow-[0_0_28px_rgba(251,191,36,0.9)] z-10">
+                <img src="../bingo/assets/cards/leader_sakura.webp" alt="" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover object-top border-3 border-pink-400 shadow-lg rotate-2">
+                <img src="../assets/game_art/ichiraku_ramen_glow.webp" alt="" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-3 border-orange-400 shadow-lg rotate-6">
+            </div>
+
+            <div class="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600 via-amber-500 to-yellow-500 text-black font-black text-xs sm:text-sm px-4 py-0.5 rounded-full border border-white shadow">
+                <span>👥 みんなで いっせいに タッチ！ マルチタッチ たいおう！</span>
+            </div>
+            <h1 class="text-3xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-yellow-200 via-orange-400 to-red-500 drop-shadow-[0_4px_12px_rgba(255,107,0,0.6)]">
+                かげぶんしん・ドロンパニック！
+            </h1>
+
+            <!-- ルール 3ポイント アイコンガイド -->
+            <div class="grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-3xl text-xs sm:text-sm font-black">
+                <div class="bg-stone-900/90 border-2 border-red-400 rounded-2xl p-2 flex items-center gap-2">
+                    <img src="../sugoroku/assets/kawarimi_log.webp" alt="" class="w-10 h-10 rounded-xl object-cover shrink-0 border border-amber-300">
+                    <div class="text-left leading-tight">
+                        <div class="text-red-300">😈 てき ＆ ニセモノ</div>
+                        <div class="text-white">タッチで ボフッと たいじ！</div>
+                    </div>
+                </div>
+                <div class="bg-stone-900/90 border-2 border-pink-400 rounded-2xl p-2 flex items-center gap-2">
+                    <img src="../bingo/assets/cards/leader_sakura.webp" alt="" class="w-10 h-10 rounded-xl object-cover object-top shrink-0 border border-pink-300">
+                    <div class="text-left leading-tight">
+                        <div class="text-pink-300">💖 ハートの なかま</div>
+                        <div class="text-white">たたかないで まもろう！</div>
+                    </div>
+                </div>
+                <div class="bg-stone-900/90 border-2 border-amber-400 rounded-2xl p-2 flex items-center gap-2">
+                    <img src="../assets/game_art/ichiraku_ramen_glow.webp" alt="" class="w-10 h-10 rounded-xl object-cover shrink-0 border border-yellow-300">
+                    <div class="text-left leading-tight">
+                        <div class="text-yellow-300">🍜 いちらく ラーメン</div>
+                        <div class="text-white">さわらず まてば ボーナス！</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- むずかしさ 3だんかい -->
+            <div class="w-full max-w-3xl">
+                <div class="text-base sm:text-xl font-black text-yellow-200 text-outline mb-1.5">⚡ はやさを えらんでね！</div>
+                <div id="diffButtonsRow" class="grid grid-cols-3 gap-3"></div>
+            </div>
+        </div>
+
+        <div class="relative z-10 flex justify-center">
+            <button id="startPanicBtn" class="px-10 py-3.5 sm:py-4 rounded-3xl font-black text-xl sm:text-3xl text-black bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 border-4 border-white shadow-[0_0_32px_rgba(251,191,36,0.95)] active:scale-95 transition flex items-center gap-3">
+                <img src="../assets/game_art/giant_rasengan_orb.webp" alt="" class="w-9 h-9 sm:w-11 sm:h-11 rounded-full object-cover orb-spin">
+                <span>ドロンパニック スタート！！</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ==========================================================
+         メイン ゲーム がめん（100dvh 固定）
+    =========================================================== -->
+    <!-- 1. じょうぶ ステータスバー -->
+    <header class="relative z-20 h-[12dvh] min-h-[62px] max-h-[88px] bg-gradient-to-r from-stone-950 via-emerald-950 to-stone-950 border-b-2 border-amber-500 px-2.5 py-1 flex items-center justify-between gap-2 shrink-0">
+        <div class="flex items-center gap-1.5 shrink-0">
+            <a id="homeLinkGame" href="../index.html" class="w-9 h-9 rounded-xl bg-stone-800 border border-amber-400/80 flex items-center justify-center text-base active:scale-95">🏠</a>
+            <button id="soundBtnGame" class="sound-toggle-btn w-9 h-9 rounded-xl bg-amber-900/90 border border-amber-400 flex items-center justify-center text-base active:scale-95">🔊</button>
+            <button id="fsBtnGame" class="fs-toggle-btn w-9 h-9 rounded-xl bg-emerald-950/90 border border-emerald-400 flex items-center justify-center text-base font-black text-emerald-200 active:scale-95">⛶</button>
+            <button id="quitToMenuBtn" class="px-2.5 h-9 rounded-xl bg-red-950 border border-red-400 text-xs font-black text-red-200 active:scale-95">🔄 さいしょ</button>
+        </div>
+
+        <!-- たいまー ＆ モード表示 -->
+        <div class="flex items-center gap-3 flex-1 justify-center max-w-xl">
+            <div class="bg-stone-900 border-2 border-amber-400 rounded-2xl px-3 py-1 flex items-center gap-2 shadow-lg">
+                <span class="text-xs sm:text-sm font-black text-amber-300">⏱️ のこり</span>
+                <span id="timeLeftLabel" class="text-2xl sm:text-4xl font-black text-white text-outline tabular-nums">60</span>
+                <span class="text-xs sm:text-sm font-black text-amber-300">びょう</span>
+            </div>
+
+            <div id="modeBannerPill" class="px-3.5 py-1.5 rounded-2xl bg-emerald-800/90 border-2 border-emerald-300 text-xs sm:text-base font-black text-white text-outline-sm truncate">
+                🍃 このはの もり パトロール！
+            </div>
+        </div>
+
+        <!-- スコア ＆ コンボ -->
+        <div class="flex items-center gap-2 shrink-0">
+            <div id="comboBadge" class="px-3 py-1 rounded-2xl bg-cyan-950 border-2 border-cyan-400 text-center">
+                <div class="text-[10px] font-black text-cyan-300 leading-none">コンボ</div>
+                <div id="comboValue" class="text-lg sm:text-2xl font-black text-white leading-tight">0</div>
+            </div>
+            <div class="px-3.5 py-1 rounded-2xl bg-gradient-to-r from-amber-600 to-orange-600 border-2 border-yellow-200 text-right shadow-lg min-w-[115px] sm:min-w-[145px]">
+                <div class="text-[10px] font-black text-yellow-100 leading-none">⭐ スコア</div>
+                <div id="scoreValue" class="text-xl sm:text-3xl font-black text-white text-outline-sm leading-tight tabular-nums">0</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 2. ちゅうおう 4×3＝12こ の かくれんぼ フィールド -->
+    <main id="playArena" class="relative z-10 flex-1 min-h-0 w-full max-w-[1650px] mx-auto p-2 sm:p-3 flex flex-col justify-between overflow-hidden rounded-2xl transition">
+        <!-- フィーバー ＆ コミカルつうち トースト -->
+        <div id="centerBannerToast" class="hidden pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 z-30 px-6 py-2 rounded-full border-4 border-white shadow-[0_0_35px_rgba(251,191,36,1)] bg-gradient-to-r from-yellow-300 via-orange-500 to-red-600 text-black font-black text-base sm:text-2xl whitespace-nowrap">
+            🔥 きゅうび フィーバータイム！！
+        </div>
+
+        <!-- 12この かくれみ 穴 グリッド -->
+        <div id="holesGrid" class="w-full h-full grid grid-cols-4 grid-rows-3 gap-2 sm:gap-3">
+            <!-- JSで12個のしげみ・岩陰・切り株・煙幕スポットを生成 -->
+        </div>
+
+        <!-- ☁️ ラスト10びょう！ きょだいボス・みんなで れんだ オーバーレイ -->
+        <div id="giantBossOverlay" class="hidden absolute inset-2 z-30 rounded-3xl bg-gradient-to-b from-red-950/95 via-stone-950/95 to-black/95 border-4 border-red-500 shadow-[0_0_60px_rgba(239,68,68,0.95)] flex flex-col items-center justify-between p-3 sm:p-5 overflow-hidden">
+            <div class="manga-burst absolute inset-0 pointer-events-none"></div>
+
+            <div class="relative z-10 w-full max-w-3xl text-center space-y-1">
+                <div class="inline-block bg-gradient-to-r from-red-600 via-orange-500 to-yellow-400 text-black font-black text-xs sm:text-base px-5 py-1 rounded-full border-2 border-white animate-bounce">
+                    ☁️ ラスト 10びょう！ みんなで いっせいに れんだ だ！！
+                </div>
+                <div class="flex items-center justify-between text-sm sm:text-xl font-black px-2">
+                    <span id="bossNameTitle" class="text-red-300 text-outline">きょだい うちは マダラ ＆ じゅうび</span>
+                    <span id="bossHpText" class="text-yellow-300 text-outline">あと 35 かい タッチ！！</span>
+                </div>
+                <div class="w-full h-6 sm:h-7 bg-stone-900 rounded-full border-3 border-red-300 overflow-hidden p-0.5 shadow-inner">
+                    <div id="bossHpBar" class="h-full bg-gradient-to-r from-yellow-300 via-orange-500 to-red-600 rounded-full transition-all duration-75" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <!-- 3にん 同時に 両手で バシバシ 叩ける 超特大マルチタッチ ボスゾーン！ -->
+            <div id="bossMultiHitZone" class="relative z-10 flex-1 w-full max-w-4xl my-2 rounded-3xl border-4 border-yellow-300 bg-gradient-to-br from-red-900/70 via-stone-900/80 to-purple-950/80 flex items-center justify-around px-4 overflow-hidden cursor-pointer shadow-[0_0_40px_rgba(251,191,36,0.7)]">
+                <div class="flex flex-col items-center pointer-events-none">
+                    <img src="../assets/game_art/giant_rasengan_orb.webp" alt="" class="w-20 h-20 sm:w-28 sm:h-28 rounded-full object-cover border-3 border-cyan-300 orb-spin shadow-[0_0_25px_rgba(56,189,248,0.9)]">
+                    <span class="mt-1 text-xs sm:text-base font-black text-cyan-200 text-outline-sm">👈 ここも タッチ！</span>
+                </div>
+
+                <div id="bossCenterSpriteWrap" class="relative flex flex-col items-center pointer-events-none transition-transform duration-75">
+                    <div class="flex items-center gap-3">
+                        <img src="../bingo/assets/cards/char_42.webp" alt="マダラ" class="w-28 h-28 sm:w-40 sm:h-40 rounded-3xl object-cover object-top border-4 border-red-400 shadow-2xl">
+                        <img src="../bingo/assets/cards/char_59.webp" alt="じゅうび" class="w-28 h-28 sm:w-40 sm:h-40 rounded-3xl object-cover object-top border-4 border-purple-400 shadow-2xl">
+                    </div>
+                    <div class="mt-2 px-5 py-1 rounded-full bg-yellow-300 text-black font-black text-base sm:text-2xl border-2 border-black shadow-lg">
+                        👆 みんなで バシバシ れんだ！！ 👆
+                    </div>
+                </div>
+
+                <div class="flex flex-col items-center pointer-events-none">
+                    <img src="../assets/game_art/giant_rasengan_orb.webp" alt="" class="w-20 h-20 sm:w-28 sm:h-28 rounded-full object-cover border-3 border-cyan-300 orb-spin shadow-[0_0_25px_rgba(56,189,248,0.9)]">
+                    <span class="mt-1 text-xs sm:text-base font-black text-cyan-200 text-outline-sm">ここも タッチ！ 👉</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🌀 らせんがん だいばくはつ カットイン -->
+        <div id="rasenganFinishCutin" class="hidden absolute inset-0 z-40 bg-sky-950/95 flex flex-col items-center justify-center p-4 text-center">
+            <div class="manga-burst absolute inset-0 pointer-events-none"></div>
+            <div class="relative z-10 flex items-center justify-center gap-4 mb-3">
+                <img src="../bingo/assets/cards/char_61.webp" alt="" class="w-32 h-32 sm:w-44 sm:h-44 rounded-3xl object-cover object-top border-4 border-yellow-300 shadow-2xl">
+                <img src="../assets/game_art/giant_rasengan_orb.webp" alt="" class="w-36 h-36 sm:w-48 sm:h-48 rounded-full object-cover border-4 border-white orb-spin shadow-[0_0_65px_rgba(56,189,248,1)]">
+            </div>
+            <div class="relative z-10 text-3xl sm:text-6xl font-black text-cyan-200 text-outline">
+                ちょう おおだま らせんがん だいばくはつ！！
+            </div>
+            <div class="relative z-10 mt-2 text-xl sm:text-3xl font-black text-yellow-300 text-outline">
+                🎉 ボス げきは ボーナス ＋2000 てん！！ 🎉
+            </div>
+        </div>
+    </main>
+
+    <!-- ==========================================================
+         🏆 けっか ＆ キラキラ しょうごう ひょうしょう モーダル
+    =========================================================== -->
+    <div id="resultModal" class="hidden fixed inset-0 z-40 bg-stone-950/95 flex flex-col justify-between p-4 sm:p-6 overflow-hidden">
+        <div class="manga-burst absolute inset-0 pointer-events-none"></div>
+
+        <div class="relative z-10 text-center">
+            <div class="inline-block bg-gradient-to-r from-yellow-200 via-amber-400 to-orange-400 text-black font-black text-xs sm:text-base px-5 py-1 rounded-full shadow-lg">
+                🎊 タイムアップ！ みんな すごい はやさ だったね！！ 🎊
+            </div>
+            <h2 id="resultRankTitle" class="mt-2 text-3xl sm:text-5xl font-black text-yellow-300 text-outline">
+                👑 でんせつの ほかげ きゅう！！
+            </h2>
+        </div>
+
+        <div class="relative z-10 max-w-4xl w-full mx-auto bg-stone-900/95 border-4 border-amber-400 rounded-3xl p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-around gap-4 shadow-2xl">
+            <div class="flex items-center gap-3">
+                <img id="resultHeroImg" src="../sugoroku/assets/kyuubi_mode.webp" alt="" class="w-28 h-28 sm:w-36 sm:h-36 rounded-3xl object-cover object-top border-4 border-yellow-300 shadow-xl">
+                <div class="text-left">
+                    <div class="text-xs sm:text-sm font-black text-amber-300">ごうけい スコア</div>
+                    <div id="resultTotalScore" class="text-4xl sm:text-6xl font-black text-white text-outline tabular-nums">0</div>
+                    <div id="resultSubComment" class="text-sm sm:text-lg font-black text-emerald-300 mt-1">かわりみの まるたが いっぱい とんだよ！</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 sm:gap-3 text-center">
+                <div class="bg-stone-800 border-2 border-amber-400/70 rounded-2xl px-3 py-2">
+                    <div class="text-[11px] font-black text-amber-200">🪵 たいじ</div>
+                    <div id="statBusted" class="text-xl sm:text-3xl font-black text-white">0</div>
+                </div>
+                <div class="bg-stone-800 border-2 border-cyan-400/70 rounded-2xl px-3 py-2">
+                    <div class="text-[11px] font-black text-cyan-200">⚡ さいこうコンボ</div>
+                    <div id="statMaxCombo" class="text-xl sm:text-3xl font-black text-white">0</div>
+                </div>
+                <div class="bg-stone-800 border-2 border-orange-400/70 rounded-2xl px-3 py-2">
+                    <div class="text-[11px] font-black text-orange-200">🍜 ラーメン</div>
+                    <div id="statRamen" class="text-xl sm:text-3xl font-black text-white">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="relative z-10 flex items-center justify-center gap-3 sm:gap-4">
+            <button id="fsBtnResult" class="fs-toggle-btn px-4 py-3 rounded-2xl font-black text-xs sm:text-base bg-emerald-950 border-2 border-emerald-400 text-emerald-100 active:scale-95 flex items-center gap-1.5">
+                <span>⛶</span><span class="fs-label-text">ぜんがめん</span>
+            </button>
+            <button id="backToDiffBtn" class="px-6 py-3.5 rounded-2xl font-black text-sm sm:text-lg bg-stone-800 border-2 border-stone-400 text-white active:scale-95">
+                🎚️ はやさを かえる
+            </button>
+            <button id="replaySameBtn" class="px-8 py-3.5 rounded-2xl font-black text-base sm:text-2xl bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 text-black border-4 border-white shadow-xl active:scale-95">
+                🔄 もう 1かい あそぶ！
+            </button>
+        </div>
+    </div>
+
+    <!-- ぜんがめん ガイドモーダル（漢字ゼロ） -->
+    <div id="fsGuideModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-stone-900 border-4 border-emerald-400 rounded-3xl p-6 max-w-md w-full text-center space-y-4 shadow-2xl">
+            <div class="text-xl sm:text-2xl font-black text-emerald-300">📱 ぜんがめんで あそぶ ほうほう！</div>
+            <p id="fsGuideText" class="text-sm sm:text-base text-white font-bold leading-relaxed">
+                サファリの「ぁあ」マーク →「ツールバーを かくす」を タッチするか、「ホームがめんに ついか」を すると バーが きえて ひろびろ ぜんがめんで あそべるよ！
+            </p>
+            <button id="closeFsGuideBtn" class="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 text-black font-black text-base sm:text-lg border-2 border-white active:scale-95">
+                わかった！ とじる ✨
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================================
+           1. キャラクター ＆ ターゲット データ（漢字ゼロ）
+        ========================================================== */
+        const C = (n) => `../bingo/assets/cards/char_${String(n).padStart(2, '0')}.webp`;
+
+        const ENEMY_POOL = [
+            { name: 'ゼツ ぶんしん',     img: C(40), voiceId: 40, tag: '😈 てき！',       pts: 100 },
+            { name: 'デイダラ',           img: C(35), voiceId: 35, tag: '💥 あかつき！',   pts: 120 },
+            { name: 'サソリ',             img: C(36), voiceId: 36, tag: '💥 あかつき！',   pts: 120 },
+            { name: 'キサメ',             img: C(37), voiceId: 37, tag: '🦈 あかつき！',   pts: 120 },
+            { name: 'ヒダン',             img: C(38), voiceId: 38, tag: '💥 あかつき！',   pts: 120 },
+            { name: 'カクズ',             img: C(39), voiceId: 39, tag: '💥 あかつき！',   pts: 120 },
+            { name: 'ペイン',             img: C(32), voiceId: 32, tag: '☁️ あかつき！',   pts: 150 },
+            { name: 'オロチマル',         img: C(43), voiceId: 43, tag: '🐍 てき！',       pts: 140 },
+            { name: 'カブト',             img: C(44), voiceId: 44, tag: '🐍 てき！',       pts: 120 },
+            { name: 'トビ・オビト',       img: C(41), voiceId: 41, tag: '🌀 あかつき！',   pts: 150 },
+            { name: 'ニセ へんげ ナルト', img: C(1),  voiceId: 1,  tag: '🎭 ニセモノ！',   pts: 130 },
+            { name: 'ニセ このはまる',   img: C(21), voiceId: 21, tag: '🎭 イタズラ！',   pts: 130 }
+        ];
+
+        const RARE_FEVER_POOL = [
+            { name: 'きんの マダラ',     img: C(42), voiceId: 42, tag: '🌟 レア 2ばい！', pts: 300 },
+            { name: 'きんの カグヤ',     img: C(67), voiceId: 67, tag: '🌟 レア 2ばい！', pts: 320 },
+            { name: 'きんの きゅうび',   img: '../sugoroku/assets/kyuubi_mode.webp', voiceId: 50, tag: '🌟 フィーバー！', pts: 350 },
+            { name: 'きんの ペイン',     img: C(32), voiceId: 32, tag: '🌟 レア 2ばい！', pts: 300 }
+        ];
+
+        const ALLY_POOL = [
+            { name: 'サクラ',         img: '../bingo/assets/cards/leader_sakura.webp',  voiceId: 3,  oopsMsg: '🌸 しゃーんなろー！！ なかま だよ〜！' },
+            { name: 'ヒナタ',         img: '../bingo/assets/cards/leader_hinata.webp',  voiceId: 12, oopsMsg: '💖 あわわ…！ なかまの ヒナタ だよ〜！' },
+            { name: 'イルカ せんせい', img: C(22),                                       voiceId: 22, oopsMsg: '🍃 こらーっ！ イルカ せんせい だぞ〜！' },
+            { name: 'カカシ せんせい', img: '../bingo/assets/cards/leader_kakashi.webp', voiceId: 4,  oopsMsg: '📘 おっと！ なかまの カカシ だよ〜！' }
+        ];
+
+        const DIFFICULTIES = {
+            easy:   { id: 'easy',   label: '🌱 やさしい',     sub: 'ゆったり たたけるよ！', spawnMs: 820, stayMin: 1650, stayMax: 2250, maxActive: 4, bossHp: 24, color: 'from-emerald-400 to-green-600' },
+            normal: { id: 'normal', label: '🔥 ふつう',       sub: 'みんなで わくわく！',   spawnMs: 580, stayMin: 1200, stayMax: 1750, maxActive: 6, bossHp: 36, color: 'from-amber-400 to-orange-600' },
+            crazy:  { id: 'crazy',  label: '⚡ ハチャメチャ', sub: 'ちょう はやいぞ！！',   spawnMs: 380, stayMin: 850,  stayMax: 1300, maxActive: 8, bossHp: 50, color: 'from-fuchsia-500 to-red-600' }
+        };
+
+        const HOLE_THEMES = [
+            { label: 'しげみ',   bg: '../assets/game_art/konoha_bush_hole.webp' },
+            { label: 'きりかぶ', bg: '../sugoroku/assets/kawarimi_log.webp' },
+            { label: 'けむり',   bg: '../sugoroku/assets/smoke_bomb.webp' },
+            { label: 'いわかげ', bg: '../assets/game_art/konoha_bush_hole.webp' }
+        ];
+
+        /* ==========================================================
+           2. ゲーム じょうたい ＆ おと エンジン
+        ========================================================== */
+        const state = {
+            soundOn: true,
+            diff: 'normal',
+            playing: false,
+            phase: 'menu', // menu | main | fever | boss | finish
+            timeLeft: 60.0,
+            score: 0,
+            combo: 0,
+            maxCombo: 0,
+            bustedCount: 0,
+            ramenCount: 0,
+            bossHp: 36,
+            bossMaxHp: 36,
+            bossCleared: false,
+            holes: [],
+            mainTimer: null,
+            spawnTimer: null,
+            bgmTimer: null,
+            lastVoiceAt: 0
+        };
+
+        const voiceEl = document.getElementById('voiceAudio');
+        let audioCtx = null;
+        let audioUnlocked = false;
+
+        function getCtx() {
+            if (!audioCtx) {
+                const AC = window.AudioContext || window.webkitAudioContext;
+                if (AC) audioCtx = new AC();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }
+
+        function unlockAudio() {
+            if (audioUnlocked) return;
+            audioUnlocked = true;
+            getCtx();
+            if (voiceEl && !voiceEl.src) {
+                voiceEl.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+                voiceEl.play().then(() => voiceEl.pause()).catch(() => {});
+            }
+        }
+
+        function playQuoteVoice(voiceId, force = false) {
+            if (!state.soundOn || !voiceId) return;
+            const now = performance.now();
+            if (!force && now - state.lastVoiceAt < 1400) return;
+            state.lastVoiceAt = now;
+            const sid = String(voiceId).padStart(2, '0');
+            voiceEl.src = `../assets/audio/quotes/${sid}.mp3?v=6`;
+            try { voiceEl.currentTime = 0; } catch (_) {}
+            voiceEl.play().catch(() => {});
+        }
+
+        function playBofuHitSound(combo = 1) {
+            if (!state.soundOn) return;
+            const ctx = getCtx();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+
+            // 白煙「ボフッ！」ノイズ＋気持ちいい上昇チャイム
+            const bufLen = Math.floor(ctx.sampleRate * 0.16);
+            const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+            const ch = buf.getChannelData(0);
+            for (let i = 0; i < bufLen; i++) {
+                ch[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.045));
+            }
+            const noise = ctx.createBufferSource();
+            noise.buffer = buf;
+            const flt = ctx.createBiquadFilter();
+            flt.type = 'bandpass';
+            flt.frequency.setValueAtTime(650, now);
+            const ng = ctx.createGain();
+            ng.gain.setValueAtTime(0.38, now);
+            noise.connect(flt);
+            flt.connect(ng);
+            ng.connect(ctx.destination);
+            noise.start(now);
+
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            const baseF = Math.min(980, 420 + combo * 28);
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(baseF, now);
+            osc.frequency.exponentialRampToValueAtTime(baseF * 1.45, now + 0.11);
+            g.gain.setValueAtTime(0.24, now);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
+            osc.connect(g);
+            g.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.14);
+        }
+
+        function playOopsBuzzer() {
+            if (!state.soundOn) return;
+            const ctx = getCtx();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(210, now);
+            osc.frequency.linearRampToValueAtTime(135, now + 0.24);
+            g.gain.setValueAtTime(0.22, now);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 0.26);
+            osc.connect(g);
+            g.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.27);
+        }
+
+        function playRamenHealChime() {
+            if (!state.soundOn) return;
+            const ctx = getCtx();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+            [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+                const osc = ctx.createOscillator();
+                const g = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(f, now + i * 0.055);
+                g.gain.setValueAtTime(0.22, now + i * 0.055);
+                g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.055 + 0.22);
+                osc.connect(g);
+                g.connect(ctx.destination);
+                osc.start(now + i * 0.055);
+                osc.stop(now + i * 0.055 + 0.23);
+            });
+        }
+
+        function playVictoryFanfare() {
+            if (!state.soundOn) return;
+            const ctx = getCtx();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+            [[523,0,0.13],[659,0.12,0.13],[784,0.24,0.13],[1046,0.38,0.45]].forEach(([f,d,dur]) => {
+                const osc = ctx.createOscillator();
+                const g = ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(f, now + d);
+                g.gain.setValueAtTime(0.28, now + d);
+                g.gain.exponentialRampToValueAtTime(0.001, now + d + dur);
+                osc.connect(g);
+                g.connect(ctx.destination);
+                osc.start(now + d);
+                osc.stop(now + d + dur + 0.02);
+            });
+        }
+
+        function startNinjaBeatLoop() {
+            stopNinjaBeatLoop();
+            let step = 0;
+            state.bgmTimer = setInterval(() => {
+                if (!state.playing || !state.soundOn) return;
+                const ctx = getCtx();
+                if (!ctx) return;
+                const isFever = state.phase === 'fever' || state.phase === 'boss';
+                if (!isFever && step % 2 === 1) { step++; return; }
+                const now = ctx.currentTime;
+                const osc = ctx.createOscillator();
+                const g = ctx.createGain();
+                const notes = isFever ? [220, 261.6, 293.7, 329.6, 392.0, 329.6] : [164.8, 196.0, 220.0, 196.0];
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(notes[step % notes.length], now);
+                g.gain.setValueAtTime(0.055, now);
+                g.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
+                osc.connect(g);
+                g.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.12);
+                step++;
+            }, 190);
+        }
+
+        function stopNinjaBeatLoop() {
+            if (state.bgmTimer) {
+                clearInterval(state.bgmTimer);
+                state.bgmTimer = null;
+            }
+        }
+
+        /* ==========================================================
+           3. スタートがめん ＆ 12この かくれんぼ穴 せいせい
+        ========================================================== */
+        function renderDifficultyButtons() {
+            const row = document.getElementById('diffButtonsRow');
+            row.innerHTML = Object.values(DIFFICULTIES).map(d => {
+                const active = state.diff === d.id;
+                return `
+                    <button data-diff="${d.id}" class="diff-select-btn py-3 px-3 rounded-3xl border-4 transition flex flex-col items-center gap-1 ${
+                        active
+                            ? `bg-gradient-to-b ${d.color} text-black border-white scale-105 shadow-[0_0_24px_rgba(251,191,36,0.9)]`
+                            : 'bg-stone-900/90 border-stone-600 text-stone-200'
+                    }">
+                        <span class="text-lg sm:text-2xl font-black">${d.label}</span>
+                        <span class="text-[11px] sm:text-xs font-black ${active ? 'text-stone-950' : 'text-amber-300'}">${d.sub}</span>
+                    </button>
+                `;
+            }).join('');
+
+            row.querySelectorAll('.diff-select-btn').forEach(btn => {
+                btn.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    unlockAudio();
+                    maybeRestorePreferredFs();
+                    state.diff = btn.getAttribute('data-diff');
+                    playBofuHitSound(2);
+                    renderDifficultyButtons();
+                });
+            });
+        }
+
+        function buildHolesArena() {
+            const grid = document.getElementById('holesGrid');
+            grid.innerHTML = '';
+            state.holes = [];
+
+            for (let i = 0; i < 12; i++) {
+                const theme = HOLE_THEMES[i % HOLE_THEMES.length];
+                const cell = document.createElement('div');
+                cell.className = 'relative rounded-3xl border-3 border-emerald-700/80 bg-gradient-to-b from-emerald-950/85 via-stone-900/95 to-stone-950 overflow-hidden flex items-center justify-center shadow-lg select-none';
+                cell.innerHTML = `
+                    <!-- 背景のしげみ・岩陰・切り株イラスト -->
+                    <img src="${theme.bg}" alt="" class="absolute inset-0 w-full h-full object-cover opacity-35 pointer-events-none">
+                    <div class="absolute bottom-1.5 inset-x-3 h-5 rounded-full bg-black/75 border border-emerald-500/40 pointer-events-none"></div>
+                    <span class="absolute bottom-1.5 text-[10px] font-black text-emerald-300/70 pointer-events-none">${theme.label}</span>
+
+                    <!-- 飛び出すターゲットレイヤー -->
+                    <div id="hole-actor-${i}" class="relative z-10 w-full h-full flex items-center justify-center pointer-events-none"></div>
+
+                    <!-- かわりみの術 白煙＆丸太エフェクトレイヤー -->
+                    <div id="hole-fx-${i}" class="absolute inset-0 z-20 pointer-events-none flex items-center justify-center"></div>
+                `;
+
+                // マルチタッチ完全対応：各マス個別の pointerdown で3人同時押しでも全部反応！
+                cell.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    handleHoleTap(i);
+                });
+
+                grid.appendChild(cell);
+                state.holes.push({
+                    idx: i,
+                    occupant: null,
+                    hideTimeout: null
+                });
+            }
+        }
+
+        /* ==========================================================
+           4. ゲーム 進行 ＆ スポーン ＆ マルチタッチ 判定
+        ========================================================== */
+        function startGame() {
+            unlockAudio();
+            maybeRestorePreferredFs();
+            playVictoryFanfare();
+            playQuoteVoice(1, true);
+
+            const cfg = DIFFICULTIES[state.diff];
+            state.playing = true;
+            state.phase = 'main';
+            state.timeLeft = 60.0;
+            state.score = 0;
+            state.combo = 0;
+            state.maxCombo = 0;
+            state.bustedCount = 0;
+            state.ramenCount = 0;
+            state.bossMaxHp = cfg.bossHp;
+            state.bossHp = cfg.bossHp;
+            state.bossCleared = false;
+
+            document.getElementById('startOverlay').classList.add('hidden');
+            document.getElementById('resultModal').classList.add('hidden');
+            document.getElementById('giantBossOverlay').classList.add('hidden');
+            document.getElementById('rasenganFinishCutin').classList.add('hidden');
+            document.getElementById('playArena').classList.remove('fever-frame');
+            document.getElementById('modeBannerPill').textContent = '🍃 このはの もり パトロール！';
+            document.getElementById('modeBannerPill').className = 'px-3.5 py-1.5 rounded-2xl bg-emerald-800/90 border-2 border-emerald-300 text-xs sm:text-base font-black text-white text-outline-sm truncate';
+
+            buildHolesArena();
+            updateHud();
+            startNinjaBeatLoop();
+            scheduleNextSpawn();
+
+            if (state.mainTimer) clearInterval(state.mainTimer);
+            state.mainTimer = setInterval(tickGameClock, 100);
+        }
+
+        function scheduleNextSpawn() {
+            if (state.spawnTimer) clearTimeout(state.spawnTimer);
+            if (!state.playing || state.phase === 'boss' || state.phase === 'finish') return;
+
+            const cfg = DIFFICULTIES[state.diff];
+            const interval = state.phase === 'fever' ? Math.round(cfg.spawnMs * 0.62) : cfg.spawnMs;
+
+            state.spawnTimer = setTimeout(() => {
+                spawnOneCharacter();
+                if (state.phase === 'fever' && Math.random() < 0.45) {
+                    spawnOneCharacter();
+                }
+                scheduleNextSpawn();
+            }, interval);
+        }
+
+        function spawnOneCharacter() {
+            if (!state.playing || state.phase === 'boss' || state.phase === 'finish') return;
+            const cfg = DIFFICULTIES[state.diff];
+            const activeHoles = state.holes.filter(h => h.occupant !== null);
+            const maxAllowed = state.phase === 'fever' ? Math.min(10, cfg.maxActive + 2) : cfg.maxActive;
+            if (activeHoles.length >= maxAllowed) return;
+
+            const emptyHoles = state.holes.filter(h => h.occupant === null);
+            if (emptyHoles.length === 0) return;
+            const hole = emptyHoles[Math.floor(Math.random() * emptyHoles.length)];
+
+            // 出現タイプ決定
+            const roll = Math.random();
+            let occ = null;
+            if (state.phase === 'fever') {
+                if (roll < 0.48) {
+                    const r = RARE_FEVER_POOL[Math.floor(Math.random() * RARE_FEVER_POOL.length)];
+                    occ = { kind: 'rare', ...r };
+                } else if (roll < 0.84) {
+                    const e = ENEMY_POOL[Math.floor(Math.random() * ENEMY_POOL.length)];
+                    occ = { kind: 'enemy', ...e, pts: e.pts * 2, tag: '🔥 2ばい！' };
+                } else if (roll < 0.93) {
+                    occ = { kind: 'ramen', name: 'いちらく ラーメン', img: '../assets/game_art/ichiraku_ramen_glow.webp', pts: 300 };
+                } else {
+                    const a = ALLY_POOL[Math.floor(Math.random() * ALLY_POOL.length)];
+                    occ = { kind: 'ally', ...a };
+                }
+            } else {
+                if (roll < 0.68) {
+                    const e = ENEMY_POOL[Math.floor(Math.random() * ENEMY_POOL.length)];
+                    occ = { kind: 'enemy', ...e };
+                } else if (roll < 0.84) {
+                    const a = ALLY_POOL[Math.floor(Math.random() * ALLY_POOL.length)];
+                    occ = { kind: 'ally', ...a };
+                } else {
+                    occ = { kind: 'ramen', name: 'いちらく ラーメン', img: '../assets/game_art/ichiraku_ramen_glow.webp', pts: 300 };
+                }
+            }
+
+            hole.occupant = occ;
+            const actorEl = document.getElementById(`hole-actor-${hole.idx}`);
+            if (!actorEl) return;
+
+            if (occ.kind === 'enemy' || occ.kind === 'rare') {
+                const borderCls = occ.kind === 'rare'
+                    ? 'border-yellow-300 ring-4 ring-yellow-300/80 shadow-[0_0_24px_rgba(250,204,21,1)]'
+                    : 'border-red-400 shadow-xl';
+                const pillCls = occ.kind === 'rare'
+                    ? 'bg-yellow-300 text-black'
+                    : 'bg-red-600 text-white';
+                actorEl.innerHTML = `
+                    <div class="target-pop relative w-[78%] h-[84%] rounded-2xl border-3 ${borderCls} overflow-hidden bg-stone-900 flex flex-col justify-between">
+                        <img src="${occ.img}" alt="" class="absolute inset-0 w-full h-full object-cover object-top">
+                        <span class="relative z-10 self-center mt-1 px-2 py-0.2 rounded-full text-[10px] sm:text-xs font-black ${pillCls} border border-black/40 shadow">${occ.tag}</span>
+                        <div class="relative z-10 bg-black/80 text-center py-0.5 text-[10px] sm:text-xs font-black text-white truncate px-1">${occ.name}</div>
+                    </div>
+                `;
+            } else if (occ.kind === 'ally') {
+                actorEl.innerHTML = `
+                    <div class="target-pop relative w-[78%] h-[84%] rounded-2xl border-4 border-pink-400 ring-2 ring-white/80 overflow-hidden bg-stone-900 flex flex-col justify-between shadow-[0_0_18px_rgba(244,114,182,0.85)]">
+                        <img src="${occ.img}" alt="" class="absolute inset-0 w-full h-full object-cover object-top">
+                        <span class="relative z-10 self-center mt-1 px-2 py-0.2 rounded-full text-[10px] sm:text-xs font-black bg-pink-500 text-white border border-white shadow">💖 なかま！</span>
+                        <div class="relative z-10 bg-pink-950/90 text-center py-0.5 text-[10px] sm:text-xs font-black text-pink-100 truncate px-1">✖ たたかないで！</div>
+                    </div>
+                `;
+            } else if (occ.kind === 'ramen') {
+                actorEl.innerHTML = `
+                    <div class="target-pop relative w-[78%] h-[84%] rounded-2xl border-4 border-amber-300 overflow-hidden bg-amber-950 flex flex-col justify-between shadow-[0_0_22px_rgba(251,191,36,0.9)]">
+                        <img src="${occ.img}" alt="" class="absolute inset-0 w-full h-full object-cover">
+                        <span class="relative z-10 self-center mt-1 px-2 py-0.2 rounded-full text-[10px] sm:text-xs font-black bg-amber-300 text-black border border-black shadow">🍜 まてば ＋300！</span>
+                        <div class="relative z-10 bg-black/80 text-center py-0.5 text-[10px] sm:text-xs font-black text-yellow-200 truncate px-1">さわらず まってね！</div>
+                    </div>
+                `;
+            }
+
+            const stayMs = occ.kind === 'ramen'
+                ? 1550
+                : Math.floor(cfg.stayMin + Math.random() * (cfg.stayMax - cfg.stayMin));
+
+            hole.hideTimeout = setTimeout(() => {
+                if (!hole.occupant) return;
+                // ラーメンを叩かずに待てたら自動回復ボーナス発動！！
+                if (hole.occupant.kind === 'ramen' && state.playing) {
+                    state.score += 300;
+                    state.ramenCount += 1;
+                    playRamenHealChime();
+                    showHoleEffect(hole.idx, 'ramen_bonus', '🍜 ＋300 まんぷく！');
+                    updateHud();
+                }
+                clearHole(hole.idx);
+            }, stayMs);
+        }
+
+        function clearHole(idx) {
+            const hole = state.holes[idx];
+            if (!hole) return;
+            if (hole.hideTimeout) {
+                clearTimeout(hole.hideTimeout);
+                hole.hideTimeout = null;
+            }
+            hole.occupant = null;
+            const actorEl = document.getElementById(`hole-actor-${idx}`);
+            if (actorEl) actorEl.innerHTML = '';
+        }
+
+        function handleHoleTap(idx) {
+            if (!state.playing || state.phase === 'boss' || state.phase === 'finish') return;
+            const hole = state.holes[idx];
+            if (!hole || !hole.occupant) return;
+
+            const occ = hole.occupant;
+            clearHole(idx);
+
+            if (occ.kind === 'enemy' || occ.kind === 'rare') {
+                state.combo += 1;
+                if (state.combo > state.maxCombo) state.maxCombo = state.combo;
+                state.bustedCount += 1;
+                const comboBonus = Math.min(150, (state.combo - 1) * 15);
+                const gained = occ.pts + comboBonus;
+                state.score += gained;
+
+                playBofuHitSound(state.combo);
+                if (occ.kind === 'rare' || state.combo % 5 === 0) {
+                    playQuoteVoice(occ.voiceId);
+                }
+                showHoleEffect(idx, 'kawarimi', `🪵 ボフッ！ ＋${gained}`);
+                updateHud();
+            } else if (occ.kind === 'ally') {
+                state.combo = 0;
+                state.score = Math.max(0, state.score - 30);
+                playOopsBuzzer();
+                playQuoteVoice(occ.voiceId, true);
+                triggerToastBanner(occ.oopsMsg);
+                const arena = document.getElementById('playArena');
+                arena.classList.remove('shake-ally');
+                void arena.offsetWidth;
+                arena.classList.add('shake-ally');
+                showHoleEffect(idx, 'ally_oops', '💦 なかまだよ！ -30');
+                updateHud();
+            } else if (occ.kind === 'ramen') {
+                // ラーメンを叩いてしまった時はこぼれちゃう（減点なしで優しいメッセージ！）
+                playOopsBuzzer();
+                showHoleEffect(idx, 'ally_oops', '🍜 あっ こぼれた〜！');
+            }
+        }
+
+        function showHoleEffect(idx, type, labelText) {
+            const fxEl = document.getElementById(`hole-fx-${idx}`);
+            if (!fxEl) return;
+
+            if (type === 'kawarimi') {
+                fxEl.innerHTML = `
+                    <div class="relative w-full h-full flex items-center justify-center">
+                        <img src="../sugoroku/assets/kawarimi_log.webp" alt="" class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-2 border-amber-300 log-fly shadow-xl">
+                        <span class="score-float absolute top-1/2 left-1/2 px-2.5 py-0.5 rounded-full bg-yellow-300 text-black font-black text-xs sm:text-base border-2 border-black whitespace-nowrap shadow-lg">${labelText}</span>
+                    </div>
+                `;
+            } else if (type === 'ramen_bonus') {
+                fxEl.innerHTML = `
+                    <div class="relative w-full h-full flex items-center justify-center">
+                        <span class="score-float absolute top-1/2 left-1/2 px-3 py-1 rounded-full bg-gradient-to-r from-amber-300 to-orange-400 text-black font-black text-xs sm:text-base border-2 border-white whitespace-nowrap shadow-xl">${labelText}</span>
+                    </div>
+                `;
+                spawnConfettiBurst(12);
+            } else {
+                fxEl.innerHTML = `
+                    <div class="relative w-full h-full flex items-center justify-center">
+                        <span class="score-float absolute top-1/2 left-1/2 px-2.5 py-0.5 rounded-full bg-pink-500 text-white font-black text-xs sm:text-sm border-2 border-white whitespace-nowrap shadow-lg">${labelText}</span>
+                    </div>
+                `;
+            }
+
+            setTimeout(() => {
+                if (fxEl) fxEl.innerHTML = '';
+            }, 650);
+        }
+
+        function triggerToastBanner(text) {
+            const b = document.getElementById('centerBannerToast');
+            b.textContent = text;
+            b.classList.remove('hidden');
+            clearTimeout(b._hideT);
+            b._hideT = setTimeout(() => b.classList.add('hidden'), 1500);
+        }
+
+        function tickGameClock() {
+            if (!state.playing) return;
+            state.timeLeft = Math.max(0, +(state.timeLeft - 0.1).toFixed(1));
+            document.getElementById('timeLeftLabel').textContent = Math.ceil(state.timeLeft);
+
+            // のこり20びょう：きゅうび フィーバータイム突入！
+            if (state.phase === 'main' && state.timeLeft <= 20.0 && state.timeLeft > 10.0) {
+                enterKyuubiFeverMode();
+            }
+
+            // のこり10びょう：きょだいボス みんなでれんだ突入！
+            if ((state.phase === 'main' || state.phase === 'fever') && state.timeLeft <= 10.0 && state.timeLeft > 0) {
+                enterGiantBossPhase();
+            }
+
+            if (state.timeLeft <= 0) {
+                finishGame(false);
+            }
+        }
+
+        function enterKyuubiFeverMode() {
+            state.phase = 'fever';
+            document.getElementById('playArena').classList.add('fever-frame');
+            const pill = document.getElementById('modeBannerPill');
+            pill.textContent = '🔥 きゅうび フィーバー！ ポイント 2ばい！！';
+            pill.className = 'px-3.5 py-1.5 rounded-2xl bg-gradient-to-r from-yellow-300 via-orange-500 to-red-600 border-2 border-white text-xs sm:text-base font-black text-black animate-pulse truncate';
+            triggerToastBanner('🦊 きゅうび フィーバータイム！！ スコア 2ばい！！');
+            playVictoryFanfare();
+            playQuoteVoice(50, true);
+            spawnConfettiBurst(35);
+        }
+
+        function enterGiantBossPhase() {
+            state.phase = 'boss';
+            if (state.spawnTimer) clearTimeout(state.spawnTimer);
+            state.holes.forEach(h => clearHole(h.idx));
+
+            const pill = document.getElementById('modeBannerPill');
+            pill.textContent = '☁️ ラスト 10びょう！ きょだい ボス れんだ！！';
+            document.getElementById('giantBossOverlay').classList.remove('hidden');
+            updateBossGaugeUI();
+            playQuoteVoice(42, true);
+        }
+
+        function updateBossGaugeUI() {
+            const pct = Math.max(0, Math.round((state.bossHp / state.bossMaxHp) * 100));
+            document.getElementById('bossHpBar').style.width = `${pct}%`;
+            document.getElementById('bossHpText').textContent = `あと ${state.bossHp} かい タッチ！！`;
+        }
+
+        function handleBossMultiHit(e) {
+            e.preventDefault();
+            if (!state.playing || state.phase !== 'boss' || state.bossCleared) return;
+
+            state.bossHp = Math.max(0, state.bossHp - 1);
+            state.combo += 1;
+            if (state.combo > state.maxCombo) state.maxCombo = state.combo;
+            state.score += 60;
+            playBofuHitSound(state.combo);
+
+            const wrap = document.getElementById('bossCenterSpriteWrap');
+            wrap.style.transform = `scale(${0.93 + Math.random() * 0.12}) rotate(${(Math.random() - 0.5) * 6}deg)`;
+            setTimeout(() => { wrap.style.transform = 'scale(1) rotate(0deg)'; }, 65);
+
+            spawnAtPoint(e.clientX || window.innerWidth / 2, e.clientY || window.innerHeight / 2, 6);
+            updateBossGaugeUI();
+            updateHud();
+
+            if (state.bossHp <= 0) {
+                state.bossCleared = true;
+                state.score += 2000;
+                updateHud();
+                triggerRasenganBossExplosion();
+            }
+        }
+
+        function triggerRasenganBossExplosion() {
+            state.phase = 'finish';
+            if (state.mainTimer) { clearInterval(state.mainTimer); state.mainTimer = null; }
+            stopNinjaBeatLoop();
+
+            document.getElementById('giantBossOverlay').classList.add('hidden');
+            document.getElementById('rasenganFinishCutin').classList.remove('hidden');
+            playVictoryFanfare();
+            playQuoteVoice(61, true);
+            spawnConfettiBurst(130);
+
+            setTimeout(() => {
+                document.getElementById('rasenganFinishCutin').classList.add('hidden');
+                showResultScreen();
+            }, 2400);
+        }
+
+        function finishGame() {
+            if (!state.playing) return;
+            state.playing = false;
+            state.phase = 'finish';
+            if (state.mainTimer) { clearInterval(state.mainTimer); state.mainTimer = null; }
+            if (state.spawnTimer) { clearTimeout(state.spawnTimer); state.spawnTimer = null; }
+            stopNinjaBeatLoop();
+            document.getElementById('giantBossOverlay').classList.add('hidden');
+            showResultScreen();
+        }
+
+        function showResultScreen() {
+            state.playing = false;
+            playVictoryFanfare();
+            spawnConfettiBurst(90);
+
+            let rankTitle = '🍃 げんき いっぱい げにん きゅう！！';
+            let comment = 'ナイス タッチ！ つぎは もっと たたけるぞ！';
+            let heroImg = '../bingo/assets/cards/leader_naruto.webp';
+            let voiceId = 1;
+
+            if (state.score >= 5500 || state.bossCleared) {
+                rankTitle = '👑 でんせつの ほかげ きゅう！！';
+                comment = 'すごすぎる！！ このはの さとを かんぜんに まもりぬいたぞ！！';
+                heroImg = '../sugoroku/assets/kyuubi_mode.webp';
+                voiceId = 61;
+            } else if (state.score >= 3500) {
+                rankTitle = '🔥 さいきょう じょうにん きゅう！！';
+                comment = 'ちょう スピード！ かわりみの まるたが たくさん とんだね！';
+                heroImg = '../bingo/assets/cards/leader_minato.webp';
+                voiceId = 5;
+            } else if (state.score >= 1800) {
+                rankTitle = '⚡ たのもしい ちゅうにん きゅう！！';
+                comment = 'チームワーク ばっちり！ いい コンボが でていたよ！';
+                heroImg = '../bingo/assets/cards/leader_kakashi.webp';
+                voiceId = 4;
+            }
+
+            document.getElementById('resultRankTitle').textContent = rankTitle;
+            document.getElementById('resultTotalScore').textContent = state.score;
+            document.getElementById('resultSubComment').textContent = comment;
+            document.getElementById('resultHeroImg').src = heroImg;
+            document.getElementById('statBusted').textContent = state.bustedCount;
+            document.getElementById('statMaxCombo').textContent = state.maxCombo;
+            document.getElementById('statRamen').textContent = state.ramenCount;
+
+            document.getElementById('resultModal').classList.remove('hidden');
+            setTimeout(() => playQuoteVoice(voiceId, true), 450);
+        }
+
+        function updateHud() {
+            document.getElementById('scoreValue').textContent = state.score;
+            document.getElementById('comboValue').textContent = state.combo;
+        }
+
+        /* ==========================================================
+           5. ぜんがめん ＆ おと きりかえ ＆ かみふぶき
+        ========================================================== */
+        function getFsElement() {
+            return document.fullscreenElement || document.webkitFullscreenElement || document.webkitCurrentFullScreenElement || document.msFullscreenElement || null;
+        }
+        function isStandalonePwa() {
+            return window.navigator.standalone === true || window.matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches;
+        }
+        function syncFsButtons() {
+            const active = !!getFsElement();
+            document.querySelectorAll('.fs-label-text').forEach(el => {
+                el.textContent = active ? 'もどす' : 'ぜんがめん';
+            });
+            setTimeout(resizeFxCanvas, 80);
+        }
+        function maybeRestorePreferredFs() {
+            try {
+                if (sessionStorage.getItem('naruto_prefer_fs') === '1' && !getFsElement()) {
+                    const docEl = document.documentElement;
+                    const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
+                    if (req) {
+                        const p = docEl.requestFullscreen ? docEl.requestFullscreen({ navigationUI: 'hide' }) : req.call(docEl);
+                        if (p && p.catch) p.catch(() => {});
+                    }
+                }
+            } catch (_) {}
+        }
+        async function toggleFullScreen() {
+            unlockAudio();
+            const docEl = document.documentElement;
+            if (getFsElement()) {
+                try { sessionStorage.setItem('naruto_prefer_fs', '0'); } catch (_) {}
+                if (document.exitFullscreen) await document.exitFullscreen().catch(() => {});
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                syncFsButtons();
+                return;
+            }
+            const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
+            if (req) {
+                try {
+                    const p = docEl.requestFullscreen ? docEl.requestFullscreen({ navigationUI: 'hide' }) : req.call(docEl);
+                    if (p && p.then) await p;
+                } catch (_) {
+                    try {
+                        const p2 = req.call(docEl);
+                        if (p2 && p2.then) await p2;
+                    } catch (_e) {}
+                }
+                await new Promise(r => setTimeout(r, 150));
+                if (getFsElement()) {
+                    try { sessionStorage.setItem('naruto_prefer_fs', '1'); } catch (_) {}
+                    syncFsButtons();
+                    return;
+                }
+            }
+            if (isStandalonePwa()) {
+                document.getElementById('fsGuideText').textContent = '✨ いま すでに ぜんがめん モード だよ！ そのまま たのしく あそんでね！';
+            }
+            document.getElementById('fsGuideModal').classList.remove('hidden');
+        }
+        document.addEventListener('fullscreenchange', syncFsButtons);
+        document.addEventListener('webkitfullscreenchange', syncFsButtons);
+
+        function toggleSound() {
+            unlockAudio();
+            state.soundOn = !state.soundOn;
+            if (!state.soundOn && voiceEl) voiceEl.pause();
+            document.querySelectorAll('.sound-toggle-btn').forEach(btn => {
+                btn.innerHTML = state.soundOn
+                    ? (btn.textContent.includes('おと') ? '<span>🔊</span><span>おと オン</span>' : '🔊')
+                    : (btn.textContent.includes('おと') ? '<span>🔇</span><span>おと オフ</span>' : '🔇');
+            });
+        }
+
+        // 花火＆紙吹雪キャンバス
+        const fxCanvas = document.getElementById('fxCanvas');
+        const fxCtx = fxCanvas.getContext('2d');
+        let particles = [];
+        function resizeFxCanvas() {
+            fxCanvas.width = window.innerWidth;
+            fxCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeFxCanvas);
+
+        function spawnConfettiBurst(count = 40) {
+            const colors = ['#fde047', '#fb923c', '#f43f5e', '#38bdf8', '#a78bfa', '#34d399'];
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: window.innerWidth * (0.15 + Math.random() * 0.7),
+                    y: window.innerHeight * (0.2 + Math.random() * 0.35),
+                    vx: (Math.random() - 0.5) * 12,
+                    vy: -Math.random() * 9 - 2,
+                    size: Math.random() * 8 + 5,
+                    alpha: 1,
+                    color: colors[Math.floor(Math.random() * colors.length)]
+                });
+            }
+        }
+
+        function spawnAtPoint(x, y, count = 8) {
+            const colors = ['#38bdf8', '#fde047', '#fb923c', '#ffffff'];
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x, y,
+                    vx: (Math.random() - 0.5) * 14,
+                    vy: (Math.random() - 0.5) * 14 - 2,
+                    size: Math.random() * 7 + 4,
+                    alpha: 1,
+                    color: colors[Math.floor(Math.random() * colors.length)]
+                });
+            }
+        }
+
+        function animateFx() {
+            fxCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.25;
+                p.alpha -= 0.018;
+                if (p.alpha <= 0) { particles.splice(i, 1); continue; }
+                fxCtx.globalAlpha = p.alpha;
+                fxCtx.fillStyle = p.color;
+                fxCtx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+            }
+            fxCtx.globalAlpha = 1;
+            requestAnimationFrame(animateFx);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            resizeFxCanvas();
+            renderDifficultyButtons();
+            buildHolesArena();
+            animateFx();
+
+            document.getElementById('startPanicBtn').addEventListener('click', startGame);
+            document.getElementById('replaySameBtn').addEventListener('click', startGame);
+            document.getElementById('backToDiffBtn').addEventListener('click', () => {
+                document.getElementById('resultModal').classList.add('hidden');
+                document.getElementById('startOverlay').classList.remove('hidden');
+            });
+            document.getElementById('quitToMenuBtn').addEventListener('click', () => {
+                state.playing = false;
+                if (state.mainTimer) clearInterval(state.mainTimer);
+                if (state.spawnTimer) clearTimeout(state.spawnTimer);
+                stopNinjaBeatLoop();
+                document.getElementById('giantBossOverlay').classList.add('hidden');
+                document.getElementById('startOverlay').classList.remove('hidden');
+            });
+            document.getElementById('bossMultiHitZone').addEventListener('pointerdown', handleBossMultiHit);
+
+            document.querySelectorAll('.fs-toggle-btn').forEach(b => b.addEventListener('click', toggleFullScreen));
+            document.querySelectorAll('.sound-toggle-btn').forEach(b => b.addEventListener('click', toggleSound));
+            document.getElementById('closeFsGuideBtn').addEventListener('click', () => {
+                document.getElementById('fsGuideModal').classList.add('hidden');
+            });
+        });
+    </script>
+</body>
+</html>

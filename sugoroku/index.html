@@ -572,31 +572,17 @@
                 if (onEndedCallback) setTimeout(onEndedCallback, 300);
                 return;
             }
-            const entry = game.audioManifest?.summon?.[String(summonId)];
             const sid = String(summonId).padStart(2, '0');
-            const src = entry ? `../bingo/${entry.src}` : `../bingo/assets/audio/summon/${sid}.mp3?v=5`;
-            const startSec = entry?.splitSec || 0;
-
-            const startPlay = () => {
-                try {
-                    voiceEl.currentTime = startSec > 0.05 ? startSec : 0;
-                } catch (_) {}
-                voiceEl.play().catch(() => {
-                    if (onEndedCallback) onEndedCallback();
-                });
-            };
+            const src = `../assets/audio/quotes/${sid}.mp3?v=6`;
 
             voiceEl.onended = () => {
                 if (onEndedCallback) onEndedCallback();
             };
-
             voiceEl.src = src;
-            if (startSec > 0.05) {
-                voiceEl.addEventListener('loadedmetadata', startPlay, { once: true });
-                voiceEl.load();
-            } else {
-                startPlay();
-            }
+            try { voiceEl.currentTime = 0; } catch (_) {}
+            voiceEl.play().catch(() => {
+                if (onEndedCallback) onEndedCallback();
+            });
         }
 
         function playPoyonSound(stepNum = 1) {
