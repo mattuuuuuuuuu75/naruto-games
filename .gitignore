@@ -1,0 +1,6 @@
+scripts/_temp_wav/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+.env

@@ -1,0 +1,2403 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NARUTOビンゴ">
+    <meta name="theme-color" content="#ff6b00">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" type="image/png" sizes="192x192" href="./assets/icons/icon-192.png">
+    <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon.png">
+    <title>NARUTO -ナルト- 疾風伝 超S級・忍界大戦ビンゴ大会！</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@700;900&family=Noto+Serif+JP:wght@900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --naruto-orange: #ff6b00;
+            --kurama-gold: #fbbf24;
+            --sharingan-red: #dc2626;
+            --chidori-blue: #38bdf8;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100dvh;
+            max-height: 100dvh;
+            overflow: hidden;
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            background-color: #090a0f;
+            background-image:
+                radial-gradient(circle at 15% 18%, rgba(255, 107, 0, 0.18) 0%, transparent 45%),
+                radial-gradient(circle at 85% 25%, rgba(220, 38, 38, 0.16) 0%, transparent 45%),
+                radial-gradient(circle at 50% 88%, rgba(56, 189, 248, 0.14) 0%, transparent 50%);
+            color: #fff;
+            user-select: none;
+        }
+
+        .font-manga {
+            font-family: 'Dela Gothic One', cursive, sans-serif;
+        }
+
+        .font-fude {
+            font-family: 'Noto Serif JP', serif;
+        }
+
+        .speed-lines {
+            background: repeating-conic-gradient(
+                from 0deg,
+                rgba(255, 165, 0, 0.08) 0deg 2deg,
+                transparent 2deg 7deg
+            );
+        }
+
+        .speed-lines-intense {
+            background: repeating-conic-gradient(
+                from 0deg,
+                rgba(255, 215, 0, 0.25) 0deg 3deg,
+                rgba(255, 69, 0, 0.15) 3deg 6deg,
+                transparent 6deg 12deg
+            );
+            animation: spinSlow 20s linear infinite;
+        }
+
+        @keyframes spinSlow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* リーチ時のチャクラオーラ */
+        @keyframes pulseAuraGold {
+            0%, 100% { box-shadow: 0 0 12px rgba(251, 191, 36, 0.7), inset 0 0 12px rgba(255, 107, 0, 0.4); }
+            50% { box-shadow: 0 0 26px rgba(254, 240, 138, 0.95), inset 0 0 22px rgba(251, 191, 36, 0.7); }
+        }
+        .aura-reach-active {
+            animation: pulseAuraGold 1.25s infinite;
+        }
+
+        /* 画面シェイク */
+        @keyframes screenShake {
+            0%, 100% { transform: translate(0, 0); }
+            20% { transform: translate(-6px, -4px); }
+            40% { transform: translate(6px, 3px); }
+            60% { transform: translate(-4px, 4px); }
+            80% { transform: translate(4px, -3px); }
+        }
+        .shake-active {
+            animation: screenShake 0.38s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        /* キラカード・ホログラム光沢エフェクト */
+        @keyframes holoSweep {
+            0% { transform: translateX(-140%) skewX(-22deg); }
+            45%, 100% { transform: translateX(220%) skewX(-22deg); }
+        }
+        .holo-card-opened::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.34) 50%,
+                transparent 100%
+            );
+            width: 55%;
+            pointer-events: none;
+            animation: holoSweep 3.8s ease-in-out infinite;
+        }
+
+        /* 最新ヒットマスの黄金パルス */
+        @keyframes latestHitPulse {
+            0% { transform: scale(1.08); box-shadow: 0 0 24px #fef08a, inset 0 0 14px #fff; }
+            100% { transform: scale(0.98); box-shadow: 0 0 14px #fbbf24, inset 0 0 8px #fef08a; }
+        }
+        .cell-latest-hit {
+            animation: latestHitPulse 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite alternate;
+            border: 2.5px solid #fef08a !important;
+            z-index: 15;
+        }
+
+        /* ビンゴ完成ラインの黄金発光 */
+        @keyframes bingoLineGlow {
+            0%, 100% {
+                box-shadow: 0 0 14px #fbbf24, inset 0 0 12px rgba(254, 240, 138, 0.85);
+                border-color: #ffffff;
+            }
+            50% {
+                box-shadow: 0 0 26px #fef08a, inset 0 0 20px rgba(255, 255, 255, 0.95);
+                border-color: #fde047;
+            }
+        }
+        .cell-bingo-line {
+            animation: bingoLineGlow 1.05s infinite !important;
+            border-width: 2.5px !important;
+            z-index: 12;
+        }
+
+        /* 音声波形インジケーター */
+        @keyframes eqBounce {
+            0%, 100% { height: 4px; }
+            50% { height: 13px; }
+        }
+        .eq-bar-1 { animation: eqBounce 0.45s ease-in-out infinite; }
+        .eq-bar-2 { animation: eqBounce 0.45s ease-in-out 0.15s infinite; }
+        .eq-bar-3 { animation: eqBounce 0.45s ease-in-out 0.30s infinite; }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(20, 16, 12, 0.7);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #f59e0b;
+            border-radius: 4px;
+        }
+
+        .text-stroke-black {
+            text-shadow:
+                -1.5px -1.5px 0 #000,
+                 1.5px -1.5px 0 #000,
+                -1.5px  1.5px 0 #000,
+                 1.5px  1.5px 0 #000,
+                 0px  2px 5px rgba(0,0,0,0.9);
+        }
+
+        .text-stroke-xs {
+            text-shadow:
+                -1px -1px 0 #000,
+                 1px -1px 0 #000,
+                -1px  1px 0 #000,
+                 1px  1px 0 #000;
+        }
+    </style>
+</head>
+<body class="flex flex-col justify-between select-none">
+
+    <!-- iPad / Android タブレット完全対応：単一持続型オーディオ要素 -->
+    <audio id="animeVoicePlayer" preload="auto" playsinline class="hidden"></audio>
+
+    <!-- 背景チャクラ火の粉＆花火キャンバス -->
+    <canvas id="chakraCanvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
+
+    <!-- ==========================================
+         1. 上部ヘッダー (6.5dvh 固定)
+    =========================================== -->
+    <header class="relative z-20 h-[6.5dvh] min-h-[44px] max-h-[58px] bg-gradient-to-r from-stone-950 via-orange-950 to-stone-950 border-b-2 border-amber-500 px-2 sm:px-3 flex items-center justify-between gap-1.5 shrink-0">
+        <!-- 左：ホームへ戻る＆アイコン＆タイトル -->
+        <div class="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <a href="../index.html" class="px-2 py-1 rounded-lg bg-stone-800 hover:bg-stone-700 border border-amber-400/70 text-amber-200 font-bold text-[10px] sm:text-xs flex items-center gap-1 shrink-0 active:scale-95 transition" title="ゲーム選択ポータルへ戻る">
+                <span>🏠</span><span class="hidden md:inline">一覧</span>
+            </a>
+            <img src="./assets/icons/icon-192.png" alt="NARUTOビンゴ" class="w-8 h-8 rounded-lg border border-amber-400 shadow shrink-0 object-cover" onerror="this.style.display='none'">
+            <div class="truncate">
+                <div class="flex items-center gap-1.5">
+                    <span class="hidden sm:inline-block bg-red-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded uppercase tracking-wider shrink-0">超S級任務</span>
+                    <h1 class="font-manga text-xs sm:text-base md:text-lg text-transparent bg-clip-text bg-gradient-to-b from-yellow-200 via-orange-400 to-red-500 truncate">
+                        NARUTO 疾風伝・忍界大戦ビンゴ！
+                    </h1>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右：操作ボタン群 -->
+        <div class="flex items-center gap-1 sm:gap-1.5 shrink-0">
+            <!-- プレイ枚数切替 (1枚 / 2枚 / 3枚) -->
+            <button id="playerCountBtn" onclick="cyclePlayerCount()" class="px-2 py-1 rounded-lg font-bold text-[10px] sm:text-xs bg-indigo-950/90 hover:bg-indigo-900 border border-indigo-400 text-indigo-100 flex items-center gap-1 shadow active:scale-95 transition" title="表示するビンゴカードの枚数を切り替え">
+                <span id="playerCountIcon">👥</span>
+                <span id="playerCountText">3枚対戦</span>
+            </button>
+
+            <!-- 推しキャラカード選択ボタン -->
+            <button onclick="openOshiModal(0)" class="px-2 py-1 rounded-lg font-bold text-[10px] sm:text-xs bg-gradient-to-r from-orange-700 to-rose-700 hover:from-orange-600 hover:to-rose-600 border border-yellow-300 text-yellow-100 flex items-center gap-1 shadow active:scale-95 transition">
+                <span>🃏</span>
+                <span>推し選択</span>
+            </button>
+
+            <!-- 音声モード切替 -->
+            <button id="voiceModeBtn" onclick="cycleVoiceMode()" class="px-2 py-1 rounded-lg font-bold text-[10px] sm:text-xs bg-amber-900/90 hover:bg-amber-800 border border-amber-400 text-amber-100 flex items-center gap-1 shadow active:scale-95 transition">
+                <span id="voiceModeIcon">🔥</span>
+                <span id="voiceModeText">声:フル実況</span>
+            </button>
+
+            <!-- 声テスト -->
+            <button onclick="testVoiceEngine()" class="px-2 py-1 rounded-lg font-bold text-[10px] sm:text-xs bg-cyan-950 hover:bg-cyan-900 border border-cyan-400 text-cyan-200 flex items-center gap-1 shadow active:scale-95 transition" title="音声テスト＆ロック解除">
+                <span>🔊</span>
+                <span class="hidden md:inline">声テスト</span>
+            </button>
+
+            <!-- 全75枚 忍カード図鑑 -->
+            <button onclick="openScrollModal()" class="px-2 py-1 rounded-lg font-bold text-[10px] sm:text-xs bg-stone-800 hover:bg-stone-700 border border-amber-500/70 text-amber-300 flex items-center gap-1 shadow active:scale-95 transition">
+                <span>📜</span>
+                <span class="hidden sm:inline">図鑑</span><span>(<span id="headerDrawnCount">0</span>/75)</span>
+            </button>
+
+            <!-- リセット -->
+            <button onclick="openResetModal()" class="px-2 py-1 rounded-lg font-bold text-[10px] sm:text-xs bg-red-950 hover:bg-red-900 border border-red-500 text-red-200 flex items-center gap-1 shadow active:scale-95 transition">
+                <span>🔄</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- ==========================================
+         2. メインステージ (残り 93.5dvh 固定)
+    =========================================== -->
+    <main id="mainStage" class="relative z-10 h-[93.5dvh] w-full max-w-[1720px] mx-auto px-1.5 sm:px-3 py-1.5 flex flex-col justify-between gap-1.5 overflow-hidden">
+
+        <!-- 上段：口寄せ抽選祭壇＆キラカード召喚ステージ (24.5dvh) -->
+        <section class="h-[24.5dvh] min-h-[146px] grid grid-cols-12 gap-2 shrink-0">
+
+            <!-- 左〜中央：口寄せ祭壇 -->
+            <div class="col-span-12 lg:col-span-8 bg-gradient-to-b from-stone-900/95 via-stone-950/95 to-black border-2 border-amber-500/85 rounded-2xl p-2 sm:p-2.5 shadow-[0_0_22px_rgba(255,107,0,0.22)] relative overflow-hidden flex flex-col justify-between">
+                <div class="speed-lines absolute inset-0 pointer-events-none"></div>
+
+                <!-- 印（イン）高速フラッシュ演出オーバーレイ -->
+                <div id="handSealOverlay" class="hidden absolute inset-0 z-30 bg-black/90 rounded-2xl flex items-center justify-center gap-4 px-4">
+                    <div id="sealKanji" class="font-fude text-5xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-b from-yellow-200 via-orange-500 to-red-600 drop-shadow-[0_0_20px_rgba(255,107,0,1)]">
+                        臨
+                    </div>
+                    <div>
+                        <div class="text-xs sm:text-sm text-amber-400 font-black tracking-widest animate-pulse">チャクラを練り上げろ…印を結べ！！</div>
+                        <div id="sealSubtext" class="text-sm sm:text-lg font-manga text-white mt-0.5">口寄せ・抽選の術 発動中！！</div>
+                    </div>
+                </div>
+
+                <!-- メイン召喚カード＋セリフ＋抽選ボタン -->
+                <div class="relative z-10 flex items-center gap-2 sm:gap-3 flex-1 min-h-0">
+
+                    <!-- 召喚キラカードショーケース (タップで拡大カード表示) -->
+                    <button id="summonCardShowcase" onclick="openCurrentCardZoom()" class="relative w-[70px] h-[88px] sm:w-[88px] sm:h-[106px] rounded-xl p-0.5 bg-gradient-to-br from-yellow-300 via-orange-500 to-red-600 shadow-[0_0_20px_rgba(255,107,0,0.8)] shrink-0 overflow-hidden group active:scale-95 transition">
+                        <div class="relative w-full h-full rounded-[10px] overflow-hidden bg-stone-950 flex flex-col justify-between">
+                            <img id="currentCardImg" src="./assets/cards/free.webp" alt="召喚カード" class="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition duration-300">
+                            <div class="relative z-10 flex items-center justify-between px-1 pt-0.5">
+                                <span id="currentNumberBadge" class="bg-black/80 text-yellow-300 border border-yellow-400/60 font-black text-[9px] sm:text-[10px] px-1 rounded leading-tight">待機</span>
+                                <span id="currentRarityBadge" class="bg-gradient-to-r from-amber-300 to-yellow-500 text-black font-black text-[8px] px-1 rounded leading-tight">忍</span>
+                            </div>
+                            <div class="relative z-10 bg-gradient-to-t from-black via-black/80 to-transparent pt-3 pb-0.5 px-1 text-center">
+                                <span id="currentAttrBadge" class="text-[8px] sm:text-[9px] font-black text-amber-200 truncate block leading-tight">木ノ葉隠れ</span>
+                            </div>
+                        </div>
+                    </button>
+
+                    <!-- キャラ名・忍術・現在発話インジケーター・決め台詞 -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex flex-wrap items-center gap-1 mb-0.5">
+                            <span id="currentRankTag" class="bg-gradient-to-r from-amber-400 to-orange-600 text-black font-black text-[9px] sm:text-xs px-1.5 py-0.2 rounded">忍界大戦・開幕待機</span>
+                            <span id="currentJutsuTag" class="text-[9px] sm:text-xs font-bold text-cyan-200 bg-cyan-950/90 border border-cyan-400/50 px-1.5 py-0.2 rounded truncate max-w-[180px] sm:max-w-xs">推しキャラを選んで抽選だ！</span>
+                            <button onclick="replayCurrentVoice()" class="text-[9px] sm:text-[10px] bg-stone-800 hover:bg-stone-700 text-amber-300 border border-amber-400/60 px-1.5 py-0.2 rounded font-bold active:scale-95 flex items-center gap-0.5">
+                                <span>🗣️</span><span>セリフ再生</span>
+                            </button>
+                            <!-- リアルタイム発話バッジ -->
+                            <div id="speakingIndicator" class="hidden items-center gap-1 bg-orange-600/90 border border-yellow-300 text-white text-[9px] sm:text-[10px] font-black px-2 py-0.2 rounded-full shadow">
+                                <span class="inline-flex items-end gap-0.5 h-3">
+                                    <i class="w-0.5 bg-yellow-200 eq-bar-1 block"></i>
+                                    <i class="w-0.5 bg-yellow-200 eq-bar-2 block"></i>
+                                    <i class="w-0.5 bg-yellow-200 eq-bar-3 block"></i>
+                                </span>
+                                <span id="speakingLabel">ナルト実況中</span>
+                            </div>
+                        </div>
+
+                        <h2 id="currentCharName" class="font-manga text-sm sm:text-xl md:text-2xl text-white text-stroke-black truncate leading-tight">
+                            口寄せボタンを押すってばよ！
+                        </h2>
+
+                        <p id="currentQuote" class="mt-0.5 text-[10px] sm:text-xs font-bold text-amber-200 bg-black/70 border-l-4 border-orange-500 pl-2 py-0.5 rounded-r line-clamp-1">
+                            「ナルトの実況に続いて、登場キャラ本人のアニメ風ボイスで決めゼリフが流れるぞ！！」
+                        </p>
+                    </div>
+
+                    <!-- 右：抽選ボタン群 -->
+                    <div class="flex flex-col gap-1.5 shrink-0 w-32 sm:w-44">
+                        <button id="drawButton" onclick="triggerSummonDraw(false)" class="w-full py-2 sm:py-2.5 px-2 rounded-xl font-manga text-xs sm:text-base text-white bg-gradient-to-r from-orange-600 via-amber-500 to-red-600 hover:from-orange-500 hover:to-red-500 border-2 border-yellow-200 shadow-[0_0_18px_rgba(255,107,0,0.85)] active:scale-95 transition flex items-center justify-center gap-1">
+                            <span>🔥</span>
+                            <span class="text-stroke-black">口寄せ・抽選！</span>
+                        </button>
+                        <button id="quickDrawButton" onclick="triggerSummonDraw(true)" class="w-full py-1 sm:py-1.5 px-2 rounded-lg font-bold text-[10px] sm:text-xs text-cyan-200 bg-cyan-950/90 hover:bg-cyan-900 border border-cyan-400 shadow active:scale-95 transition flex items-center justify-center gap-1">
+                            <span>⚡</span>
+                            <span>飛雷神・即抽選</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 下段：横1列召喚カード履歴バー -->
+                <div class="relative z-10 h-8 bg-black/80 border border-amber-500/40 rounded-xl px-2 flex items-center gap-2 shrink-0">
+                    <div class="text-[10px] sm:text-xs font-black text-amber-400 shrink-0 flex items-center gap-1">
+                        <span>📜召喚順:</span>
+                        <span class="bg-amber-500/20 border border-amber-400 text-white px-1.5 rounded text-[10px]" id="drawnCounterBadge">0/75</span>
+                    </div>
+                    <div id="horizontalHistoryBar" class="flex-1 flex items-center gap-1.5 overflow-x-auto whitespace-nowrap py-0.5">
+                        <span class="text-[11px] text-stone-500 italic">まだ召喚された忍カードはないってばよ…</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右側 (PC/横タブレット大画面)：戦況ボード＆実況ログ -->
+            <div class="hidden lg:flex lg:col-span-4 bg-gradient-to-b from-stone-900/95 via-stone-950/95 to-black border-2 border-red-500/80 rounded-2xl p-2.5 flex-col justify-between overflow-hidden">
+                <div id="miniScoreboard" class="grid grid-cols-3 gap-1.5 shrink-0 mb-1.5"></div>
+                <div id="liveCommentaryBox" class="flex-1 bg-black/80 border border-stone-700 rounded-xl p-2 overflow-y-auto space-y-1 text-[11px] leading-tight min-h-0">
+                    <div class="text-amber-300 font-bold">
+                        📢 【本部】推しキャラのビンゴカードを選んで開幕だ！各カードの「推し変更」からいつでも好きなキャラに変えられるぞ！
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 下段：プレイヤー別 推しキャラ・ビンゴカード領域 (67.5dvh 固定) -->
+        <section id="cardsGrid" class="h-[67.5dvh] grid grid-cols-3 gap-1.5 sm:gap-3 items-stretch overflow-hidden shrink-0">
+            <!-- JSで1〜3枚の推しキャラビンゴカードを描画 -->
+        </section>
+
+    </main>
+
+    <!-- ==========================================
+         モーダル1：🃏 推しキャラのビンゴカード選択デッキ (全12キャラ)
+    =========================================== -->
+    <div id="oshiSelectModal" class="hidden fixed inset-0 z-50 bg-black/88 backdrop-blur-md flex items-center justify-center p-2 sm:p-5">
+        <div class="bg-stone-950 border-2 border-amber-400 rounded-3xl max-w-5xl w-full max-h-[92dvh] flex flex-col shadow-[0_0_50px_rgba(255,107,0,0.45)] overflow-hidden">
+            <!-- ヘッダー -->
+            <div class="p-3 sm:p-4 bg-gradient-to-r from-stone-900 via-orange-950 to-stone-900 border-b border-amber-500/50 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                    <h3 class="font-manga text-base sm:text-2xl text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-amber-400 to-orange-500">
+                        🃏 推しキャラ・ビンゴカード編成！
+                    </h3>
+                    <p class="text-[11px] sm:text-xs text-stone-300">
+                        好きなキャラをタップすると、専用ボイス＆専用デザインのビンゴカードに変身するってばよ！
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <!-- プレイ人数切替ボタン群 -->
+                    <div class="flex items-center bg-black/60 p-1 rounded-xl border border-stone-700 gap-1">
+                        <button onclick="setPlayerCount(1)" id="modalCountBtn1" class="px-2.5 py-1 rounded-lg text-xs font-black transition">👑 1枚</button>
+                        <button onclick="setPlayerCount(2)" id="modalCountBtn2" class="px-2.5 py-1 rounded-lg text-xs font-black transition">⚔️ 2枚</button>
+                        <button onclick="setPlayerCount(3)" id="modalCountBtn3" class="px-2.5 py-1 rounded-lg text-xs font-black transition">👥 3枚</button>
+                    </div>
+                    <button onclick="closeOshiModal()" class="px-4 py-1.5 rounded-xl font-manga text-xs sm:text-sm bg-gradient-to-r from-amber-400 to-orange-500 text-black border border-white shadow">
+                        🔥 決定して戻る
+                    </button>
+                </div>
+            </div>
+
+            <!-- 編集対象プレイヤータブ + 名前入力 -->
+            <div class="px-3 sm:px-4 py-2 bg-stone-900/90 border-b border-stone-800 flex flex-wrap items-center justify-between gap-2">
+                <div id="oshiPlayerTabs" class="flex items-center gap-1.5">
+                    <!-- JS生成: 1P / 2P / 3P タブ -->
+                </div>
+                <div class="flex items-center gap-1.5 flex-1 max-w-xs">
+                    <span class="text-xs font-bold text-amber-300 shrink-0">カード名:</span>
+                    <input id="oshiModalNameInput" type="text" onchange="updateActiveModalPlayerName(this.value)" class="w-full bg-black/70 text-white font-manga text-xs sm:text-sm px-2.5 py-1 rounded-lg border border-amber-500/60 focus:border-yellow-300 focus:outline-none" placeholder="例: たろうのナルトカード">
+                </div>
+            </div>
+
+            <!-- 全12種 推しキャラカード一覧グリッド -->
+            <div id="oshiLeaderGrid" class="p-3 sm:p-4 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3">
+                <!-- JS生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         モーダル2：📜 封印の書（全75枚 忍カード＆専用ボイス大図鑑）
+    =========================================== -->
+    <div id="scrollModal" class="hidden fixed inset-0 z-50 bg-black/88 backdrop-blur-sm flex items-center justify-center p-2 sm:p-5">
+        <div class="bg-stone-950 border-2 border-amber-500 rounded-2xl max-w-6xl w-full max-h-[90dvh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="p-3 sm:p-4 bg-gradient-to-r from-stone-900 via-orange-950 to-stone-900 border-b border-amber-500/50 flex items-center justify-between gap-2">
+                <div>
+                    <h3 class="font-manga text-base sm:text-xl text-amber-400">📜 封印の書・全75枚 忍キラカード＆ボイス大図鑑</h3>
+                    <p class="text-[11px] sm:text-xs text-stone-300">カードをタップすると、拡大キラカード表示＆そのキャラ自身のアニメ風決めゼリフが再生されるぞ！</p>
+                </div>
+                <button onclick="closeScrollModal()" class="px-4 py-1.5 rounded-xl font-manga text-xs sm:text-sm bg-red-700 hover:bg-red-600 text-white border border-yellow-300 shrink-0">
+                    ✖ 閉じる
+                </button>
+            </div>
+            <div id="fullHistoryGrid" class="p-2.5 sm:p-4 overflow-y-auto grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2">
+                <!-- JS生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         モーダル3：🔍 キャラクターキラカード拡大ショーケース
+    =========================================== -->
+    <div id="cardZoomModal" onclick="closeCardZoomModal(event)" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+        <div onclick="event.stopPropagation()" class="relative max-w-sm w-full bg-gradient-to-br from-yellow-300 via-orange-500 to-red-700 p-1.5 rounded-3xl shadow-[0_0_60px_rgba(255,140,0,0.9)]">
+            <div class="bg-stone-950 rounded-[22px] overflow-hidden">
+                <div class="relative aspect-square w-full overflow-hidden holo-card-opened">
+                    <img id="zoomCardImg" src="./assets/cards/char_01.webp" alt="キャラカード" class="w-full h-full object-cover object-top">
+                    <div class="absolute top-2.5 left-2.5 bg-black/80 border border-yellow-300 text-yellow-300 font-manga text-sm px-2.5 py-0.5 rounded-lg shadow" id="zoomCardNum">B-1</div>
+                    <div class="absolute top-2.5 right-2.5 bg-gradient-to-r from-yellow-300 to-amber-500 text-black font-black text-xs px-2.5 py-0.5 rounded-full shadow" id="zoomCardAttr">仙術・UR</div>
+                    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-stone-950 via-stone-950/80 to-transparent pt-10 pb-2 px-4">
+                        <div id="zoomCardJutsu" class="text-xs font-black text-cyan-300">仙法・超大玉螺旋多連丸</div>
+                        <h3 id="zoomCardName" class="font-manga text-2xl text-white text-stroke-black">うずまきナルト</h3>
+                    </div>
+                </div>
+                <div class="p-4 space-y-3">
+                    <p id="zoomCardQuote" class="text-xs sm:text-sm font-bold text-amber-200 bg-stone-900 border-l-4 border-amber-400 p-2.5 rounded-r">
+                        「まっすぐ自分の言葉は曲げねェ…それがオレの忍道だってばよ！」
+                    </p>
+                    <div class="flex items-center gap-2">
+                        <button id="zoomReplayBtn" class="flex-1 py-2.5 rounded-xl font-manga text-xs sm:text-sm bg-gradient-to-r from-orange-600 to-amber-500 text-white border border-yellow-200 shadow active:scale-95">
+                            🔊 キャラの声でセリフ再生！
+                        </button>
+                        <button onclick="closeCardZoomModal()" class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-600">
+                            閉じる
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         モーダル4：🎉 超S級任務達成！（推しキャラ専用BINGOカットイン）
+    =========================================== -->
+    <div id="bingoCutinModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/88 backdrop-blur-md">
+        <div class="fixed inset-0 speed-lines-intense pointer-events-none"></div>
+        <div class="relative z-10 max-w-lg w-full bg-gradient-to-b from-yellow-300 via-orange-500 to-red-700 p-1.5 rounded-3xl shadow-[0_0_80px_rgba(255,165,0,1)]">
+            <div class="bg-stone-950 rounded-[22px] p-5 sm:p-6 text-center relative overflow-hidden">
+                <div class="font-fude text-[140px] font-black text-orange-500/10 absolute -top-8 left-1/2 -translate-x-1/2 pointer-events-none">忍</div>
+                <div class="relative z-10 flex flex-col items-center">
+                    <div class="inline-block bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-300 text-black font-black text-xs px-4 py-1 rounded-full uppercase mb-2 animate-bounce">
+                        🎉 超S級任務達成・神引きビンゴ炸裂！！ 🎉
+                    </div>
+                    <!-- 推しキャラの特大キラ肖像 -->
+                    <div class="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl p-1 bg-gradient-to-br from-yellow-200 via-amber-400 to-red-600 shadow-[0_0_30px_rgba(251,191,36,0.9)] my-1 overflow-hidden holo-card-opened relative">
+                        <img id="bingoModalPortrait" src="./assets/cards/leader_naruto.webp" alt="推しキャラ" class="w-full h-full object-cover object-top rounded-xl">
+                    </div>
+                    <h2 id="bingoModalTitle" class="font-manga text-xl sm:text-3xl text-transparent bg-clip-text bg-gradient-to-b from-yellow-200 via-amber-400 to-orange-500 mt-2 mb-1">
+                        ナルトカードがビンゴ達成だってばよ！！
+                    </h2>
+                    <div id="bingoModalRankBadge" class="inline-block my-1 px-4 py-1 rounded-xl bg-red-700 border-2 border-yellow-300 text-yellow-200 font-manga text-sm sm:text-lg">
+                        🏆 初代・火影級ビンゴ神
+                    </div>
+                    <p id="bingoModalQuote" class="mt-2 text-xs sm:text-sm font-bold text-amber-200 bg-stone-900/90 border border-amber-500/40 rounded-xl p-3 w-full">
+                        「やったー！！超S級任務達成！オレたちの最強ビンゴだってばよぉぉ！！」
+                    </p>
+                    <button onclick="closeBingoModal()" class="mt-4 px-7 py-2.5 rounded-2xl font-manga text-sm sm:text-base text-black bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-400 border-2 border-white shadow-xl active:scale-95 transition">
+                        🔥 任務続行！さらなるビンゴを目指すってばよ！
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         モーダル5：🔄 忍界リセット確認
+    =========================================== -->
+    <div id="resetConfirmModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="max-w-md w-full bg-stone-900 border-2 border-red-500 rounded-2xl p-5 text-center shadow-2xl">
+            <div class="text-4xl mb-2">🌀</div>
+            <h3 class="font-manga text-lg sm:text-xl text-amber-400 mb-1.5">忍界リセットの術を発動するか？</h3>
+            <p class="text-xs sm:text-sm text-stone-300 mb-5">
+                これまでの召喚履歴を封印し、選んだ推しキャラのまま新しいビンゴカードを配り直すってばよ！
+            </p>
+            <div class="flex items-center justify-center gap-3">
+                <button onclick="closeResetModal()" class="flex-1 py-2 px-4 rounded-xl font-bold text-xs sm:text-sm bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-600">
+                    キャンセル
+                </button>
+                <button onclick="confirmResetGame()" class="flex-1 py-2 px-4 rounded-xl font-manga text-xs sm:text-sm bg-gradient-to-r from-red-600 to-orange-600 text-white border border-yellow-300 shadow-lg">
+                    🔥 新カードで開幕！
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================================
+           1. 全12種 プレイヤーが選べる「推しキャラ・ビンゴカード」定義
+        ========================================================== */
+        const OSHI_LEADERS = [
+            {
+                id: "naruto",
+                charName: "うずまきナルト",
+                defaultCardName: "ナルトカード",
+                badge: "🦊 九尾＆仙術",
+                sealIcon: "🍥",
+                sealText: "螺旋",
+                portrait: "./assets/cards/leader_naruto.webp",
+                headerBg: "from-orange-600 via-amber-500 to-red-600",
+                borderClass: "border-orange-500",
+                cardBg: "from-stone-900 via-orange-950/40 to-stone-950",
+                openBorder: "border-yellow-300 shadow-[0_0_12px_rgba(255,130,0,0.9)]",
+                openRibbon: "from-orange-600/95 via-amber-600/95 to-red-700/95",
+                barColor: "from-yellow-300 via-orange-500 to-red-600",
+                reachTitle: "🔥 九尾リーチ！",
+                selectQuote: "オレのカードを選んだな！絶対ビンゴするってばよ！！",
+                bingoQuote: "やったー！！超S級任務達成！オレたちの最強ビンゴだってばよぉぉ！！"
+            },
+            {
+                id: "sasuke",
+                charName: "うちはサスケ",
+                defaultCardName: "サスケカード",
+                badge: "👁️ 万華鏡写輪眼",
+                sealIcon: "👁️",
+                sealText: "写輪",
+                portrait: "./assets/cards/leader_sasuke.webp",
+                headerBg: "from-indigo-800 via-purple-700 to-red-700",
+                borderClass: "border-purple-500",
+                cardBg: "from-stone-900 via-indigo-950/45 to-stone-950",
+                openBorder: "border-fuchsia-300 shadow-[0_0_12px_rgba(168,85,247,0.9)]",
+                openRibbon: "from-purple-800/95 via-indigo-800/95 to-red-800/95",
+                barColor: "from-cyan-400 via-purple-500 to-red-600",
+                reachTitle: "⚡ 須佐能乎リーチ！",
+                selectQuote: "フン…オレのカードを選んだか。見せてやる…うちはの力を！",
+                bingoQuote: "当然の結果だ。万華鏡写輪眼の前に死角はない…見事なビンゴだな！"
+            },
+            {
+                id: "sakura",
+                charName: "春野サクラ",
+                defaultCardName: "サクラカード",
+                badge: "🌸 百豪＆桜花衝",
+                sealIcon: "🌸",
+                sealText: "桜花",
+                portrait: "./assets/cards/leader_sakura.webp",
+                headerBg: "from-pink-600 via-rose-500 to-emerald-600",
+                borderClass: "border-pink-400",
+                cardBg: "from-stone-900 via-rose-950/40 to-stone-950",
+                openBorder: "border-pink-200 shadow-[0_0_12px_rgba(244,114,182,0.9)]",
+                openRibbon: "from-pink-600/95 via-rose-600/95 to-emerald-700/95",
+                barColor: "from-emerald-300 via-pink-500 to-rose-600",
+                reachTitle: "🌸 百豪リーチ！",
+                selectQuote: "私のカードね！百豪のチャクラ全開でいくわよ！しゃーんなろー！！",
+                bingoQuote: "やったわー！！しゃーんなろー！！百豪ビンゴ、完全達成よ！！"
+            },
+            {
+                id: "kakashi",
+                charName: "はたけカカシ",
+                defaultCardName: "カカシカード",
+                badge: "⚡ 神威＆雷切",
+                sealIcon: "⚡",
+                sealText: "雷切",
+                portrait: "./assets/cards/leader_kakashi.webp",
+                headerBg: "from-sky-700 via-cyan-600 to-slate-700",
+                borderClass: "border-cyan-400",
+                cardBg: "from-stone-900 via-sky-950/40 to-stone-950",
+                openBorder: "border-cyan-200 shadow-[0_0_12px_rgba(56,189,248,0.9)]",
+                openRibbon: "from-sky-700/95 via-cyan-700/95 to-slate-800/95",
+                barColor: "from-sky-300 via-cyan-400 to-blue-600",
+                reachTitle: "⚡ 神威リーチ！",
+                selectQuote: "おっ、オレのカードかい？本気を出せば神威ですぐビンゴしちゃうよ。",
+                bingoQuote: "お見事！さすがはオレが見込んだだけのことはあるね。超S級ビンゴ達成だ！"
+            },
+            {
+                id: "minato",
+                charName: "波風ミナト",
+                defaultCardName: "ミナトカード",
+                badge: "🟨 黄色い閃光",
+                sealIcon: "🟨",
+                sealText: "飛雷",
+                portrait: "./assets/cards/leader_minato.webp",
+                headerBg: "from-amber-500 via-yellow-500 to-red-600",
+                borderClass: "border-yellow-400",
+                cardBg: "from-stone-900 via-amber-950/40 to-stone-950",
+                openBorder: "border-yellow-200 shadow-[0_0_14px_rgba(250,204,21,0.95)]",
+                openRibbon: "from-amber-600/95 via-yellow-600/95 to-red-700/95",
+                barColor: "from-yellow-200 via-amber-400 to-red-500",
+                reachTitle: "🟨 飛雷神リーチ！",
+                selectQuote: "四代目火影、波風ミナトだ！黄色い閃光のスピードで一番乗りを目指すよ！",
+                bingoQuote: "すごいよ！飛雷神の術みたいな最速ビンゴ達成だね！おめでとう！！"
+            },
+            {
+                id: "itachi",
+                charName: "うちはイタチ",
+                defaultCardName: "イタチカード",
+                badge: "🐦‍⬛ 月読＆天照",
+                sealIcon: "🐦‍⬛",
+                sealText: "天照",
+                portrait: "./assets/cards/leader_itachi.webp",
+                headerBg: "from-red-800 via-rose-900 to-neutral-900",
+                borderClass: "border-red-500",
+                cardBg: "from-stone-950 via-red-950/45 to-black",
+                openBorder: "border-red-300 shadow-[0_0_12px_rgba(239,68,68,0.9)]",
+                openRibbon: "from-red-800/95 via-rose-950/95 to-black/95",
+                barColor: "from-red-400 via-rose-600 to-red-900",
+                reachTitle: "🔥 天照リーチ！",
+                selectQuote: "オレのカードを選ぶとはな…勝利の道筋はすでに見えている。",
+                bingoQuote: "見事だ…お前の瞳には、しっかりと勝利の光が映っていたようだな。"
+            },
+            {
+                id: "gaara",
+                charName: "我愛羅",
+                defaultCardName: "我愛羅カード",
+                badge: "🏜️ 五代目風影",
+                sealIcon: "🏜️",
+                sealText: "砂瀑",
+                portrait: "./assets/cards/leader_gaara.webp",
+                headerBg: "from-amber-700 via-orange-800 to-red-900",
+                borderClass: "border-amber-500",
+                cardBg: "from-stone-900 via-amber-950/35 to-stone-950",
+                openBorder: "border-amber-200 shadow-[0_0_12px_rgba(217,119,6,0.9)]",
+                openRibbon: "from-amber-700/95 via-stone-800/95 to-red-900/95",
+                barColor: "from-yellow-300 via-amber-600 to-red-800",
+                reachTitle: "🏜️ 砂瀑リーチ！",
+                selectQuote: "砂の風影、我愛羅だ。絶対防御の砂でお前の勝利を守り抜こう。",
+                bingoQuote: "見事な絆の力だ…砂の誇りにかけて、このビンゴ達成を祝福しよう！"
+            },
+            {
+                id: "hinata",
+                charName: "日向ヒナタ",
+                defaultCardName: "ヒナタカード",
+                badge: "🦁 白眼＆双獅拳",
+                sealIcon: "🦁",
+                sealText: "白眼",
+                portrait: "./assets/cards/leader_hinata.webp",
+                headerBg: "from-violet-600 via-purple-500 to-sky-600",
+                borderClass: "border-violet-400",
+                cardBg: "from-stone-900 via-violet-950/40 to-stone-950",
+                openBorder: "border-violet-200 shadow-[0_0_12px_rgba(167,139,250,0.9)]",
+                openRibbon: "from-violet-700/95 via-indigo-700/95 to-sky-700/95",
+                barColor: "from-sky-300 via-violet-400 to-purple-600",
+                reachTitle: "🦁 双獅拳リーチ！",
+                selectQuote: "私のカードを選んでくれてありがとう！白眼でしっかり見極めるね！",
+                bingoQuote: "やったぁ…！あきらめないでよかった…最高のビンゴ達成だね！！"
+            },
+            {
+                id: "jiraiya",
+                charName: "自来也",
+                defaultCardName: "自来也カード",
+                badge: "🐸 伝説のガマ仙人",
+                sealIcon: "🐸",
+                sealText: "仙人",
+                portrait: "./assets/cards/leader_jiraiya.webp",
+                headerBg: "from-red-700 via-orange-600 to-emerald-700",
+                borderClass: "border-red-400",
+                cardBg: "from-stone-900 via-red-950/35 to-stone-950",
+                openBorder: "border-orange-200 shadow-[0_0_12px_rgba(234,88,12,0.9)]",
+                openRibbon: "from-red-700/95 via-orange-700/95 to-emerald-800/95",
+                barColor: "from-emerald-400 via-orange-500 to-red-600",
+                reachTitle: "🐸 仙法リーチ！",
+                selectQuote: "ガッハッハ！妙木山のガマ仙人、自来也様のカードとはお目が高いのう！",
+                bingoQuote: "よぉーっし！ど根性ビンゴ達成じゃ！これぞ伝説の三忍の豪運よ！！"
+            },
+            {
+                id: "shikamaru",
+                charName: "奈良シカマル",
+                defaultCardName: "シカマルカード",
+                badge: "🦌 IQ200の軍師",
+                sealIcon: "🦌",
+                sealText: "影縛",
+                portrait: "./assets/cards/leader_shikamaru.webp",
+                headerBg: "from-emerald-800 via-teal-800 to-stone-800",
+                borderClass: "border-emerald-500",
+                cardBg: "from-stone-950 via-emerald-950/35 to-black",
+                openBorder: "border-emerald-200 shadow-[0_0_12px_rgba(16,185,129,0.9)]",
+                openRibbon: "from-emerald-800/95 via-teal-900/95 to-stone-900/95",
+                barColor: "from-lime-300 via-emerald-500 to-teal-700",
+                reachTitle: "🦌 影真似リーチ！",
+                selectQuote: "めんどくせーが…選ばれたからには200手先まで読んで勝たせてやるよ！",
+                bingoQuote: "チェックメイトだ！作戦通り、完璧なビンゴ達成だぜ！"
+            },
+            {
+                id: "guy_lee",
+                charName: "ガイ＆リー",
+                defaultCardName: "青春ガイ＆リー",
+                badge: "🐉 八門遁甲・青春",
+                sealIcon: "🐉",
+                sealText: "青春",
+                portrait: "./assets/cards/leader_guy_lee.webp",
+                headerBg: "from-emerald-600 via-green-600 to-red-600",
+                borderClass: "border-green-400",
+                cardBg: "from-stone-900 via-emerald-950/40 to-stone-950",
+                openBorder: "border-lime-200 shadow-[0_0_12px_rgba(74,222,128,0.9)]",
+                openRibbon: "from-emerald-700/95 via-green-700/95 to-red-700/95",
+                barColor: "from-lime-300 via-emerald-500 to-red-600",
+                reachTitle: "🐉 夜ガイリーチ！",
+                selectQuote: "ナイスガイ！！青春フルパワー全開で熱血ビンゴへ突き進むぞぉぉ！！",
+                bingoQuote: "うおおおぉぉ！！青春のクライマックス！！熱血ビンゴ達成だァァ！！"
+            },
+            {
+                id: "madara",
+                charName: "うちはマダラ",
+                defaultCardName: "マダラカード",
+                badge: "☄️ 完成体須佐能乎",
+                sealIcon: "☄️",
+                sealText: "覇王",
+                portrait: "./assets/cards/leader_madara.webp",
+                headerBg: "from-purple-900 via-fuchsia-900 to-red-800",
+                borderClass: "border-fuchsia-500",
+                cardBg: "from-stone-950 via-purple-950/45 to-black",
+                openBorder: "border-fuchsia-200 shadow-[0_0_14px_rgba(217,70,239,0.95)]",
+                openRibbon: "from-purple-900/95 via-fuchsia-900/95 to-red-900/95",
+                barColor: "from-fuchsia-400 via-purple-600 to-red-700",
+                reachTitle: "☄️ 天碍震星リーチ！",
+                selectQuote: "ほう…このうちはマダラのカードを選ぶか。圧倒的な力で舞うとしよう！",
+                bingoQuote: "フハハハハ！これぞ完成体須佐能乎の威光！見事なビンゴであったぞ！！"
+            }
+        ];
+
+        /* ==========================================================
+           2. 全75枚 忍キャラクターカードデータ
+        ========================================================== */
+        const NARUTO_POOL = [
+            // B列 (1-15)
+            { id: 1, cardName: "ナルト", rarity: "UR", name: "うずまきナルト", jutsu: "仙法・超大玉螺旋多連丸", emoji: "🐸", attr: "仙術",
+              quote: "まっすぐ自分の言葉は曲げねェ…それがオレの忍道だってばよ！",
+              speechName: "うずまき ナルト", speechJutsu: "せんぽう、ちょう おおだま らせん たれんがん", speechQuote: "まっすぐ じぶんの ことばは まげねぇ、それが オレの にんどう だってばよ！" },
+            { id: 2, cardName: "サスケ", rarity: "UR", name: "うちはサスケ", jutsu: "永遠の万華鏡写輪眼", emoji: "👁️", attr: "瞳術",
+              quote: "オレは過去を断ち切る…お前はオレにとっての新たな光だ！",
+              speechName: "うちは サスケ", speechJutsu: "えいえんの まんげきょう しゃりんがん", speechQuote: "オレは かこを たちきる、おまえは オレにとっての あらたな ひかりだ！" },
+            { id: 3, cardName: "サクラ", rarity: "SSR", name: "春野サクラ", jutsu: "百豪の術・桜花衝", emoji: "🌸", attr: "怪力医療",
+              quote: "しゃーんなろー！！やっと二人の背中に追いついた！",
+              speechName: "はるの サクラ", speechJutsu: "びゃくごうの じゅつ、おうかしょう", speechQuote: "しゃーんなろー！ やっと ふたりの せなかに おいついた！" },
+            { id: 4, cardName: "カカシ", rarity: "UR", name: "はたけカカシ", jutsu: "万華鏡写輪眼・神威", emoji: "⚡", attr: "雷遁・瞳術",
+              quote: "仲間を大切にしない奴は、それ以上のクズだ！",
+              speechName: "はたけ カカシ", speechJutsu: "まんげきょう しゃりんがん、カムイ", speechQuote: "なかまを たいせつに しない やつは、それ いじょうの クズだ！" },
+            { id: 5, cardName: "ミナト", rarity: "UR", name: "波風ミナト", jutsu: "飛雷神の術・二の段", emoji: "🟨", attr: "四代目火影",
+              quote: "木ノ葉の黄色い閃光！ここからは誰にも触れさせないよ！",
+              speechName: "なみかぜ ミナト", speechJutsu: "ひらいしんの じゅつ、にの だん", speechQuote: "このはの きいろい せんこう！ ここからは だれにも ふれさせないよ！" },
+            { id: 6, cardName: "自来也", rarity: "SSR", name: "自来也（ガマ仙人）", jutsu: "仙法・五右衛門＆超大玉螺旋丸", emoji: "🍶", attr: "伝説の三忍",
+              quote: "忍びとは耐え忍ぶ者のことなんだよ…諦めねェど根性だ！",
+              speechName: "じらいや、ガマせんにん", speechJutsu: "せんぽう、ごえもん、ちょう おおだま らせんがん", speechQuote: "しのびとは たえしのぶ ものの ことなんだよ、あきらめねぇ どこんじょうだ！" },
+            { id: 7, cardName: "綱手", rarity: "SSR", name: "綱手（五代目火影）", jutsu: "創造再生・百豪の極み", emoji: "🎲", attr: "五代目火影",
+              quote: "火影の称号をナメるなよ！命を懸けて里を守る！",
+              speechName: "つなで、ごだいめ ほかげ", speechJutsu: "そうぞう さいせい、びゃくごうの きわみ", speechQuote: "ほかげの しょうごうを ナメるなよ！ いのちを かけて さとを まもる！" },
+            { id: 8, cardName: "ガイ", rarity: "UR", name: "マイト・ガイ", jutsu: "八門遁甲の陣・夜ガイ", emoji: "🐉", attr: "体術極致",
+              quote: "紅き春の蒸気！青春のクライマックスだァァ！！",
+              speechName: "マイト ガイ", speechJutsu: "はちもん とんこうの じん、やガイ", speechQuote: "あかき はるの じょうき！ せいしゅんの クライマックスだぁぁ！" },
+            { id: 9, cardName: "リー", rarity: "SR", name: "ロック・リー", jutsu: "八門遁甲・表蓮華＆裏蓮華", emoji: "🥋", attr: "体術",
+              quote: "努力の天才だと証明してみせます！僕の忍道です！",
+              speechName: "ロック リー", speechJutsu: "はちもん とんこう、おもて れんげ、うら れんげ", speechQuote: "どりょくの てんさいだと しょうめい してみせます！ ぼくの にんどうです！" },
+            { id: 10, cardName: "シカマル", rarity: "SSR", name: "奈良シカマル", jutsu: "影真似・影首縛りの術", emoji: "🦌", attr: "秘術",
+              quote: "めんどくせーが…やるしかねェだろ、仲間のためだ！",
+              speechName: "なら シカマル", speechJutsu: "かげまね、かげ くびしばりの じゅつ", speechQuote: "めんどくせーが、やるしかねぇだろ、なかまの ためだ！" },
+            { id: 11, cardName: "ネジ", rarity: "SSR", name: "日向ネジ", jutsu: "八卦六十四掌・回天", emoji: "☯️", attr: "白眼・柔拳",
+              quote: "ナルト…お前はオレを闇から救い出してくれたんだ",
+              speechName: "ひゅうが ネジ", speechJutsu: "はっけ ろくじゅうよんしょう、かいてん", speechQuote: "ナルト、おまえは オレを やみから すくいだして くれたんだ！" },
+            { id: 12, cardName: "ヒナタ", rarity: "SSR", name: "日向ヒナタ", jutsu: "白眼・柔歩双獅拳", emoji: "🦁", attr: "白眼・柔拳",
+              quote: "私だって…ナルトくんの隣を歩きたいから！",
+              speechName: "ひゅうが ヒナタ", speechJutsu: "びゃくがん、じゅうほ そうしけん", speechQuote: "わたしだって、ナルトくんの となりを あるきたいから！" },
+            { id: 13, cardName: "サイ", rarity: "SR", name: "サイ", jutsu: "超獣偽画・狛犬", emoji: "🖌️", attr: "墨忍術",
+              quote: "仲間との繋がり…それが僕に笑顔を教えてくれた",
+              speechName: "サイ", speechJutsu: "ちょうじゅう ぎが、こまいぬ", speechQuote: "なかまとの つながり、それが ぼくに えがおを おしえてくれた！" },
+            { id: 14, cardName: "ヤマト", rarity: "SR", name: "ヤマト（テンゾウ）", jutsu: "木遁・樹界降誕", emoji: "🌲", attr: "木遁",
+              quote: "九尾のチャクラは僕が木遁で完全に抑え込む！",
+              speechName: "ヤマト たいちょう", speechJutsu: "もくとん、じゅかい こうたん", speechQuote: "きゅうびの チャクラは ぼくが もくとんで かんぜんに おさえこむ！" },
+            { id: 15, cardName: "アスマ", rarity: "SR", name: "猿飛アスマ", jutsu: "風遁・翠嵐烈風＆飛燕", emoji: "🗡️", attr: "風遁",
+              quote: "木ノ葉の『玉』を守り抜く…それが未来を繋ぐ忍の務めだ",
+              speechName: "さるとび アスマ", speechJutsu: "ふうとん、すいらん れっぷう、ひえん", speechQuote: "このはの ぎょくを まもりぬく、それが みらいを つなぐ しのびの つとめだ！" },
+
+            // I列 (16-30)
+            { id: 16, cardName: "チョウジ", rarity: "SR", name: "秋道チョウジ", jutsu: "超倍化の術・蝶弾爆撃", emoji: "🦋", attr: "秘術",
+              quote: "仲間の悪口を言う奴は絶対に許さない！カロリー解放！",
+              speechName: "あきみち チョウジ", speechJutsu: "ちょう ばいかの じゅつ、ちょうだん ばくげき", speechQuote: "なかまの わるぐちを いうやつは ぜったいに ゆるさない！ カロリー かいほう！" },
+            { id: 17, cardName: "イノ", rarity: "SR", name: "山中イノ", jutsu: "心転身の術・忍連合通信", emoji: "💐", attr: "秘術",
+              quote: "忍連合軍全員の心を一つに繋ぐわよ！！",
+              speechName: "やまなか イノ", speechJutsu: "しんてんしんの じゅつ、しのび れんごう つうしん", speechQuote: "しのび れんごうぐん ぜんいんの こころを ひとつに つなぐわよ！" },
+            { id: 18, cardName: "キバ", rarity: "SR", name: "犬塚キバ＆赤丸", jutsu: "牙狼牙・尾追い牙通牙", emoji: "🐺", attr: "獣人忍術",
+              quote: "いくぜ赤丸！オレたちも火影を狙うってばよ！",
+              speechName: "いぬづか キバ と あかまる", speechJutsu: "がろうが、おおい がつうが", speechQuote: "いくぜ あかまる！ オレたちも ほかげを ねらうぞ！" },
+            { id: 19, cardName: "シノ", rarity: "SR", name: "油女シノ", jutsu: "秘術・蟲玉", emoji: "🪲", attr: "秘術",
+              quote: "オレの寄壊蟲からは誰一人として逃れられない…なぜならだ",
+              speechName: "あぶらめ シノ", speechJutsu: "ひじゅつ、むしだま", speechQuote: "オレの きかいちゅう からは だれひとり として のがれられない、なぜならだ！" },
+            { id: 20, cardName: "テンテン", rarity: "SR", name: "テンテン", jutsu: "双昇龍・芭蕉扇解放", emoji: "🪭", attr: "忍具口寄せ",
+              quote: "六道仙人の宝具だって使いこなしてみせるわよ！",
+              speechName: "テンテン", speechJutsu: "そうしょうりゅう、ばしょうせん かいほう", speechQuote: "りくどう せんにんの ほうぐ だって つかいこなして みせるわよ！" },
+            { id: 21, cardName: "木ノ葉丸", rarity: "SR", name: "猿飛木ノ葉丸", jutsu: "火遁・灰積焼＆螺旋丸", emoji: "🧣", attr: "火遁",
+              quote: "ナルト兄ちゃん直伝の螺旋丸！コレに決めたってばよ！",
+              speechName: "さるとび このはまる", speechJutsu: "かとん、はいせきしょう と らせんがん", speechQuote: "ナルト にいちゃん じきでんの らせんがん！ これに きめた コレ！" },
+            { id: 22, cardName: "イルカ", rarity: "SSR", name: "うみのイルカ", jutsu: "木ノ葉隠れ・絆の教え", emoji: "🐬", attr: "恩師",
+              quote: "ナルトはオレが認めた最高の生徒だ！！",
+              speechName: "うみの イルカ せんせい", speechJutsu: "このはがくれ、きずなの おしえ", speechQuote: "ナルトは オレが みとめた さいこうの せいとだ！" },
+            { id: 23, cardName: "シズネ", rarity: "SR", name: "シズネ＆トントン", jutsu: "毒霧・仕込み千本", emoji: "🐷", attr: "医療忍術",
+              quote: "綱手様！医療部隊の準備、いつでも万全です！",
+              speechName: "シズネ と トントン", speechJutsu: "どくぎり、しこみ せんぼん", speechQuote: "つなでさま！ いりょう ぶたいの じゅんび、いつでも ばんぜんです！" },
+            { id: 24, cardName: "我愛羅", rarity: "UR", name: "我愛羅（五代目風影）", jutsu: "砂瀑大葬・絶対防御", emoji: "🏜️", attr: "風影",
+              quote: "ここに敵はいない…我らはすべて『忍』だ！！",
+              speechName: "ガアラ、ごだいめ かぜかげ", speechJutsu: "さばく たいそう、ぜったい ぼうぎょ", speechQuote: "ここに てきは いない、われらは すべて しのびだ！" },
+            { id: 25, cardName: "カンクロウ", rarity: "SR", name: "カンクロウ", jutsu: "黒秘技・機々一発", emoji: "🪆", attr: "傀儡術",
+              quote: "傀儡師の頂点、その真髄を見せてやるぜ！",
+              speechName: "カンクロウ", speechJutsu: "くろひぎ、きき いっぱつ", speechQuote: "くぐつしの ちょうてん、その しんずいを みせてやるぜ！" },
+            { id: 26, cardName: "テマリ", rarity: "SR", name: "テマリ", jutsu: "風遁・大カマイタチの術", emoji: "🌪️", attr: "風遁",
+              quote: "忍連合軍で私の風遁を超える使い手はいないよ！",
+              speechName: "テマリ", speechJutsu: "ふうとん、おお カマイタチの じゅつ", speechQuote: "しのび れんごうぐんで わたしの ふうとんを こえる つかいては いないよ！" },
+            { id: 27, cardName: "ビー", rarity: "SSR", name: "キラービー", jutsu: "雷犁熱刀（ラリアット）", emoji: "🐙", attr: "八尾人柱力",
+              quote: "バカヤロー！コノヤロー！八本目の剣で韻を踏むぜ♪",
+              speechName: "キラービー", speechJutsu: "らいり ねっとう、ラリアット", speechQuote: "バカヤロー！ コノヤロー！ はちほんめの けんで いんを ふむぜ イェー！" },
+            { id: 28, cardName: "雷影エー", rarity: "SSR", name: "エー（四代目雷影）", jutsu: "雷遁チャクラモード・雷虐水平", emoji: "🌩️", attr: "雷影",
+              quote: "オレのスピードについて来られる忍など存在せん！！",
+              speechName: "エー、よんだいめ らいかげ", speechJutsu: "らいとん チャクラモード、らいぎゃく すいへい", speechQuote: "オレの スピードに ついてこられる しのびなど そんざいせん！" },
+            { id: 29, cardName: "オオノキ", rarity: "SSR", name: "オオノキ（三代目土影）", jutsu: "塵遁・原界剥離の術", emoji: "🪨", attr: "土影",
+              quote: "己を捨てず、誇りを胸に戦う！両天秤のオオノキじゃ！",
+              speechName: "オオノキ、さんだいめ つちかげ", speechJutsu: "じんとん、げんかい はくりの じゅつ", speechQuote: "おのれを すてず、ほこりを むねに たたかう！ りょうてんびんの オオノキじゃ！" },
+            { id: 30, cardName: "照美メイ", rarity: "SSR", name: "照美メイ（五代目水影）", jutsu: "溶遁・溶怪の術＆沸遁", emoji: "🌊", attr: "水影",
+              quote: "霧隠れの水影として、ここで全てを溶かし尽くすわ！",
+              speechName: "てるみ メイ、ごだいめ みずかげ", speechJutsu: "ようとん、ようかいの じゅつ と ふっとん", speechQuote: "きりがくれの みずかげ として、ここで すべてを とかしつくすわ！" },
+
+            // N列 (31-45)
+            { id: 31, cardName: "イタチ", rarity: "UR", name: "うちはイタチ", jutsu: "天照・月読・須佐能乎", emoji: "🐦‍⬛", attr: "万華鏡写輪眼",
+              quote: "許せサスケ…お前がこれからどうなろうと、オレはお前をずっと愛している",
+              speechName: "うちは イタチ", speechJutsu: "あまてらす、つくよみ、スサノオ", speechQuote: "ゆるせ サスケ、オレは おまえを ずっと あいしている！" },
+            { id: 32, cardName: "ペイン", rarity: "UR", name: "ペイン（天道）", jutsu: "神羅天征・地爆天星", emoji: "🔮", attr: "輪廻眼",
+              quote: "痛みを考えろ、痛みを知れ…ここより世界に痛みを！！",
+              speechName: "ペイン てんどう", speechJutsu: "しんら てんせい、ちばく てんせい", speechQuote: "いたみを かんがえろ、いたみを しれ、ここより せかいに いたみを！" },
+            { id: 33, cardName: "長門", rarity: "SSR", name: "長門（うずまきナガト）", jutsu: "外道・輪廻天生の術", emoji: "🌧️", attr: "輪廻眼",
+              quote: "ナルト…お前なら本当に平和を掴み取れるかもしれんな",
+              speechName: "うずまき ナガト", speechJutsu: "げどう、りんね てんせいの じゅつ", speechQuote: "ナルト、おまえなら ほんとうに へいわを つかみとれる かもしれんな！" },
+            { id: 34, cardName: "小南", rarity: "SSR", name: "小南（コナン）", jutsu: "神の紙者の術・6000億枚の起爆札", emoji: "🕊️", attr: "暁",
+              quote: "今度こそ…枯れない希望の花になるわ",
+              speechName: "あかつきの コナン", speechJutsu: "かみの ししゃの じゅつ、ろくせんおくまいの きばくふだ", speechQuote: "こんどこそ、かれない きぼうの はなに なるわ！" },
+            { id: 35, cardName: "デイダラ", rarity: "SSR", name: "デイダラ", jutsu: "起爆粘土・C4カルラ", emoji: "💥", attr: "爆遁",
+              quote: "芸術は爆発だ！！一瞬の煌めきこそが究極の美だ、うん！",
+              speechName: "デイダラ", speechJutsu: "きばく ねんど、シーフォー カルラ", speechQuote: "げいじゅつは ばくはつだ！ いっしゅんの きらめき こそが きゅうきょくの びだ、うん！" },
+            { id: 36, cardName: "サソリ", rarity: "SSR", name: "赤砂のサソリ", jutsu: "赤秘技・百機の操演", emoji: "🦂", attr: "傀儡師",
+              quote: "芸術とは永遠に美しく残るものだ…百機を見ろ",
+              speechName: "あかさなの サソリ", speechJutsu: "あかひぎ、ひゃっきの そうえん", speechQuote: "げいじゅつとは えいえんに うつくしく のこる ものだ！" },
+            { id: 37, cardName: "鬼鮫", rarity: "SSR", name: "干柿鬼鮫", jutsu: "水遁・大鮫弾の術", emoji: "🦈", attr: "尾のない尾獣",
+              quote: "イタチさん…どうやら私はロクでもない人間でもなかったようですよ",
+              speechName: "ほしがき きさめ", speechJutsu: "すいとん、だい こうだんの じゅつ", speechQuote: "イタチさん、どうやら わたしは ロクでもない にんげんでも なかった ようですよ！" },
+            { id: 38, cardName: "飛段", rarity: "SR", name: "飛段（ヒダン）", jutsu: "呪術・死司憑血", emoji: "🩸", attr: "暁・不死身",
+              quote: "ジャシン様への儀式が始まるぜェ！",
+              speechName: "あかつきの ヒダン", speechJutsu: "じゅじゅつ、しじ ひょうけつ", speechQuote: "ジャシンさまへの ぎしきが はじまるぜぇ！" },
+            { id: 39, cardName: "角都", rarity: "SR", name: "角都（カクズ）", jutsu: "地怨虞・五属性複合忍術", emoji: "🫀", attr: "暁・不死身",
+              quote: "地獄の沙汰も金次第だ…お前の心臓をもらうぞ",
+              speechName: "あかつきの カクズ", speechJutsu: "じおんぐ、ごぞくせい ふくごう にんじゅつ", speechQuote: "じごくの さたも かねしだいだ、おまえの しんぞうを もらうぞ！" },
+            { id: 40, cardName: "ゼツ", rarity: "SR", name: "ゼツ（黒ゼツ・白ゼツ）", jutsu: "蜉蝣・胞子の術", emoji: "🪴", attr: "暁",
+              quote: "忍の歴史はすべてこの瞬間のためにあったのだ",
+              speechName: "くろゼツ と しろゼツ", speechJutsu: "かげろう、ほうしの じゅつ", speechQuote: "しのびの れきしは すべて この しゅんかんの ために あったのだ！" },
+            { id: 41, cardName: "オビト", rarity: "UR", name: "うちはオビト", jutsu: "神威・六道十尾柩印", emoji: "🎭", attr: "十尾人柱力",
+              quote: "ナルト…お前は必ず火影になれよ！",
+              speechName: "うちは オビト", speechJutsu: "カムイ、りくどう じゅうび きゅういん", speechQuote: "ナルト、おまえは かならず ほかげに なれよ！" },
+            { id: 42, cardName: "マダラ", rarity: "UR", name: "うちはマダラ", jutsu: "天碍震星・完成体須佐能乎", emoji: "☄️", attr: "伝説の忍",
+              quote: "お前も舞うか？二つの隕石をどうする、オオノキよ",
+              speechName: "うちは マダラ", speechJutsu: "てんがい しんせい、かんせいたい スサノオ", speechQuote: "おまえも まうか？ ふたつの いんせきを どうする、オオノキよ！" },
+            { id: 43, cardName: "大蛇丸", rarity: "SSR", name: "大蛇丸", jutsu: "八岐の術・口寄せ穢土転生", emoji: "🐍", attr: "伝説の三忍",
+              quote: "すべての忍術の真理を解き明かす…サスケくんの風を見届けよう",
+              speechName: "おろちまる", speechJutsu: "やまたの じゅつ、くちよせ えど てんせい", speechQuote: "すべての にんじゅつの しんりを ときあかす、サスケくんの かぜを みとどけよう！" },
+            { id: 44, cardName: "カブト", rarity: "SSR", name: "薬師カブト", jutsu: "仙法・白激の術（龍仙人）", emoji: "🐉", attr: "仙術",
+              quote: "蛇から龍へと昇華したボクの仙術を見せてあげるよ！",
+              speechName: "やくし カブト", speechJutsu: "せんぽう、はくげきの じゅつ", speechQuote: "へびから りゅうへと しょうかした ボクの せんじゅつを みせてあげるよ！" },
+            { id: 45, cardName: "シスイ", rarity: "SSR", name: "うちはシスイ", jutsu: "万華鏡写輪眼・別天神", emoji: "🔥", attr: "瞬身のシスイ",
+              quote: "うちはの名と木ノ葉の平和…イタチ、お前に託す",
+              speechName: "うちは シスイ", speechJutsu: "まんげきょう しゃりんがん、ことあまつかみ", speechQuote: "うちはの なと このはの へいわ、イタチ、おまえに たくす！" },
+
+            // G列 (46-60)
+            { id: 46, cardName: "柱間", rarity: "UR", name: "千手柱間（初代火影）", jutsu: "仙法・木遁・真数千手 頂上化仏", emoji: "⛩️", attr: "忍の神",
+              quote: "里を傷つける者は、たとえ友や我が子であろうと許さん！",
+              speechName: "せんじゅ はしらま、しょだい ほかげ", speechJutsu: "せんぽう もくとん、しんすう せんじゅ、ちょうじょう けぶつ", speechQuote: "さとを きずつける ものは、たとえ ともや わがこで あろうと ゆるさん！" },
+            { id: 47, cardName: "扉間", rarity: "SSR", name: "千手扉間（二代目火影）", jutsu: "水遁・水断波＆互乗起爆札", emoji: "🌊", attr: "二代目火影",
+              quote: "飛雷神も影分身もワシが創った術だ！いくぞ猿よ！",
+              speechName: "せんじゅ とびらま、にだいめ ほかげ", speechJutsu: "すいとん すいだんは、ごじょう きばくふだ", speechQuote: "ひらいしんも かげぶんしんも ワシが つくった じゅつだ！ いくぞ さるよ！" },
+            { id: 48, cardName: "ヒルゼン", rarity: "SSR", name: "猿飛ヒルゼン（三代目火影）", jutsu: "五遁・大連弾の術＆金剛如意", emoji: "🐵", attr: "三代目火影",
+              quote: "木の葉舞うところに火は燃ゆる…火の影は里を照らす！",
+              speechName: "さるとび ヒルゼン、さんだいめ ほかげ", speechJutsu: "ごとん だいれんだんの じゅつ、こんごう にょい", speechQuote: "このは まう ところに ひは もゆる、ひの かげは さとを てらす！" },
+            { id: 49, cardName: "クシナ", rarity: "SSR", name: "うずまきクシナ", jutsu: "金剛封鎖・赤い血潮のハバネロ", emoji: "🌶️", attr: "母の愛",
+              quote: "ナルト…大好きだってばね！！",
+              speechName: "うずまき クシナ", speechJutsu: "こんごう ふうさ、あかい ちしおの ハバネロ", speechQuote: "ナルト、だいすき だってばね！" },
+            { id: 50, cardName: "九喇嘛", rarity: "UR", name: "九喇嘛（九尾・クラマ）", jutsu: "超大玉尾獣玉・九尾チャクラモード", emoji: "🦊", attr: "九尾",
+              quote: "行くぞナルト！！ワシのチャクラを全部持っていきやがれ！！",
+              speechName: "きゅうび、クラマ", speechJutsu: "ちょう おおだま びじゅうだま、きゅうび チャクラモード", speechQuote: "いくぞ ナルト！ ワシの チャクラを ぜんぶ もっていきやがれ！" },
+            { id: 51, cardName: "守鶴", rarity: "SR", name: "守鶴（一尾・シュカク）", jutsu: "風遁・練空弾＆砂漠層大葬封印", emoji: "🦝", attr: "一尾",
+              quote: "我愛羅と組めば最強の絶対防御と封印術だぜ！",
+              speechName: "いちび、しゅかく", speechJutsu: "ふうとん れんくうだん、さばくそう たいそう ふういん", speechQuote: "ガアラと くめば さいきょうの ぜったい ぼうぎょと ふういんじゅつ だぜ！" },
+            { id: 52, cardName: "又旅", rarity: "SR", name: "又旅（二尾・マタタビ）", jutsu: "青炎の火鼠玉（二位ユギト）", emoji: "🐈‍⬛", attr: "二尾",
+              quote: "蒼き劫火ですべてを焼き尽くします！",
+              speechName: "にび、またたび", speechJutsu: "せいえんの ひねずみだま", speechQuote: "あおき ごうかで すべてを やきつくします！" },
+            { id: 53, cardName: "磯撫", rarity: "SR", name: "磯撫（三尾・イソブ）", jutsu: "珊瑚掌・大水弾（やぐら）", emoji: "🐢", attr: "三尾",
+              quote: "霧隠れの鉄壁、珊瑚の盾を突破できるかな？",
+              speechName: "さんび、いそぶ", speechJutsu: "さんごしょう、だいすいだん", speechQuote: "きりがくれの てっぺき、さんごの たてを とっぱ できるかな？" },
+            { id: 54, cardName: "孫悟空", rarity: "SR", name: "孫悟空（四尾・ソンゴクウ）", jutsu: "仙法・熔遁螺旋手裏剣", emoji: "🦍", attr: "四尾",
+              quote: "水簾洞の美猴王！ナルトよ、オレの力を貸してやる！",
+              speechName: "よんび、そんごくう", speechJutsu: "せんぽう、ようとん らせん しゅりけん", speechQuote: "すいれんどうの びこうおう！ ナルトよ、オレの ちからを かしてやる！" },
+            { id: 55, cardName: "穆王", rarity: "SR", name: "穆王（五尾・コクオウ）", jutsu: "沸遁・怪力無双（ハン）", emoji: "🐎", attr: "五尾",
+              quote: "蒸気チャクラを沸点まで高め、一撃で粉砕いたします！",
+              speechName: "ごび、こくおう", speechJutsu: "ふっとん、かいりき むそう", speechQuote: "じょうき チャクラを ふってんまで たかめ、いちげきで ふんさい いたします！" },
+            { id: 56, cardName: "犀犬", rarity: "SR", name: "犀犬（六尾・サイケン）", jutsu: "水遁・泡沫の術＆強酸", emoji: "🐌", attr: "六尾",
+              quote: "シャボン玉の舞いとともに、すべてを溶かすであります！",
+              speechName: "ろくび、さいけん", speechJutsu: "すいとん、ほうまつの じゅつ", speechQuote: "シャボンだまの まいと ともに、すべてを とかすで あります！" },
+            { id: 57, cardName: "重明", rarity: "SR", name: "重明（七尾・チョウメイ）", jutsu: "秘伝・鱗粉隠れの術", emoji: "🪲", attr: "七尾",
+              quote: "ラッキーセブン重明だ！空を駆け抜けて友達100人作るっス！",
+              speechName: "ななび、ちょうめい", speechJutsu: "ひでん、りんぷんがくれの じゅつ", speechQuote: "ラッキーセブン ちょうめいだ！ そらを かけぬけて ともだち ひゃくにん つくるっス！" },
+            { id: 58, cardName: "牛鬼", rarity: "SSR", name: "牛鬼（八尾・ギュウキ）", jutsu: "尾獣八巻・連続尾獣玉", emoji: "🐂", attr: "八尾",
+              quote: "ビー！ナルト！お前ら二人のコンビネーションで決めるぞ！",
+              speechName: "はちび、ぎゅうき", speechJutsu: "びじゅう はちまき、れんぞく びじゅうだま", speechQuote: "ビー！ ナルト！ おまえら ふたりの コンビネーションで きめるぞ！" },
+            { id: 59, cardName: "十尾", rarity: "UR", name: "外道魔像・十尾", jutsu: "天変地異・神樹降臨", emoji: "👁️‍🗨️", attr: "始祖",
+              quote: "すべてのチャクラの根源が今、大地を揺るがす…！",
+              speechName: "げどう まぞう、じゅうび", speechJutsu: "てんぺん ちい、しんじゅ こうりん", speechQuote: "すべての チャクラの こんげんが いま、だいちを ゆるがす！" },
+            { id: 60, cardName: "ブン太", rarity: "SSR", name: "ガマブン太＆ガマ吉", jutsu: "火遁・蝦蟇油炎弾", emoji: "🐸", attr: "妙木山",
+              quote: "親分・ガマブン太とガマ吉の親子連携、見せてやるぜ！",
+              speechName: "ガマブンたと ガマきち", speechJutsu: "かとん、がまゆ えんだん", speechQuote: "おやぶん ガマブンたと ガマきちの おやこ れんけい、みせてやるぜ！" },
+
+            // O列 (61-75)
+            { id: 61, cardName: "六道ナルト", rarity: "UR", name: "うずまきナルト（六道）", jutsu: "六道・超大玉螺旋手裏剣", emoji: "☀️", attr: "六道陽の力",
+              quote: "仲間の想いを全部乗せた、オレの最強の螺旋手裏剣だってばよ！！",
+              speechName: "りくどう せんにんモード、うずまき ナルト", speechJutsu: "りくどう、ちょう おおだま らせん しゅりけん", speechQuote: "なかまの おもいを ぜんぶ のせた、オレの さいきょうの らせん しゅりけん だってばよ！" },
+            { id: 62, cardName: "輪廻サスケ", rarity: "UR", name: "うちはサスケ（輪廻写輪眼）", jutsu: "インドラの矢・天手力", emoji: "🏹", attr: "六道陰の力",
+              quote: "全尾獣のチャクラを須佐能乎に集束させた最強の一矢だ！",
+              speechName: "りんね しゃりんがん、うちは サスケ", speechJutsu: "インドラの や、あめのてぢから", speechQuote: "ぜん びじゅうの チャクラを スサノオに しゅうそくさせた さいきょうの いっしだ！" },
+            { id: 63, cardName: "威装須佐", rarity: "UR", name: "威装・須佐能乎", jutsu: "九尾×完成体須佐能乎合体", emoji: "⚔️", attr: "合体奥義",
+              quote: "ナルトとサスケ、二人の力が重なった究極の鎧！！",
+              speechName: "いそう スサノオ", speechJutsu: "きゅうび と かんせいたい スサノオ がったい", speechQuote: "ナルトと サスケ、ふたりの ちからが かさなった きゅうきょくの よろいだ！" },
+            { id: 64, cardName: "螺旋手裏", rarity: "SSR", name: "風遁・螺旋手裏剣", jutsu: "超高密度チャクラの刃", emoji: "🌀", attr: "Sランク忍術",
+              quote: "四代目火影すら到達できなかった形態変化と性質変化の融合！",
+              speechName: "ふうとん、らせん しゅりけん", speechJutsu: "ちょう こうみつど チャクラの やいば", speechQuote: "よんだいめ ほかげ すら とうたつ できなかった けいたい へんかと せいしつ へんかの ゆうごうだ！" },
+            { id: 65, cardName: "雷切麒麟", rarity: "SSR", name: "雷切・千鳥（双雷震）", jutsu: "千鳥流し・雷遁麒麟", emoji: "⚡", attr: "Sランク雷遁",
+              quote: "雷鳴とともに敵を貫く！消えろ、麒麟とともに！",
+              speechName: "らいきり、ちどり、キリン", speechJutsu: "ちどり ながし、らいとん キリン", speechQuote: "らいめいと ともに てきを つらぬく！ きえろ、キリンと ともに！" },
+            { id: 66, cardName: "六道仙人", rarity: "UR", name: "大筒木ハゴロモ（六道仙人）", jutsu: "万物創造・六道地爆天星", emoji: "🦯", attr: "忍宗の開祖",
+              quote: "忍宗の絆…ナルトとサスケよ、お前たちに未来を託すぞ",
+              speechName: "おおつつき ハゴロモ、りくどう せんにん", speechJutsu: "ばんぶつ そうぞう、りくどう ちばく てんせい", speechQuote: "にんしゅうの きずな、ナルトと サスケよ、おまえたちに みらいを たくすぞ！" },
+            { id: 67, cardName: "カグヤ", rarity: "UR", name: "大筒木カグヤ", jutsu: "天之御中・膨張求道玉", emoji: "🐇", attr: "チャクラの祖",
+              quote: "この空間もすべてのチャクラも、わらわ一人のものぞ…",
+              speechName: "おおつつき カグヤ", speechJutsu: "あめの みなか、ぼうちょう ぐどうだま", speechQuote: "この くうかんも すべての チャクラも、わらわ ひとりの ものぞ！" },
+            { id: 68, cardName: "両目カカシ", rarity: "UR", name: "はたけカカシ（両目万華鏡）", jutsu: "神威雷切・完成体須佐能乎", emoji: "🌌", attr: "第七班の絆",
+              quote: "オビトのプレゼントだ…第七班、教え子たちを舐めるなよ！",
+              speechName: "りょうめ まんげきょう、はたけ カカシ", speechJutsu: "カムイ らいきり、かんせいたい スサノオ", speechQuote: "オビトの プレゼントだ、だいななはん、おしえごたちを なめるなよ！" },
+            { id: 69, cardName: "第七班", rarity: "UR", name: "新三竦み（第七班集結）", jutsu: "ガマ吉・アオダ・カツユ同時口寄せ", emoji: "🐍", attr: "新・三忍",
+              quote: "第七班、ここに完全復活！！いくぞサスケ、サクラ！！",
+              speechName: "しん さんすくみ、だいななはん しゅうけつ", speechJutsu: "ガマきち、アオダ、カツユ どうじ くちよせ", speechQuote: "だいななはん、ここに かんぜん ふっかつ！ いくぞ サスケ、サクラ！" },
+            { id: 70, cardName: "ダルイ達", rarity: "SR", name: "ダルイ＆ミフネ", jutsu: "嵐遁・励挫鎖苛素＆居合斬り", emoji: "🗡️", attr: "連合軍隊長",
+              quote: "黒い雷と侍の信念で穢土転生を斬り伏せる！",
+              speechName: "ダルイ と ミフネ", speechJutsu: "らんとん レーザーサーカス と いあいぎり", speechQuote: "くろい かみなりと さむらいの しんねんで きりふせる！" },
+            { id: 71, cardName: "チヨバア", rarity: "SR", name: "チヨバア＆サクラ", jutsu: "白秘技・近松十人衆", emoji: "👵", attr: "砂と木ノ葉",
+              quote: "次の世代はきっと昔のワシらとは違う…未来に託すぞい！",
+              speechName: "チヨバア と サクラ", speechJutsu: "しろひぎ、ちかまつ じゅうにんしゅう", speechQuote: "つぎの せだいは きっと むかしの ワシらとは ちがう、みらいに たくすぞい！" },
+            { id: 72, cardName: "再不斬", rarity: "SSR", name: "桃地再不斬＆白", jutsu: "魔鏡氷晶・霧隠れの術", emoji: "❄️", attr: "初期からの絆",
+              quote: "ナルトよ…お前はあの日からずっと変わらぬまま成長したな",
+              speechName: "ももち ザブザ と ハク", speechJutsu: "まきょう ひょうしょう、きりがくれの じゅつ", speechQuote: "ナルトよ、おまえは あのひから ずっと かわらぬまま せいちょう したな！" },
+            { id: 73, cardName: "忍連合", rarity: "SSR", name: "忍連合軍の術", jutsu: "五大国全忍・大同団結", emoji: "🤝", attr: "最強の術",
+              quote: "無限月読を打ち破るのは、オレたち全員の『忍連合の術』だ！！",
+              speechName: "しのび れんごうぐんの じゅつ", speechJutsu: "ごだいこく ぜんしのび、だいどう だんけつ", speechQuote: "むげん つくよみを うちやぶるのは、オレたち ぜんいんの しのび れんごうの じゅつだ！" },
+            { id: 74, cardName: "一楽麺", rarity: "SSR", name: "一楽のラーメン", jutsu: "特製チャーシュー大盛り", emoji: "🍜", attr: "木ノ葉名物",
+              quote: "任務帰りの一杯！チャクラ全回復の最強グルメだってばよ！",
+              speechName: "いちらくの ラーメン", speechJutsu: "とくせい チャーシュー おおもり", speechQuote: "にんむ がえりの いっぱい！ チャクラ ぜんかいふくの さいきょう グルメ だってばよ！" },
+            { id: 75, cardName: "和解の印", rarity: "UR", name: "終末の谷・和解の印", jutsu: "ナルトとサスケ・魂の決着", emoji: "🤞", attr: "最終決戦",
+              quote: "サスケ…お前が痛ェとオレも痛ェんだ…帰ろうぜ、木ノ葉へ！",
+              speechName: "しゅうまつの たに、わかいの いん", speechJutsu: "ナルトと サスケ、たましいの けっちゃく", speechQuote: "サスケ、おまえが いてぇと オレも いてぇんだ、かえろうぜ、このはへ！" }
+        ];
+
+        NARUTO_POOL.forEach(item => {
+            item.img = `./assets/cards/char_${String(item.id).padStart(2, '0')}.webp`;
+        });
+
+        const HAND_SEALS = ["臨", "兵", "闘", "者", "皆", "陣", "烈", "在", "前", "巳", "寅", "亥"];
+        const BINGO_TITLES = [
+            "🏆 初代・火影級ビンゴ神",
+            "⚡ 伝説の三忍級マスター",
+            "🔥 上忍・忍界の英雄"
+        ];
+        const STORAGE_KEY = "naruto_bingo_prefs_v2";
+
+        /* ==========================================================
+           3. 単一データソース状態管理 (Single Source of Truth)
+        ========================================================== */
+        const state = {
+            drawnSet: new Set(),
+            drawnHistory: [],
+            remainingIds: [],
+            latestDrawnId: null,
+            isSpinning: false,
+            spinIntervalId: null,
+            voiceMode: 'full',       // 'full' | 'quick' | 'mute'
+            playerCount: 3,          // 1 | 2 | 3
+            activeOshiTab: 0,
+            bingoWinnerOrder: [],
+            players: [],             // 最大3枠保持し、playerCount分を表示・判定
+            audioManifest: null
+        };
+
+        function loadSavedPrefs() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return null;
+                return JSON.parse(raw);
+            } catch (_) {
+                return null;
+            }
+        }
+
+        function savePrefs() {
+            try {
+                const payload = {
+                    playerCount: state.playerCount,
+                    slots: state.players.map(p => ({
+                        leaderId: p.leader.id,
+                        name: p.name
+                    }))
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+            } catch (_) {}
+        }
+
+        function getLeaderById(id) {
+            return OSHI_LEADERS.find(l => l.id === id) || OSHI_LEADERS[0];
+        }
+
+        /* ==========================================================
+           4. アニメ風スムーズ音声エンジン (MP3キュー再生 ＋ Web Speech安全フォールバック)
+        ========================================================== */
+        const voicePlayer = document.getElementById('animeVoicePlayer');
+        let audioQueue = [];
+        let activeSegmentTimer = null;
+        let audioUnlocked = false;
+        window._activeUtterances = [];
+
+        async function loadAudioManifest() {
+            try {
+                const res = await fetch(`./assets/audio/manifest.json?t=${Date.now()}`, { cache: 'no-store' });
+                if (res.ok) {
+                    state.audioManifest = await res.json();
+                }
+            } catch (err) {
+                console.warn('Audio manifest fallback mode:', err);
+            }
+        }
+
+        function unlockTabletAudioOnce() {
+            if (audioUnlocked) return;
+            audioUnlocked = true;
+            getAudioContext();
+            if (voicePlayer && voicePlayer.paused && !voicePlayer.src) {
+                // 無音WAVデータURIでiOS Safariの<audio>要素の再生ロックを即時解除
+                voicePlayer.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
+                voicePlayer.play().then(() => {
+                    voicePlayer.pause();
+                }).catch(() => {});
+            }
+        }
+        window.addEventListener('pointerdown', unlockTabletAudioOnce, { once: true, passive: true });
+
+        function setSpeakingBadge(labelText) {
+            const box = document.getElementById('speakingIndicator');
+            const lbl = document.getElementById('speakingLabel');
+            if (!labelText) {
+                box.classList.add('hidden');
+                box.classList.remove('inline-flex');
+            } else {
+                lbl.textContent = labelText;
+                box.classList.remove('hidden');
+                box.classList.add('inline-flex');
+            }
+        }
+
+        function stopAllVoicePlayback() {
+            audioQueue = [];
+            if (activeSegmentTimer) {
+                clearInterval(activeSegmentTimer);
+                activeSegmentTimer = null;
+            }
+            try {
+                voicePlayer.pause();
+            } catch (_) {}
+            if ('speechSynthesis' in window) {
+                try { window.speechSynthesis.cancel(); } catch (_) {}
+            }
+            setSpeakingBadge(null);
+        }
+
+        /**
+         * キューアイテム構造:
+         * { src, startSec=0, endSec=null, label='ナルト実況中', splitLabelAt=null, secondLabel=null, fallbackText='' }
+         */
+        function enqueueVoiceClips(clips, cancelCurrent = true) {
+            if (state.voiceMode === 'mute') return;
+            if (cancelCurrent) {
+                stopAllVoicePlayback();
+            }
+            audioQueue.push(...clips);
+            if (voicePlayer.paused || cancelCurrent) {
+                playNextInQueue();
+            }
+        }
+
+        function playNextInQueue() {
+            if (activeSegmentTimer) {
+                clearInterval(activeSegmentTimer);
+                activeSegmentTimer = null;
+            }
+            if (state.voiceMode === 'mute' || audioQueue.length === 0) {
+                setSpeakingBadge(null);
+                return;
+            }
+
+            const clip = audioQueue.shift();
+            if (!clip.src) {
+                speakFallbackWebSpeech(clip.fallbackText, () => playNextInQueue());
+                return;
+            }
+
+            setSpeakingBadge(clip.label || 'ボイス再生中');
+
+            const startPlayback = () => {
+                if (clip.startSec && clip.startSec > 0.05) {
+                    try { voicePlayer.currentTime = clip.startSec; } catch (_) {}
+                } else {
+                    try { voicePlayer.currentTime = 0; } catch (_) {}
+                }
+
+                const playPromise = voicePlayer.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                        setSpeakingBadge(null);
+                        speakFallbackWebSpeech(clip.fallbackText, () => playNextInQueue());
+                    });
+                }
+
+                if (clip.endSec || clip.splitLabelAt) {
+                    activeSegmentTimer = setInterval(() => {
+                        const ct = voicePlayer.currentTime || 0;
+                        if (clip.splitLabelAt && ct >= clip.splitLabelAt && clip.secondLabel) {
+                            setSpeakingBadge(clip.secondLabel);
+                            clip.splitLabelAt = null;
+                        }
+                        if (clip.endSec && ct >= clip.endSec) {
+                            clearInterval(activeSegmentTimer);
+                            activeSegmentTimer = null;
+                            voicePlayer.pause();
+                            playNextInQueue();
+                        }
+                    }, 35);
+                }
+            };
+
+            voicePlayer.onended = () => {
+                if (activeSegmentTimer) {
+                    clearInterval(activeSegmentTimer);
+                    activeSegmentTimer = null;
+                }
+                playNextInQueue();
+            };
+
+            voicePlayer.onerror = () => {
+                if (activeSegmentTimer) {
+                    clearInterval(activeSegmentTimer);
+                    activeSegmentTimer = null;
+                }
+                speakFallbackWebSpeech(clip.fallbackText, () => playNextInQueue());
+            };
+
+            voicePlayer.src = clip.src;
+            if (clip.startSec && clip.startSec > 0.05) {
+                voicePlayer.addEventListener('loadedmetadata', startPlayback, { once: true });
+                voicePlayer.load();
+            } else {
+                startPlayback();
+            }
+        }
+
+        // MP3未ロード時用の安全なWeb Speechフォールバック
+        function speakFallbackWebSpeech(text, onDone) {
+            if (!text || state.voiceMode === 'mute' || !('speechSynthesis' in window)) {
+                setSpeakingBadge(null);
+                if (onDone) onDone();
+                return;
+            }
+            try {
+                window.speechSynthesis.cancel();
+                const utter = new SpeechSynthesisUtterance(text);
+                utter.lang = 'ja-JP';
+                utter.rate = 1.12;
+                utter.pitch = 1.05;
+                window._activeUtterances.push(utter);
+                const finish = () => {
+                    const i = window._activeUtterances.indexOf(utter);
+                    if (i !== -1) window._activeUtterances.splice(i, 1);
+                    setSpeakingBadge(null);
+                    if (onDone) onDone();
+                };
+                utter.onend = finish;
+                utter.onerror = finish;
+                window.speechSynthesis.speak(utter);
+            } catch (_) {
+                setSpeakingBadge(null);
+                if (onDone) onDone();
+            }
+        }
+
+        // 便利再生ヘルパー
+        function playSysVoice(key, label, fallbackText) {
+            const src = state.audioManifest?.sys?.[key]?.src || `./assets/audio/sys/${key}.mp3`;
+            enqueueVoiceClips([{ src, label, fallbackText }], true);
+        }
+
+        function playLeaderSelectVoice(leader) {
+            const src = state.audioManifest?.leaders?.[leader.id]?.select || `./assets/audio/leaders/${leader.id}_select.mp3`;
+            enqueueVoiceClips([{
+                src,
+                label: `${leader.charName}`,
+                fallbackText: leader.selectQuote
+            }], true);
+        }
+
+        // キャラクター単体の決めゼリフ再生（カードタップ・図鑑タップ用）
+        function playCharacterQuoteOnly(item) {
+            const m = state.audioManifest?.summon?.[String(item.id)];
+            const src = m?.src || `./assets/audio/summon/${String(item.id).padStart(2, '0')}.mp3`;
+            const startSec = m?.splitSec || 0;
+            enqueueVoiceClips([{
+                src,
+                startSec,
+                label: `${item.cardName} セリフ`,
+                fallbackText: `${item.speechName}！ ${item.speechJutsu}！ ${item.speechQuote}`
+            }], true);
+        }
+
+        // 抽選時の「ナルト実況 → 登場キャラ本人風セリフ → ヒット/リーチ/推しキャラビンゴ歓声」掛け合い再生！
+        function playSummonSequence(item, hitPlayers, reachUpPlayers, bingoUpPlayers) {
+            if (state.voiceMode === 'mute') return;
+            const m = state.audioManifest?.summon?.[String(item.id)];
+            const summonSrc = m?.src || `./assets/audio/summon/${String(item.id).padStart(2, '0')}.mp3`;
+            const splitSec = m?.splitSec || null;
+            const colKana = ["ビー", "アイ", "エヌ", "ジー", "オー"][Math.floor((item.id - 1) / 15)];
+
+            const queue = [];
+
+            if (state.voiceMode === 'full') {
+                // フル実況：ナルトの召喚コール → そのまま登場キャラの声で決めゼリフ！
+                queue.push({
+                    src: summonSrc,
+                    startSec: 0,
+                    endSec: null,
+                    label: '🎙️ ナルト実況中！',
+                    splitLabelAt: splitSec || 4.8,
+                    secondLabel: `🎙️ ${item.cardName} 登場！`,
+                    fallbackText: `くちよせ せいこう！ ${colKana}の ${item.id}ばん、${item.speechName} だってばよ！ ${item.speechJutsu}！ ${item.speechQuote}`
+                });
+            } else {
+                // サクサク実況：ナルトの召喚コール部分のみ再生してテンポよく次へ！
+                queue.push({
+                    src: summonSrc,
+                    startSec: 0,
+                    endSec: splitSec ? Math.max(2.5, splitSec - 0.08) : null,
+                    label: '🎙️ ナルト実況中！',
+                    fallbackText: `${colKana}の ${item.id}ばん、${item.speechName} だってばよ！`
+                });
+            }
+
+            // 続けてビンゴ達成・リーチ・ヒットのリアクションボイス！
+            if (bingoUpPlayers.length > 0) {
+                const winner = bingoUpPlayers[0];
+                queue.push({
+                    src: state.audioManifest?.sys?.bingo?.src || './assets/audio/sys/bingo.mp3',
+                    label: '🎉 ナルト大興奮！',
+                    fallbackText: 'やったー！ちょうエスきゅう にんむ たっせい、ビンゴ だってばよ！'
+                });
+                queue.push({
+                    src: state.audioManifest?.leaders?.[winner.leader.id]?.bingo || `./assets/audio/leaders/${winner.leader.id}_bingo.mp3`,
+                    label: `🏆 ${winner.leader.charName}`,
+                    fallbackText: winner.leader.bingoQuote
+                });
+            } else if (reachUpPlayers.length > 0) {
+                queue.push({
+                    src: state.audioManifest?.sys?.reach?.src || './assets/audio/sys/reach.mp3',
+                    label: '⚡ リーチ突入！',
+                    fallbackText: 'きたきたぁ！リーチ とつにゅう だってばよ！'
+                });
+            } else if (state.voiceMode === 'full' && hitPlayers.length > 0) {
+                const hitKey = hitPlayers.length >= 3 ? 'triple_hit' : (hitPlayers.length === 2 ? 'double_hit' : 'hit');
+                queue.push({
+                    src: state.audioManifest?.sys?.[hitKey]?.src || `./assets/audio/sys/${hitKey}.mp3`,
+                    label: '🔥 カード解放！',
+                    fallbackText: 'よしっ！カードに ヒット したってばよ！'
+                });
+            }
+
+            enqueueVoiceClips(queue, true);
+        }
+
+        function cycleVoiceMode() {
+            unlockTabletAudioOnce();
+            const order = ['full', 'quick', 'mute'];
+            state.voiceMode = order[(order.indexOf(state.voiceMode) + 1) % order.length];
+
+            const iconEl = document.getElementById('voiceModeIcon');
+            const textEl = document.getElementById('voiceModeText');
+            const btnEl = document.getElementById('voiceModeBtn');
+
+            if (state.voiceMode === 'full') {
+                iconEl.textContent = "🔥";
+                textEl.textContent = "声:フル実況";
+                btnEl.className = "px-2 py-1 rounded-lg font-bold text-[10px] sm:text-xs bg-amber-900/90 hover:bg-amber-800 border border-amber-400 text-amber-100 flex items-center gap-1 shadow active:scale-95 transition";
+                playSysVoice('test', '🎙️ ナルト実況', 'フルじっきょうモード だってばよ！');
+            } else if (state.voiceMode === 'quick') {
+                iconEl.textContent = "⚡";
+                textEl.textContent = "声:サクサク";
+                btnEl.className = "px-2 py-1 rounded-lg font-bold text-[10px] sm:text-xs bg-emerald-900/90 hover:bg-emerald-800 border border-emerald-400 text-emerald-100 flex items-center gap-1 shadow active:scale-95 transition";
+                stopAllVoicePlayback();
+            } else {
+                iconEl.textContent = "🔇";
+                textEl.textContent = "声:ミュート";
+                btnEl.className = "px-2 py-1 rounded-lg font-bold text-[10px] sm:text-xs bg-stone-800 hover:bg-stone-700 border border-stone-500 text-stone-300 flex items-center gap-1 shadow active:scale-95 transition";
+                stopAllVoicePlayback();
+            }
+            playSealSound(1.1);
+        }
+
+        function testVoiceEngine() {
+            unlockTabletAudioOnce();
+            if (state.voiceMode === 'mute') {
+                state.voiceMode = 'full';
+                document.getElementById('voiceModeIcon').textContent = "🔥";
+                document.getElementById('voiceModeText').textContent = "声:フル実況";
+            }
+            playChakraSwirlSound(false);
+            playSysVoice('test', '🎙️ うずまきナルト', 'チャクラ充填完了！忍界大戦ビンゴ大会、いくってばよ！');
+            addCommentary("🔊 【音声チェック】ナルトのアニメ風ボイス再生を確認したってばよ！", "text-cyan-300 font-bold");
+        }
+
+        function replayCurrentVoice() {
+            unlockTabletAudioOnce();
+            if (!state.latestDrawnId) {
+                testVoiceEngine();
+                return;
+            }
+            const item = NARUTO_POOL.find(x => x.id === state.latestDrawnId);
+            if (!item) return;
+            playSummonSequence(item, [], [], []);
+        }
+
+        /* ==========================================================
+           5. Web Audio API 忍術効果音シンセサイザー
+        ========================================================== */
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) audioCtx = new AudioContextClass();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function playSealSound(pitchMultiplier = 1) {
+            if (state.voiceMode === 'mute') return;
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(720 * pitchMultiplier, now);
+            osc.frequency.exponentialRampToValueAtTime(1350 * pitchMultiplier, now + 0.035);
+            osc.frequency.exponentialRampToValueAtTime(420 * pitchMultiplier, now + 0.085);
+            gain.gain.setValueAtTime(0.24, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.09);
+        }
+
+        function playSummonBoomSound() {
+            if (state.voiceMode === 'mute') return;
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+            const subOsc = ctx.createOscillator();
+            const subGain = ctx.createGain();
+            subOsc.type = 'sine';
+            subOsc.frequency.setValueAtTime(155, now);
+            subOsc.frequency.exponentialRampToValueAtTime(36, now + 0.38);
+            subGain.gain.setValueAtTime(0.45, now);
+            subGain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+            subOsc.connect(subGain);
+            subGain.connect(ctx.destination);
+            subOsc.start(now);
+            subOsc.stop(now + 0.42);
+        }
+
+        function playChakraSwirlSound(isReach = false) {
+            if (state.voiceMode === 'mute') return;
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+            const freqs = isReach ? [440, 554.37, 659.25, 880] : [330, 440, 659.25];
+            freqs.forEach((f, idx) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(f * 0.65, now + idx * 0.045);
+                osc.frequency.exponentialRampToValueAtTime(f * 1.4, now + idx * 0.045 + 0.22);
+                gain.gain.setValueAtTime(0.10, now + idx * 0.045);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.045 + 0.24);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now + idx * 0.045);
+                osc.stop(now + idx * 0.045 + 0.25);
+            });
+        }
+
+        function playBingoFanfare() {
+            if (state.voiceMode === 'mute') return;
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+            const notes = [
+                { freq: 523.25, delay: 0.0, dur: 0.14 },
+                { freq: 587.33, delay: 0.12, dur: 0.14 },
+                { freq: 659.25, delay: 0.24, dur: 0.14 },
+                { freq: 783.99, delay: 0.36, dur: 0.20 },
+                { freq: 880.00, delay: 0.54, dur: 0.20 },
+                { freq: 1046.50, delay: 0.72, dur: 0.65 }
+            ];
+            notes.forEach(note => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(note.freq, now + note.delay);
+                gain.gain.setValueAtTime(0.28, now + note.delay);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + note.delay + note.dur);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now + note.delay);
+                osc.stop(now + note.delay + note.dur);
+            });
+        }
+
+        /* ==========================================================
+           6. ビンゴカード生成＆100%同期オープン判定エンジン
+        ========================================================== */
+        function shuffleArray(arr) {
+            const copy = [...arr];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
+        }
+
+        function generateBingoGrid() {
+            const cols = [];
+            for (let colIdx = 0; colIdx < 5; colIdx++) {
+                const min = colIdx * 15 + 1;
+                const pool = [];
+                for (let n = min; n < min + 15; n++) pool.push(n);
+                cols.push(shuffleArray(pool).slice(0, 5));
+            }
+
+            const grid = [];
+            for (let r = 0; r < 5; r++) {
+                const row = [];
+                for (let c = 0; c < 5; c++) {
+                    if (r === 2 && c === 2) {
+                        row.push({
+                            isFree: true,
+                            id: 0,
+                            cardName: "FREE 木ノ葉",
+                            name: "木ノ葉の額当て (FREE)",
+                            jutsu: "推しチャクラ常時解放",
+                            img: "./assets/cards/free.webp",
+                            opened: true,
+                            inBingoLine: false
+                        });
+                    } else {
+                        const numId = Number(cols[c][r]);
+                        const itemData = NARUTO_POOL.find(item => item.id === numId);
+                        row.push({
+                            isFree: false,
+                            id: numId,
+                            cardName: itemData.cardName,
+                            name: itemData.name,
+                            jutsu: itemData.jutsu,
+                            rarity: itemData.rarity,
+                            img: itemData.img,
+                            opened: false,
+                            inBingoLine: false
+                        });
+                    }
+                }
+                grid.push(row);
+            }
+            return grid;
+        }
+
+        function getActivePlayers() {
+            return state.players.slice(0, state.playerCount);
+        }
+
+        function syncAndEvaluatePlayer(player) {
+            const grid = player.grid;
+            let hitLatestOnThisCard = false;
+
+            for (let r = 0; r < 5; r++) {
+                for (let c = 0; c < 5; c++) {
+                    const cell = grid[r][c];
+                    const numId = Number(cell.id);
+                    cell.opened = Boolean(cell.isFree || state.drawnSet.has(numId));
+                    cell.inBingoLine = false;
+                    if (!cell.isFree && numId === state.latestDrawnId) {
+                        hitLatestOnThisCard = true;
+                    }
+                }
+            }
+
+            const lines = [];
+            for (let r = 0; r < 5; r++) lines.push([[r,0],[r,1],[r,2],[r,3],[r,4]]);
+            for (let c = 0; c < 5; c++) lines.push([[0,c],[1,c],[2,c],[3,c],[4,c]]);
+            lines.push([[0,0],[1,1],[2,2],[3,3],[4,4]]);
+            lines.push([[0,4],[1,3],[2,2],[3,1],[4,0]]);
+
+            let bingoCount = 0;
+            let reachCount = 0;
+
+            lines.forEach(line => {
+                const openedCells = line.filter(([r, c]) => grid[r][c].opened);
+                if (openedCells.length === 5) {
+                    bingoCount++;
+                    line.forEach(([r, c]) => { grid[r][c].inBingoLine = true; });
+                } else if (openedCells.length === 4) {
+                    reachCount++;
+                }
+            });
+
+            let openedCount = 0;
+            for (let r = 0; r < 5; r++) {
+                for (let c = 0; c < 5; c++) {
+                    if (grid[r][c].opened) openedCount++;
+                }
+            }
+
+            const prevBingo = player.bingoCount;
+            const prevReach = player.reachCount;
+
+            player.bingoCount = bingoCount;
+            player.reachCount = reachCount;
+            player.openedCount = openedCount;
+
+            if (bingoCount > 0 && player.rankOrder === null) {
+                state.bingoWinnerOrder.push(player.id);
+                player.rankOrder = state.bingoWinnerOrder.length;
+            }
+
+            return {
+                hitLatest: hitLatestOnThisCard,
+                bingoIncreased: bingoCount > prevBingo,
+                reachIncreased: reachCount > prevReach
+            };
+        }
+
+        function initGame(preserveSetup = true) {
+            if (state.spinIntervalId) {
+                clearInterval(state.spinIntervalId);
+                state.spinIntervalId = null;
+            }
+
+            const saved = loadSavedPrefs();
+            if (!preserveSetup) {
+                if (saved?.playerCount && [1, 2, 3].includes(saved.playerCount)) {
+                    state.playerCount = saved.playerCount;
+                } else {
+                    // 縦向きタブレットやスマホ幅では2枚対戦、横向き大画面では3枚対戦を初期表示
+                    state.playerCount = window.innerWidth < 900 ? 2 : 3;
+                }
+            }
+
+            const defaultLeaderIds = ["naruto", "sasuke", "sakura"];
+
+            state.drawnSet = new Set();
+            state.drawnHistory = [];
+            state.remainingIds = Array.from({ length: 75 }, (_, i) => i + 1);
+            state.latestDrawnId = null;
+            state.isSpinning = false;
+            state.bingoWinnerOrder = [];
+
+            if (preserveSetup && state.players.length === 3) {
+                state.players.forEach(p => {
+                    p.grid = generateBingoGrid();
+                    p.bingoCount = 0;
+                    p.reachCount = 0;
+                    p.openedCount = 1;
+                    p.rankOrder = null;
+                });
+            } else {
+                state.players = [0, 1, 2].map(idx => {
+                    const savedSlot = saved?.slots?.[idx];
+                    const leader = getLeaderById(savedSlot?.leaderId || defaultLeaderIds[idx]);
+                    return {
+                        id: idx,
+                        name: savedSlot?.name || leader.defaultCardName,
+                        leader: leader,
+                        grid: generateBingoGrid(),
+                        bingoCount: 0,
+                        reachCount: 0,
+                        openedCount: 1,
+                        rankOrder: null
+                    };
+                });
+            }
+
+            state.players.forEach(p => syncAndEvaluatePlayer(p));
+
+            updatePlayerCountButtonUI();
+            updateTopLotteryDisplay(null);
+            renderAllPlayerCards();
+            renderMiniScoreboard();
+            renderHorizontalHistory();
+            renderFullHistoryModalGrid();
+        }
+
+        /* ==========================================================
+           7. プレイ枚数切替＆推しキャラカード変更システム
+        ========================================================== */
+        function updatePlayerCountButtonUI() {
+            const iconMap = { 1: "👑", 2: "⚔️", 3: "👥" };
+            const textMap = { 1: "1枚特大", 2: "2枚対戦", 3: "3枚対戦" };
+            document.getElementById('playerCountIcon').textContent = iconMap[state.playerCount];
+            document.getElementById('playerCountText').textContent = textMap[state.playerCount];
+
+            const grid = document.getElementById('cardsGrid');
+            if (state.playerCount === 1) {
+                grid.className = "h-[67.5dvh] max-w-xl mx-auto w-full grid grid-cols-1 gap-2 items-stretch overflow-hidden shrink-0";
+            } else if (state.playerCount === 2) {
+                grid.className = "h-[67.5dvh] max-w-5xl mx-auto w-full grid grid-cols-2 gap-2 sm:gap-4 items-stretch overflow-hidden shrink-0";
+            } else {
+                grid.className = "h-[67.5dvh] w-full grid grid-cols-3 gap-1.5 sm:gap-3 items-stretch overflow-hidden shrink-0";
+            }
+        }
+
+        function setPlayerCount(count) {
+            unlockTabletAudioOnce();
+            playSealSound(1.1);
+            state.playerCount = count;
+            if (state.activeOshiTab >= count) state.activeOshiTab = 0;
+            savePrefs();
+            updatePlayerCountButtonUI();
+            renderAllPlayerCards();
+            renderMiniScoreboard();
+            if (!document.getElementById('oshiSelectModal').classList.contains('hidden')) {
+                renderOshiModalContent();
+            }
+        }
+
+        function cyclePlayerCount() {
+            const next = state.playerCount === 3 ? 2 : (state.playerCount === 2 ? 1 : 3);
+            setPlayerCount(next);
+        }
+
+        function openOshiModal(playerIdx = 0) {
+            unlockTabletAudioOnce();
+            playSealSound(1.05);
+            state.activeOshiTab = Math.min(playerIdx, state.playerCount - 1);
+            renderOshiModalContent();
+            document.getElementById('oshiSelectModal').classList.remove('hidden');
+        }
+
+        function closeOshiModal() {
+            playSealSound(1.15);
+            document.getElementById('oshiSelectModal').classList.add('hidden');
+        }
+
+        function selectOshiTab(idx) {
+            playSealSound(1.0);
+            state.activeOshiTab = idx;
+            renderOshiModalContent();
+        }
+
+        function chooseOshiLeaderForSlot(leaderId) {
+            unlockTabletAudioOnce();
+            const player = state.players[state.activeOshiTab];
+            const prevDefault = player.leader.defaultCardName;
+            const newLeader = getLeaderById(leaderId);
+
+            player.leader = newLeader;
+            if (!player.name || player.name === prevDefault || OSHI_LEADERS.some(l => l.defaultCardName === player.name)) {
+                player.name = newLeader.defaultCardName;
+            }
+
+            savePrefs();
+            playChakraSwirlSound(false);
+            playLeaderSelectVoice(newLeader);
+
+            renderOshiModalContent();
+            renderAllPlayerCards();
+            renderMiniScoreboard();
+            addCommentary(`🃏 ${state.activeOshiTab + 1}Pが推しカードを『${newLeader.charName}』に変更！「${newLeader.selectQuote}」`, "text-yellow-300 font-bold");
+        }
+
+        function updateActiveModalPlayerName(val) {
+            const trimmed = val.trim();
+            if (!trimmed) return;
+            state.players[state.activeOshiTab].name = trimmed;
+            savePrefs();
+            renderAllPlayerCards();
+            renderMiniScoreboard();
+            renderOshiModalContent();
+        }
+
+        function renderOshiModalContent() {
+            // 枚数ボタンハイライト
+            [1, 2, 3].forEach(n => {
+                const btn = document.getElementById(`modalCountBtn${n}`);
+                btn.className = n === state.playerCount
+                    ? "px-2.5 py-1 rounded-lg text-xs font-black bg-amber-400 text-black shadow"
+                    : "px-2.5 py-1 rounded-lg text-xs font-bold text-stone-300 hover:bg-stone-800";
+            });
+
+            // プレイヤータブ描画
+            const tabsEl = document.getElementById('oshiPlayerTabs');
+            tabsEl.innerHTML = getActivePlayers().map((p, idx) => {
+                const active = idx === state.activeOshiTab;
+                return `
+                    <button onclick="selectOshiTab(${idx})" class="px-3 py-1.5 rounded-xl font-manga text-xs sm:text-sm flex items-center gap-1.5 border transition ${
+                        active
+                            ? `bg-gradient-to-r ${p.leader.headerBg} text-white border-yellow-300 shadow-lg scale-105`
+                            : 'bg-stone-800 text-stone-300 border-stone-600 hover:bg-stone-700'
+                    }">
+                        <img src="${p.leader.portrait}" alt="" class="w-5 h-5 rounded-full object-cover border border-white/60">
+                        <span>${idx + 1}P: ${p.name}</span>
+                    </button>
+                `;
+            }).join('');
+
+            const activePlayer = state.players[state.activeOshiTab];
+            document.getElementById('oshiModalNameInput').value = activePlayer.name;
+
+            // 12人の推しキャラカード一覧
+            const gridEl = document.getElementById('oshiLeaderGrid');
+            gridEl.innerHTML = OSHI_LEADERS.map(leader => {
+                const isSelected = activePlayer.leader.id === leader.id;
+                return `
+                    <button onclick="chooseOshiLeaderForSlot('${leader.id}')" class="relative rounded-2xl p-1 bg-gradient-to-br ${
+                        isSelected ? 'from-yellow-200 via-amber-400 to-orange-500 scale-[1.02] shadow-[0_0_24px_rgba(251,191,36,0.85)]' : 'from-stone-700 to-stone-900 hover:from-amber-500/70 hover:to-orange-600/70'
+                    } transition text-left overflow-hidden group active:scale-95">
+                        <div class="bg-stone-950 rounded-[13px] overflow-hidden flex flex-col h-full">
+                            <div class="relative h-28 sm:h-36 w-full overflow-hidden ${isSelected ? 'holo-card-opened' : ''}">
+                                <img src="${leader.portrait}" alt="${leader.charName}" class="w-full h-full object-cover object-top group-hover:scale-105 transition duration-300">
+                                <div class="absolute top-1.5 left-1.5 bg-black/75 border border-white/30 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                    ${leader.badge}
+                                </div>
+                                ${isSelected ? `<div class="absolute top-1.5 right-1.5 bg-yellow-300 text-black font-black text-[10px] px-2 py-0.5 rounded-full shadow">✨選択中</div>` : ''}
+                                <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-stone-950 via-stone-950/75 to-transparent pt-6 pb-1.5 px-2.5">
+                                    <div class="font-manga text-sm sm:text-base text-white text-stroke-xs">${leader.charName}</div>
+                                </div>
+                            </div>
+                            <div class="p-2 flex items-center justify-between text-[10px] sm:text-xs bg-gradient-to-r ${leader.headerBg}">
+                                <span class="font-black text-white">開封印: ${leader.sealIcon}${leader.sealText}</span>
+                                <span class="bg-black/55 text-yellow-200 px-1.5 py-0.5 rounded font-bold">🔊ボイス付</span>
+                            </div>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        /* ==========================================================
+           8. 口寄せ・抽選実行エンジン
+        ========================================================== */
+        function triggerSummonDraw(isQuick = false) {
+            unlockTabletAudioOnce();
+            if (state.isSpinning) return;
+
+            if (state.remainingIds.length === 0) {
+                playSysVoice('complete', '🌟 全75忍集結！', '全75人の忍が全員集結したぞ！最高の忍界大戦だったってばよ！');
+                addCommentary("🌟 【完全制覇】全75枚の忍カードがすべて召喚されたってばよ！！", "text-yellow-300 font-black");
+                return;
+            }
+
+            state.isSpinning = true;
+            const drawBtn = document.getElementById('drawButton');
+            const quickBtn = document.getElementById('quickDrawButton');
+            drawBtn.disabled = true;
+            quickBtn.disabled = true;
+            drawBtn.classList.add('opacity-60');
+
+            const randIdx = Math.floor(Math.random() * state.remainingIds.length);
+            const pickedId = Number(state.remainingIds.splice(randIdx, 1)[0]);
+            const item = NARUTO_POOL.find(x => x.id === pickedId);
+
+            if (isQuick) {
+                playSealSound(1.25);
+                completeSummonAndOpenCards(item);
+                return;
+            }
+
+            const overlay = document.getElementById('handSealOverlay');
+            const sealKanji = document.getElementById('sealKanji');
+            overlay.classList.remove('hidden');
+
+            let step = 0;
+            const totalSteps = 5;
+            if (state.spinIntervalId) clearInterval(state.spinIntervalId);
+
+            state.spinIntervalId = setInterval(() => {
+                sealKanji.textContent = HAND_SEALS[Math.floor(Math.random() * HAND_SEALS.length)];
+                playSealSound(0.95 + step * 0.12);
+                step++;
+                if (step >= totalSteps) {
+                    clearInterval(state.spinIntervalId);
+                    state.spinIntervalId = null;
+                    overlay.classList.add('hidden');
+                    completeSummonAndOpenCards(item);
+                }
+            }, 80);
+        }
+
+        function completeSummonAndOpenCards(item) {
+            const numId = Number(item.id);
+            state.drawnSet.add(numId);
+            state.drawnHistory.unshift(numId);
+            state.latestDrawnId = numId;
+
+            playSummonBoomSound();
+            const mainStage = document.getElementById('mainStage');
+            mainStage.classList.remove('shake-active');
+            void mainStage.offsetWidth;
+            mainStage.classList.add('shake-active');
+
+            const hitPlayers = [];
+            const reachUpPlayers = [];
+            const bingoUpPlayers = [];
+
+            // 全3枠を同期しつつ、現在アクティブな枚数のプレイヤーに対してヒット・ビンゴ演出を実行
+            state.players.forEach((player, idx) => {
+                const res = syncAndEvaluatePlayer(player);
+                if (idx < state.playerCount) {
+                    if (res.hitLatest) hitPlayers.push(player);
+                    if (res.bingoIncreased) bingoUpPlayers.push(player);
+                    else if (res.reachIncreased) reachUpPlayers.push(player);
+                }
+            });
+
+            updateTopLotteryDisplay(item);
+            renderAllPlayerCards();
+            renderMiniScoreboard();
+            renderHorizontalHistory();
+            renderFullHistoryModalGrid();
+
+            const hitNamesLog = hitPlayers.map(p => `【${p.name}】`).join("・");
+            if (hitPlayers.length > 0) {
+                addCommentary(`⚡ No.${item.id}『${item.name}』降臨！ → ${hitNamesLog} のキャラカードが解放！！`, "text-amber-300 font-black");
+            } else {
+                addCommentary(`💨 No.${item.id}『${item.name}』降臨！（現在のカードには配置なし）`, "text-stone-400");
+            }
+
+            // ナルト召喚実況 → 登場キャラの決めゼリフ → ヒット/リーチ/ビンゴ歓声！
+            playSummonSequence(item, hitPlayers, reachUpPlayers, bingoUpPlayers);
+
+            if (bingoUpPlayers.length > 0) {
+                playBingoFanfare();
+                triggerChakraFireworks();
+                showBingoModal(bingoUpPlayers[0]);
+            } else if (reachUpPlayers.length > 0) {
+                playChakraSwirlSound(true);
+            } else if (hitPlayers.length > 0) {
+                playChakraSwirlSound(false);
+            }
+
+            state.isSpinning = false;
+            const drawBtn = document.getElementById('drawButton');
+            const quickBtn = document.getElementById('quickDrawButton');
+            drawBtn.disabled = false;
+            quickBtn.disabled = false;
+            drawBtn.classList.remove('opacity-60');
+        }
+
+        /* ==========================================================
+           9. UI描画：上部召喚キラカード・履歴・推しキャラ別ビンゴカード
+        ========================================================== */
+        function updateTopLotteryDisplay(item) {
+            const count = state.drawnHistory.length;
+            document.getElementById('headerDrawnCount').textContent = count;
+            document.getElementById('drawnCounterBadge').textContent = `${count}/75`;
+
+            const cardImg = document.getElementById('currentCardImg');
+            const numBadge = document.getElementById('currentNumberBadge');
+            const rarityBadge = document.getElementById('currentRarityBadge');
+            const attrBadge = document.getElementById('currentAttrBadge');
+            const rankTag = document.getElementById('currentRankTag');
+            const jutsuTag = document.getElementById('currentJutsuTag');
+            const charName = document.getElementById('currentCharName');
+            const quoteEl = document.getElementById('currentQuote');
+
+            if (!item) {
+                cardImg.src = "./assets/cards/free.webp";
+                numBadge.textContent = "待機";
+                rarityBadge.textContent = "忍";
+                attrBadge.textContent = "木ノ葉隠れ";
+                rankTag.textContent = "忍界大戦・開幕待機";
+                jutsuTag.textContent = "推しキャラを選んで抽選だ！";
+                charName.textContent = "口寄せボタンを押すってばよ！";
+                quoteEl.textContent = "「ナルトの実況に続いて、登場キャラ本人のアニメ風ボイスで決めゼリフが流れるぞ！！」";
+                return;
+            }
+
+            const colLetter = ["B", "I", "N", "G", "O"][Math.floor((item.id - 1) / 15)];
+            cardImg.src = item.img;
+            numBadge.textContent = `${colLetter}-${item.id}`;
+            rarityBadge.textContent = item.rarity;
+            attrBadge.textContent = item.attr;
+            rankTag.textContent = `召喚 【${colLetter}の ${item.id}番】`;
+            jutsuTag.textContent = item.jutsu;
+            charName.textContent = item.name;
+            quoteEl.textContent = `「${item.quote}」`;
+        }
+
+        function renderHorizontalHistory() {
+            const bar = document.getElementById('horizontalHistoryBar');
+            if (state.drawnHistory.length === 0) {
+                bar.innerHTML = `<span class="text-[11px] text-stone-500 italic">まだ召喚された忍カードはないってばよ…</span>`;
+                return;
+            }
+
+            bar.innerHTML = state.drawnHistory.map((id, idx) => {
+                const item = NARUTO_POOL.find(x => x.id === id);
+                const isLatest = idx === 0;
+                const badgeClass = isLatest
+                    ? "bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 text-black font-black border border-white shadow"
+                    : "bg-stone-800 hover:bg-stone-700 text-amber-200 border border-amber-500/40 font-bold";
+
+                return `
+                    <button onclick="openCardZoomById(${item.id})" class="pl-1 pr-2 py-0.5 rounded-lg text-[10px] sm:text-xs flex items-center gap-1 shrink-0 transition active:scale-95 ${badgeClass}">
+                        <img src="${item.img}" alt="" class="w-5 h-5 rounded object-cover object-top border border-black/40">
+                        <span>${item.id}.${item.cardName}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function getColBadgeColor(colIdx) {
+            return [
+                "bg-orange-600 text-white",
+                "bg-red-600 text-white",
+                "bg-purple-600 text-white",
+                "bg-emerald-600 text-white",
+                "bg-sky-600 text-white"
+            ][colIdx] || "bg-amber-600 text-white";
+        }
+
+        function renderAllPlayerCards() {
+            const container = document.getElementById('cardsGrid');
+            container.innerHTML = '';
+
+            const headerLetters = [
+                { char: 'B', sub: '1-15', color: 'from-orange-500 to-amber-600' },
+                { char: 'I', sub: '16-30', color: 'from-red-600 to-rose-700' },
+                { char: 'N', sub: '31-45', color: 'from-purple-600 to-indigo-700' },
+                { char: 'G', sub: '46-60', color: 'from-emerald-600 to-teal-700' },
+                { char: 'O', sub: '61-75', color: 'from-sky-500 to-blue-700' }
+            ];
+
+            getActivePlayers().forEach((player, pIdx) => {
+                const leader = player.leader;
+                const chakraPercent = Math.round((player.openedCount / 25) * 100);
+
+                const reachAuraClass = (player.reachCount > 0 && player.bingoCount === 0)
+                    ? "aura-reach-active !border-yellow-300"
+                    : (player.bingoCount > 0 ? "!border-yellow-200 shadow-[0_0_24px_rgba(251,191,36,0.85)]" : "");
+
+                let statusPill = '';
+                if (player.bingoCount > 0) {
+                    statusPill = `<span class="bg-yellow-300 text-black font-black text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full animate-bounce shrink-0">🏆${player.bingoCount}BINGO!</span>`;
+                } else if (player.reachCount > 0) {
+                    statusPill = `<span class="bg-red-600 text-white font-black text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full animate-pulse shrink-0">${leader.reachTitle}</span>`;
+                } else {
+                    statusPill = `<span class="hidden xl:inline-block bg-black/55 text-amber-200 font-bold text-[9px] px-1.5 py-0.5 rounded-full truncate">${leader.badge}</span>`;
+                }
+
+                // 5x5 各マス＝本格キャラクターキラカード描画！
+                let cellsHtml = '';
+                for (let r = 0; r < 5; r++) {
+                    for (let c = 0; c < 5; c++) {
+                        const cell = player.grid[r][c];
+                        const isLatestHit = (!cell.isFree && cell.id === state.latestDrawnId);
+                        const colBadge = getColBadgeColor(c);
+
+                        let frameClass = '';
+                        let imgFilterClass = '';
+                        let sealBadgeHtml = '';
+                        let nameRibbonClass = '';
+
+                        if (isLatestHit) {
+                            frameClass = `cell-latest-hit holo-card-opened`;
+                            imgFilterClass = 'brightness-110 saturate-125 scale-105';
+                            sealBadgeHtml = `<span class="bg-yellow-300 text-black font-black text-[8px] sm:text-[9px] px-1 rounded shadow">⚡HIT!</span>`;
+                            nameRibbonClass = `bg-gradient-to-r ${leader.openRibbon} text-yellow-100`;
+                        } else if (cell.inBingoLine) {
+                            frameClass = 'cell-bingo-line holo-card-opened';
+                            imgFilterClass = 'brightness-110 saturate-125';
+                            sealBadgeHtml = `<span class="bg-yellow-300 text-black font-black text-[8px] sm:text-[9px] px-1 rounded shadow">🏆神</span>`;
+                            nameRibbonClass = 'bg-gradient-to-r from-amber-500 via-red-600 to-amber-500 text-white';
+                        } else if (cell.opened) {
+                            frameClass = `border-2 ${leader.openBorder} holo-card-opened`;
+                            imgFilterClass = 'brightness-105 saturate-115';
+                            sealBadgeHtml = cell.isFree
+                                ? `<span class="bg-yellow-300 text-black font-black text-[8px] px-1 rounded shadow">FREE</span>`
+                                : `<span class="bg-black/80 text-yellow-200 border border-yellow-300/70 font-black text-[8px] px-1 rounded shadow">${leader.sealIcon}開</span>`;
+                            nameRibbonClass = `bg-gradient-to-r ${leader.openRibbon} text-white`;
+                        } else {
+                            frameClass = 'border border-stone-700/90 hover:border-amber-400/70';
+                            imgFilterClass = 'brightness-[0.62] contrast-105 saturate-90 group-hover:brightness-90';
+                            nameRibbonClass = 'bg-black/80 text-stone-200';
+                        }
+
+                        // 中央FREEマスは選んだ推しキャラの肖像＋黄金額当て仕様に！
+                        const cellPortrait = cell.isFree ? leader.portrait : cell.img;
+                        const displayCardName = cell.isFree ? `${leader.sealText}★` : cell.cardName;
+
+                        cellsHtml += `
+                            <button
+                                onclick="handleCellTap(${pIdx}, ${r}, ${c})"
+                                class="group relative w-full h-full min-h-0 rounded-xl overflow-hidden bg-stone-900 transition active:scale-95 flex flex-col justify-between ${frameClass}"
+                            >
+                                <!-- フルブリード・キャラカードイラスト -->
+                                <img src="${cellPortrait}" alt="${displayCardName}" loading="lazy" class="absolute inset-0 w-full h-full object-cover object-top transition duration-200 ${imgFilterClass}">
+
+                                <!-- カード上段：番号バッジ ＆ 開封印 -->
+                                <div class="relative z-10 w-full flex items-start justify-between p-0.5 sm:p-1 pointer-events-none">
+                                    <span class="${cell.isFree ? 'bg-yellow-300 text-black' : colBadge} font-black text-[8px] sm:text-[10px] px-1 py-0.1 rounded shadow leading-tight border border-black/40">
+                                        ${cell.isFree ? '★' : cell.id}
+                                    </span>
+                                    ${sealBadgeHtml}
+                                </div>
+
+                                <!-- カード下段：トレーディングカードネームプレート -->
+                                <div class="relative z-10 w-full ${nameRibbonClass} backdrop-blur-[1px] py-0.5 px-0.5 border-t border-white/15 pointer-events-none">
+                                    <span class="block text-[8px] sm:text-[10px] tracking-tighter font-black leading-none truncate text-center text-stroke-xs">
+                                        ${displayCardName}
+                                    </span>
+                                </div>
+                            </button>
+                        `;
+                    }
+                }
+
+                const cardEl = document.createElement('div');
+                cardEl.className = `h-full flex flex-col justify-between bg-gradient-to-b ${leader.cardBg} border-2 ${leader.borderClass} ${reachAuraClass} rounded-2xl p-1.5 sm:p-2.5 shadow-xl overflow-hidden`;
+
+                cardEl.innerHTML = `
+                    <!-- 推しキャラ専用カードヘッダー -->
+                    <div class="shrink-0">
+                        <div class="bg-gradient-to-r ${leader.headerBg} rounded-xl p-1.5 border border-white/25 flex items-center gap-2 relative overflow-hidden">
+                            <!-- 推しキャラ肖像アイコン (タップで推しキャラ変更！) -->
+                            <button onclick="openOshiModal(${pIdx})" class="relative w-10 h-10 sm:w-12 sm:h-12 rounded-xl overflow-hidden border-2 border-yellow-200 shadow-md shrink-0 group active:scale-95" title="タップして推しキャラを変更">
+                                <img src="${leader.portrait}" alt="${leader.charName}" class="w-full h-full object-cover object-top group-hover:scale-110 transition">
+                                <span class="absolute inset-x-0 bottom-0 bg-black/80 text-[7px] sm:text-[8px] font-black text-yellow-300 text-center leading-tight py-0.2">変更</span>
+                            </button>
+
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between gap-1 mb-0.5">
+                                    ${statusPill}
+                                    <div class="flex items-center gap-1 text-[9px] sm:text-[11px] font-manga whitespace-nowrap ml-auto shrink-0">
+                                        <span class="bg-black/75 text-yellow-300 px-1 py-0.2 rounded border border-yellow-400/40">BINGO:${player.bingoCount}</span>
+                                        <span class="bg-black/75 text-orange-300 px-1 py-0.2 rounded border border-orange-400/40">リーチ:${player.reachCount}</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <input
+                                        type="text"
+                                        value="${player.name}"
+                                        onchange="updatePlayerName(${pIdx}, this.value)"
+                                        aria-label="カード名"
+                                        class="w-full bg-black/45 focus:bg-black/80 text-white font-manga text-[11px] sm:text-sm px-2 py-0.5 rounded-lg border border-white/25 focus:border-yellow-300 focus:outline-none"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- チャクラ解放ゲージ -->
+                        <div class="mt-1 mb-1 flex items-center gap-1.5">
+                            <div class="text-[8.5px] sm:text-[10px] font-bold text-amber-300 shrink-0">
+                                ${leader.sealIcon}解放 ${player.openedCount}/25
+                            </div>
+                            <div class="flex-1 h-1.5 sm:h-2 bg-stone-800 rounded-full overflow-hidden border border-stone-600">
+                                <div class="h-full rounded-full bg-gradient-to-r ${leader.barColor} transition-all duration-300" style="width: ${chakraPercent}%"></div>
+                            </div>
+                            <div class="text-[8.5px] sm:text-[10px] font-black text-white shrink-0">${chakraPercent}%</div>
+                        </div>
+
+                        <!-- B-I-N-G-O 列ヘッダー -->
+                        <div class="grid grid-cols-5 gap-1 mb-1">
+                            ${headerLetters.map(h => `
+                                <div class="bg-gradient-to-b ${h.color} rounded-md py-0.5 text-center border border-white/20 flex items-center justify-center gap-0.5">
+                                    <span class="font-manga text-[10px] sm:text-xs text-white leading-none">${h.char}</span>
+                                    <span class="text-[7px] sm:text-[8px] text-white/85 font-bold leading-none hidden sm:inline">${h.sub}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- 5x5 キャラクターカードグリッド -->
+                    <div class="flex-1 min-h-0 grid grid-cols-5 grid-rows-5 gap-1 sm:gap-1.5">
+                        ${cellsHtml}
+                    </div>
+                `;
+
+                container.appendChild(cardEl);
+            });
+        }
+
+        /* ==========================================================
+           10. カードタップ・図鑑・拡大ショーケース操作
+        ========================================================== */
+        function handleCellTap(playerIdx, r, c) {
+            unlockTabletAudioOnce();
+            const player = state.players[playerIdx];
+            const cell = player.grid[r][c];
+
+            if (cell.isFree) {
+                playSealSound(1.2);
+                playLeaderSelectVoice(player.leader);
+                return;
+            }
+
+            const item = NARUTO_POOL.find(x => x.id === Number(cell.id));
+            if (!item) return;
+
+            playSealSound(1.05);
+            openCardZoomById(item.id);
+        }
+
+        function openCurrentCardZoom() {
+            if (!state.latestDrawnId) {
+                openOshiModal(0);
+                return;
+            }
+            openCardZoomById(state.latestDrawnId);
+        }
+
+        function openCardZoomById(id) {
+            unlockTabletAudioOnce();
+            const item = NARUTO_POOL.find(x => x.id === Number(id));
+            if (!item) return;
+
+            const isDrawn = state.drawnSet.has(item.id);
+            const colLetter = ["B", "I", "N", "G", "O"][Math.floor((item.id - 1) / 15)];
+
+            document.getElementById('zoomCardImg').src = item.img;
+            document.getElementById('zoomCardNum').textContent = `${colLetter}-${item.id} ${isDrawn ? '【召喚済】' : '【未召喚】'}`;
+            document.getElementById('zoomCardAttr').textContent = `${item.attr}・${item.rarity}`;
+            document.getElementById('zoomCardJutsu').textContent = item.jutsu;
+            document.getElementById('zoomCardName').textContent = item.name;
+            document.getElementById('zoomCardQuote').textContent = `「${item.quote}」`;
+
+            const replayBtn = document.getElementById('zoomReplayBtn');
+            replayBtn.onclick = () => playCharacterQuoteOnly(item);
+
+            document.getElementById('cardZoomModal').classList.remove('hidden');
+            playCharacterQuoteOnly(item);
+        }
+
+        function closeCardZoomModal(e) {
+            if (e && e.target !== e.currentTarget) return;
+            document.getElementById('cardZoomModal').classList.add('hidden');
+        }
+
+        function updatePlayerName(playerIdx, newName) {
+            const trimmed = newName.trim();
+            if (trimmed) {
+                state.players[playerIdx].name = trimmed;
+                savePrefs();
+                renderMiniScoreboard();
+            }
+        }
+
+        function renderMiniScoreboard() {
+            const board = document.getElementById('miniScoreboard');
+            if (!board) return;
+            const active = getActivePlayers();
+            board.className = `grid grid-cols-${active.length} gap-1.5 shrink-0 mb-1.5`;
+            board.innerHTML = active.map(p => {
+                const isBingo = p.bingoCount > 0;
+                const isReach = p.reachCount > 0;
+                const statusText = isBingo
+                    ? `🏆 ${p.bingoCount} BINGO`
+                    : (isReach ? `⚡ ${p.reachCount} リーチ` : `${p.openedCount}/25 解放`);
+                const statusColor = isBingo
+                    ? 'bg-amber-400 text-black font-black'
+                    : (isReach ? 'bg-red-600 text-white font-black animate-pulse' : 'bg-stone-800 text-stone-300');
+
+                return `
+                    <div class="bg-stone-950 border ${p.leader.borderClass} rounded-xl p-1.5 flex items-center gap-1.5">
+                        <img src="${p.leader.portrait}" alt="" class="w-7 h-7 rounded-lg object-cover object-top border border-white/40 shrink-0">
+                        <div class="min-w-0 flex-1">
+                            <div class="text-[10px] font-bold text-amber-200 truncate">${p.name}</div>
+                            <div class="text-[9px] mt-0.5 px-1 py-0.2 rounded text-center ${statusColor}">${statusText}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderFullHistoryModalGrid() {
+            const grid = document.getElementById('fullHistoryGrid');
+            if (!grid) return;
+            grid.innerHTML = NARUTO_POOL.map(item => {
+                const isDrawn = state.drawnSet.has(item.id);
+                const isLatest = state.latestDrawnId === item.id;
+                const borderCls = isLatest
+                    ? "border-2 border-yellow-300 shadow-[0_0_15px_rgba(250,204,21,0.9)]"
+                    : (isDrawn ? "border-2 border-amber-400" : "border border-stone-700 opacity-65 hover:opacity-100");
+
+                return `
+                    <button onclick="openCardZoomById(${item.id})" class="relative aspect-square rounded-xl overflow-hidden bg-stone-900 transition active:scale-95 group ${borderCls}">
+                        <img src="${item.img}" alt="${item.cardName}" loading="lazy" class="w-full h-full object-cover object-top ${isDrawn ? '' : 'grayscale-[55%]'} group-hover:scale-105 transition">
+                        <span class="absolute top-1 left-1 bg-black/80 text-amber-300 text-[9px] font-black px-1 rounded">${item.id}</span>
+                        ${isDrawn ? `<span class="absolute top-1 right-1 bg-amber-400 text-black text-[8px] font-black px-1 rounded">召済</span>` : ''}
+                        <div class="absolute inset-x-0 bottom-0 bg-black/85 py-0.5 px-1">
+                            <span class="block text-[9px] font-black text-white truncate text-center">${item.cardName}</span>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function addCommentary(text, colorClass = "text-stone-200") {
+            const box = document.getElementById('liveCommentaryBox');
+            if (!box) return;
+            const entry = document.createElement('div');
+            entry.className = `${colorClass} border-b border-stone-800/80 pb-1`;
+            entry.textContent = text;
+            box.prepend(entry);
+        }
+
+        /* ==========================================================
+           11. モーダル制御
+        ========================================================== */
+        function openScrollModal() {
+            playSealSound(1.0);
+            renderFullHistoryModalGrid();
+            document.getElementById('scrollModal').classList.remove('hidden');
+        }
+        function closeScrollModal() {
+            document.getElementById('scrollModal').classList.add('hidden');
+        }
+
+        function showBingoModal(player) {
+            const modal = document.getElementById('bingoCutinModal');
+            document.getElementById('bingoModalPortrait').src = player.leader.portrait;
+            document.getElementById('bingoModalTitle').textContent = `${player.name} がビンゴ達成！！`;
+            const rankTitle = BINGO_TITLES[(player.rankOrder || 1) - 1] || "🔥 忍界ビンゴ神";
+            document.getElementById('bingoModalRankBadge').textContent = `${rankTitle} （${player.bingoCount} ライン達成！）`;
+            document.getElementById('bingoModalQuote').textContent = `「${player.leader.bingoQuote}」`;
+            modal.classList.remove('hidden');
+        }
+        function closeBingoModal() {
+            playSealSound(1.2);
+            document.getElementById('bingoCutinModal').classList.add('hidden');
+        }
+
+        function openResetModal() {
+            playSealSound(0.9);
+            document.getElementById('resetConfirmModal').classList.remove('hidden');
+        }
+        function closeResetModal() {
+            document.getElementById('resetConfirmModal').classList.add('hidden');
+        }
+        function confirmResetGame() {
+            unlockTabletAudioOnce();
+            closeResetModal();
+            playSummonBoomSound();
+            initGame(true);
+            playSysVoice('reset', '🌀 忍界リセット！', '忍界リセットの術！新しいビンゴカードで勝負開始だってばよ！');
+            addCommentary("🔄 【新装開幕】推しキャラカードに新しい25マスが配られたってばよ！", "text-amber-300 font-bold");
+        }
+
+        /* ==========================================================
+           12. 背景チャクラ火の粉＆花火アニメーション
+        ========================================================== */
+        const canvas = document.getElementById('chakraCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let celebrationBursts = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        function initAmbientParticles() {
+            particles = [];
+            for (let i = 0; i < 30; i++) {
+                particles.push({
+                    x: Math.random() * window.innerWidth,
+                    y: Math.random() * window.innerHeight,
+                    radius: Math.random() * 2.4 + 1,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: -Math.random() * 1.0 - 0.25,
+                    alpha: Math.random() * 0.5 + 0.2,
+                    color: ['#ff6b00', '#fbbf24', '#ef4444', '#38bdf8'][Math.floor(Math.random() * 4)]
+                });
+            }
+        }
+
+        function triggerChakraFireworks() {
+            const colors = ['#fbbf24', '#ff6b00', '#ef4444', '#38bdf8', '#a855f7', '#10b981'];
+            for (let b = 0; b < 4; b++) {
+                const cx = window.innerWidth * (0.2 + 0.2 * b);
+                const cy = window.innerHeight * (0.25 + Math.random() * 0.3);
+                for (let i = 0; i < 28; i++) {
+                    const angle = (Math.PI * 2 * i) / 28;
+                    const speed = Math.random() * 5.5 + 2;
+                    celebrationBursts.push({
+                        x: cx,
+                        y: cy,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        radius: Math.random() * 3.5 + 2,
+                        alpha: 1,
+                        color: colors[Math.floor(Math.random() * colors.length)]
+                    });
+                }
+            }
+        }
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                if (p.y < -10) {
+                    p.y = canvas.height + 10;
+                    p.x = Math.random() * canvas.width;
+                }
+                ctx.save();
+                ctx.globalAlpha = p.alpha;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+
+            for (let i = celebrationBursts.length - 1; i >= 0; i--) {
+                const b = celebrationBursts[i];
+                b.x += b.vx;
+                b.y += b.vy;
+                b.vy += 0.08;
+                b.alpha -= 0.018;
+                if (b.alpha <= 0) {
+                    celebrationBursts.splice(i, 1);
+                    continue;
+                }
+                ctx.save();
+                ctx.globalAlpha = b.alpha;
+                ctx.fillStyle = b.color;
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+            requestAnimationFrame(animateCanvas);
+        }
+
+        // PWA Service Worker 登録
+        if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(() => {});
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            resizeCanvas();
+            initAmbientParticles();
+            initGame(false);
+            animateCanvas();
+            await loadAudioManifest();
+        });
+    </script>
+</body>
+</html>

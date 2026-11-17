@@ -1,0 +1,538 @@
+{
+  "summon": {
+    "1": {
+      "src": "assets/audio/summon/01.mp3?v=5",
+      "splitSec": 5.65,
+      "duration": 13.9,
+      "voice": "Puck"
+    },
+    "2": {
+      "src": "assets/audio/summon/02.mp3?v=5",
+      "splitSec": 4.93,
+      "duration": 14.46,
+      "voice": "Iapetus"
+    },
+    "3": {
+      "src": "assets/audio/summon/03.mp3?v=5",
+      "splitSec": 4.78,
+      "duration": 12.55,
+      "voice": "Laomedeia"
+    },
+    "4": {
+      "src": "assets/audio/summon/04.mp3?v=5",
+      "splitSec": 5.45,
+      "duration": 13.1,
+      "voice": "Charon"
+    },
+    "5": {
+      "src": "assets/audio/summon/05.mp3?v=5",
+      "splitSec": 6.01,
+      "duration": 15.26,
+      "voice": "Achird"
+    },
+    "6": {
+      "src": "assets/audio/summon/06.mp3?v=5",
+      "splitSec": 5.77,
+      "duration": 17.98,
+      "voice": "Algenib"
+    },
+    "7": {
+      "src": "assets/audio/summon/07.mp3?v=5",
+      "splitSec": 6.38,
+      "duration": 15.91,
+      "voice": "Gacrux"
+    },
+    "8": {
+      "src": "assets/audio/summon/08.mp3?v=5",
+      "splitSec": 3.97,
+      "duration": 11.94,
+      "voice": "Sadachbia"
+    },
+    "9": {
+      "src": "assets/audio/summon/09.mp3?v=5",
+      "splitSec": 4.46,
+      "duration": 14.9,
+      "voice": "Sadachbia"
+    },
+    "10": {
+      "src": "assets/audio/summon/10.mp3?v=5",
+      "splitSec": 4.89,
+      "duration": 13.46,
+      "voice": "Zubenelgenubi"
+    },
+    "11": {
+      "src": "assets/audio/summon/11.mp3?v=5",
+      "splitSec": 5.33,
+      "duration": 15.3,
+      "voice": "Orus"
+    },
+    "12": {
+      "src": "assets/audio/summon/12.mp3?v=5",
+      "splitSec": 4.77,
+      "duration": 12.46,
+      "voice": "Achernar"
+    },
+    "13": {
+      "src": "assets/audio/summon/13.mp3?v=5",
+      "splitSec": 4.29,
+      "duration": 14.18,
+      "voice": "Schedar"
+    },
+    "14": {
+      "src": "assets/audio/summon/14.mp3?v=5",
+      "splitSec": 5.7,
+      "duration": 13.07,
+      "voice": "Alnilam"
+    },
+    "15": {
+      "src": "assets/audio/summon/15.mp3?v=5",
+      "splitSec": 6.06,
+      "duration": 16.31,
+      "voice": "Algieba"
+    },
+    "16": {
+      "src": "assets/audio/summon/16.mp3?v=5",
+      "splitSec": 5.53,
+      "duration": 15.18,
+      "voice": "Achird"
+    },
+    "17": {
+      "src": "assets/audio/summon/17.mp3?v=5",
+      "splitSec": 5.16,
+      "duration": 12.57,
+      "voice": "Autonoe"
+    },
+    "18": {
+      "src": "assets/audio/summon/18.mp3?v=5",
+      "splitSec": 6.38,
+      "duration": 13.1,
+      "voice": "Fenrir"
+    },
+    "19": {
+      "src": "assets/audio/summon/19.mp3?v=5",
+      "splitSec": 6.54,
+      "duration": 14.91,
+      "voice": "Schedar"
+    },
+    "20": {
+      "src": "assets/audio/summon/20.mp3?v=5",
+      "splitSec": 5.82,
+      "duration": 18.79,
+      "voice": "Leda"
+    },
+    "21": {
+      "src": "assets/audio/summon/21.mp3?v=5",
+      "splitSec": 6.22,
+      "duration": 14.54,
+      "voice": "Puck"
+    },
+    "22": {
+      "src": "assets/audio/summon/22.mp3?v=5",
+      "splitSec": 5.73,
+      "duration": 12.86,
+      "voice": "Achird"
+    },
+    "23": {
+      "src": "assets/audio/summon/23.mp3?v=5",
+      "splitSec": 5.81,
+      "duration": 11.78,
+      "voice": "Erinome"
+    },
+    "24": {
+      "src": "assets/audio/summon/24.mp3?v=5",
+      "splitSec": 6.5,
+      "duration": 15.18,
+      "voice": "Enceladus"
+    },
+    "25": {
+      "src": "assets/audio/summon/25.mp3?v=5",
+      "splitSec": 5.78,
+      "duration": 12.71,
+      "voice": "Zubenelgenubi"
+    },
+    "26": {
+      "src": "assets/audio/summon/26.mp3?v=5",
+      "splitSec": 4.9,
+      "duration": 12.95,
+      "voice": "Pulcherrima"
+    },
+    "27": {
+      "src": "assets/audio/summon/27.mp3?v=5",
+      "splitSec": 5.01,
+      "duration": 14.5,
+      "voice": "Fenrir"
+    },
+    "28": {
+      "src": "assets/audio/summon/28.mp3?v=5",
+      "splitSec": 6.25,
+      "duration": 14.98,
+      "voice": "Algenib"
+    },
+    "29": {
+      "src": "assets/audio/summon/29.mp3?v=5",
+      "splitSec": 6.66,
+      "duration": 16.87,
+      "voice": "Algenib"
+    },
+    "30": {
+      "src": "assets/audio/summon/30.mp3?v=5",
+      "splitSec": 6.88,
+      "duration": 15.37,
+      "voice": "Sulafat"
+    },
+    "31": {
+      "src": "assets/audio/summon/31.mp3?v=5",
+      "splitSec": 6.02,
+      "duration": 18.35,
+      "voice": "Charon"
+    },
+    "32": {
+      "src": "assets/audio/summon/32.mp3?v=5",
+      "splitSec": 6.06,
+      "duration": 19.39,
+      "voice": "Charon"
+    },
+    "33": {
+      "src": "assets/audio/summon/33.mp3?v=5",
+      "splitSec": 5.45,
+      "duration": 14.66,
+      "voice": "Sadaltager"
+    },
+    "34": {
+      "src": "assets/audio/summon/34.mp3?v=5",
+      "splitSec": 5.37,
+      "duration": 14.34,
+      "voice": "Despina"
+    },
+    "35": {
+      "src": "assets/audio/summon/35.mp3?v=5",
+      "splitSec": 5.21,
+      "duration": 14.42,
+      "voice": "Sadachbia"
+    },
+    "36": {
+      "src": "assets/audio/summon/36.mp3?v=5",
+      "splitSec": 6.16,
+      "duration": 14.69,
+      "voice": "Iapetus"
+    },
+    "37": {
+      "src": "assets/audio/summon/37.mp3?v=5",
+      "splitSec": 6.28,
+      "duration": 21.65,
+      "voice": "Algieba"
+    },
+    "38": {
+      "src": "assets/audio/summon/38.mp3?v=5",
+      "splitSec": 5.25,
+      "duration": 13.34,
+      "voice": "Fenrir"
+    },
+    "39": {
+      "src": "assets/audio/summon/39.mp3?v=5",
+      "splitSec": 5.37,
+      "duration": 17.22,
+      "voice": "Charon"
+    },
+    "40": {
+      "src": "assets/audio/summon/40.mp3?v=5",
+      "splitSec": 5.38,
+      "duration": 14.31,
+      "voice": "Enceladus"
+    },
+    "41": {
+      "src": "assets/audio/summon/41.mp3?v=5",
+      "splitSec": 5.56,
+      "duration": 16.77,
+      "voice": "Alnilam"
+    },
+    "42": {
+      "src": "assets/audio/summon/42.mp3?v=5",
+      "splitSec": 5.25,
+      "duration": 16.5,
+      "voice": "Charon"
+    },
+    "43": {
+      "src": "assets/audio/summon/43.mp3?v=5",
+      "splitSec": 4.77,
+      "duration": 17.98,
+      "voice": "Enceladus"
+    },
+    "44": {
+      "src": "assets/audio/summon/44.mp3?v=5",
+      "splitSec": 5.33,
+      "duration": 14.58,
+      "voice": "Sadaltager"
+    },
+    "45": {
+      "src": "assets/audio/summon/45.mp3?v=5",
+      "splitSec": 5.57,
+      "duration": 13.9,
+      "voice": "Orus"
+    },
+    "46": {
+      "src": "assets/audio/summon/46.mp3?v=5",
+      "splitSec": 7.5,
+      "duration": 19.19,
+      "voice": "Fenrir"
+    },
+    "47": {
+      "src": "assets/audio/summon/47.mp3?v=5",
+      "splitSec": 5.46,
+      "duration": 13.83,
+      "voice": "Orus"
+    },
+    "48": {
+      "src": "assets/audio/summon/48.mp3?v=5",
+      "splitSec": 6.58,
+      "duration": 16.88,
+      "voice": "Algenib"
+    },
+    "49": {
+      "src": "assets/audio/summon/49.mp3?v=5",
+      "splitSec": 5.33,
+      "duration": 13.34,
+      "voice": "Sulafat"
+    },
+    "50": {
+      "src": "assets/audio/summon/50.mp3?v=5",
+      "splitSec": 6.01,
+      "duration": 16.22,
+      "voice": "Algenib"
+    },
+    "51": {
+      "src": "assets/audio/summon/51.mp3?v=5",
+      "splitSec": 5.89,
+      "duration": 15.38,
+      "voice": "Sadachbia"
+    },
+    "52": {
+      "src": "assets/audio/summon/52.mp3?v=5",
+      "splitSec": 5.81,
+      "duration": 11.82,
+      "voice": "Erinome"
+    },
+    "53": {
+      "src": "assets/audio/summon/53.mp3?v=5",
+      "splitSec": 5.26,
+      "duration": 15.19,
+      "voice": "Umbriel"
+    },
+    "54": {
+      "src": "assets/audio/summon/54.mp3?v=5",
+      "splitSec": 5.76,
+      "duration": 15.37,
+      "voice": "Charon"
+    },
+    "55": {
+      "src": "assets/audio/summon/55.mp3?v=5",
+      "splitSec": 6.01,
+      "duration": 14.98,
+      "voice": "Vindemiatrix"
+    },
+    "56": {
+      "src": "assets/audio/summon/56.mp3?v=5",
+      "splitSec": 5.64,
+      "duration": 12.89,
+      "voice": "Achird"
+    },
+    "57": {
+      "src": "assets/audio/summon/57.mp3?v=5",
+      "splitSec": 5.46,
+      "duration": 14.47,
+      "voice": "Sadachbia"
+    },
+    "58": {
+      "src": "assets/audio/summon/58.mp3?v=5",
+      "splitSec": 5.16,
+      "duration": 12.69,
+      "voice": "Alnilam"
+    },
+    "59": {
+      "src": "assets/audio/summon/59.mp3?v=5",
+      "splitSec": 6.26,
+      "duration": 15.39,
+      "voice": "Charon"
+    },
+    "60": {
+      "src": "assets/audio/summon/60.mp3?v=5",
+      "splitSec": 7.45,
+      "duration": 16.46,
+      "voice": "Algenib"
+    },
+    "61": {
+      "src": "assets/audio/summon/61.mp3?v=5",
+      "splitSec": 7.82,
+      "duration": 16.54,
+      "voice": "Puck"
+    },
+    "62": {
+      "src": "assets/audio/summon/62.mp3?v=5",
+      "splitSec": 6.53,
+      "duration": 16.18,
+      "voice": "Iapetus"
+    },
+    "63": {
+      "src": "assets/audio/summon/63.mp3?v=5",
+      "splitSec": 6.97,
+      "duration": 15.7,
+      "voice": "Fenrir"
+    },
+    "64": {
+      "src": "assets/audio/summon/64.mp3?v=5",
+      "splitSec": 6.02,
+      "duration": 14.78,
+      "voice": "Charon"
+    },
+    "65": {
+      "src": "assets/audio/summon/65.mp3?v=5",
+      "splitSec": 7.1,
+      "duration": 16.5,
+      "voice": "Iapetus"
+    },
+    "66": {
+      "src": "assets/audio/summon/66.mp3?v=5",
+      "splitSec": 7.82,
+      "duration": 19.67,
+      "voice": "Rasalgethi"
+    },
+    "67": {
+      "src": "assets/audio/summon/67.mp3?v=5",
+      "splitSec": 5.25,
+      "duration": 14.82,
+      "voice": "Despina"
+    },
+    "68": {
+      "src": "assets/audio/summon/68.mp3?v=5",
+      "splitSec": 6.41,
+      "duration": 16.3,
+      "voice": "Charon"
+    },
+    "69": {
+      "src": "assets/audio/summon/69.mp3?v=5",
+      "splitSec": 6.72,
+      "duration": 16.08,
+      "voice": "Puck"
+    },
+    "70": {
+      "src": "assets/audio/summon/70.mp3?v=5",
+      "splitSec": 5.5,
+      "duration": 12.75,
+      "voice": "Umbriel"
+    },
+    "71": {
+      "src": "assets/audio/summon/71.mp3?v=5",
+      "splitSec": 5.9,
+      "duration": 15.87,
+      "voice": "Gacrux"
+    },
+    "72": {
+      "src": "assets/audio/summon/72.mp3?v=5",
+      "splitSec": 6.53,
+      "duration": 18.06,
+      "voice": "Algenib"
+    },
+    "73": {
+      "src": "assets/audio/summon/73.mp3?v=5",
+      "splitSec": 6.1,
+      "duration": 15.52,
+      "voice": "Puck"
+    },
+    "74": {
+      "src": "assets/audio/summon/74.mp3?v=5",
+      "splitSec": 5.73,
+      "duration": 13.02,
+      "voice": "Puck"
+    },
+    "75": {
+      "src": "assets/audio/summon/75.mp3?v=5",
+      "splitSec": 7.38,
+      "duration": 17.52,
+      "voice": "Puck"
+    }
+  },
+  "leaders": {
+    "naruto": {
+      "select": "assets/audio/leaders/naruto_select.mp3?v=5",
+      "bingo": "assets/audio/leaders/naruto_bingo.mp3?v=5"
+    },
+    "sasuke": {
+      "select": "assets/audio/leaders/sasuke_select.mp3?v=5",
+      "bingo": "assets/audio/leaders/sasuke_bingo.mp3?v=5"
+    },
+    "sakura": {
+      "select": "assets/audio/leaders/sakura_select.mp3?v=5",
+      "bingo": "assets/audio/leaders/sakura_bingo.mp3?v=5"
+    },
+    "kakashi": {
+      "select": "assets/audio/leaders/kakashi_select.mp3?v=5",
+      "bingo": "assets/audio/leaders/kakashi_bingo.mp3?v=5"
+    },
+    "minato": {
+      "select": "assets/audio/leaders/minato_select.mp3?v=5",
+      "bingo": "assets/audio/leaders/minato_bingo.mp3?v=5"
+    },
+    "itachi": {
+      "select": "assets/audio/leaders/itachi_select.mp3?v=5",
+      "bingo": "assets/audio/leaders/itachi_bingo.mp3?v=5"
+    },
+    "gaara": {
+      "select": "assets/audio/leaders/gaara_select.mp3?v=5",
+      "bingo": "assets/audio/leaders/gaara_bingo.mp3?v=5"
+    },
+    "hinata": {
+      "select": "assets/audio/leaders/hinata_select.mp3?v=5",
+      "bingo": "assets/audio/leaders/hinata_bingo.mp3?v=5"
+    },
+    "jiraiya": {
+      "select": "assets/audio/leaders/jiraiya_select.mp3?v=5",
+      "bingo": "assets/audio/leaders/jiraiya_bingo.mp3?v=5"
+    },
+    "shikamaru": {
+      "select": "assets/audio/leaders/shikamaru_select.mp3?v=5",
+      "bingo": "assets/audio/leaders/shikamaru_bingo.mp3?v=5"
+    },
+    "guy_lee": {
+      "select": "assets/audio/leaders/guy_lee_select.mp3?v=5",
+      "bingo": "assets/audio/leaders/guy_lee_bingo.mp3?v=5"
+    },
+    "madara": {
+      "select": "assets/audio/leaders/madara_select.mp3?v=5",
+      "bingo": "assets/audio/leaders/madara_bingo.mp3?v=5"
+    }
+  },
+  "sys": {
+    "test": {
+      "src": "assets/audio/sys/test.mp3?v=5",
+      "duration": 8.52
+    },
+    "hit": {
+      "src": "assets/audio/sys/hit.mp3?v=5",
+      "duration": 4.12
+    },
+    "double_hit": {
+      "src": "assets/audio/sys/double_hit.mp3?v=5",
+      "duration": 3.6
+    },
+    "triple_hit": {
+      "src": "assets/audio/sys/triple_hit.mp3?v=5",
+      "duration": 5.2
+    },
+    "reach": {
+      "src": "assets/audio/sys/reach.mp3?v=5",
+      "duration": 5.92
+    },
+    "bingo": {
+      "src": "assets/audio/sys/bingo.mp3?v=5",
+      "duration": 6.6
+    },
+    "reset": {
+      "src": "assets/audio/sys/reset.mp3?v=5",
+      "duration": 5.8
+    },
+    "complete": {
+      "src": "assets/audio/sys/complete.mp3?v=5",
+      "duration": 8.0
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "NARUTO 疾風伝 忍界ゲームランド！",
+  "short_name": "NARUTOゲーム",
+  "description": "ビンゴ大会やすごろくなど、NARUTOのミニゲームであそべるキッズゲームランド！",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#090a0f",
+  "theme_color": "#ff6b00",
+  "icons": [
+    {
+      "src": "./assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
